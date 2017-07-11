@@ -96,7 +96,7 @@ $ npm test
 Single Test 
 -----------
 ```
-$ npm test tests/unit/<file_name.php>
+$ npm test tests/unit/<file_name.js>
 ```
 
 Developer Information
