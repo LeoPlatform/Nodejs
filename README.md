@@ -3,20 +3,20 @@ LeoPlatform/Nodejs
 
 Leo Nodejs SDK
 
-A php interface to interact with the Leo Platform
+A nodejs interface to interact with the Leo Platform
 
 Documentation: https://docs.leoinsights.com
 
 How to install the Leo SDK
 ===================================
 
-Composer
+NPM
 --------
-The Leo SDK uses Composer for installation (https://getcomposer.org/doc/01-basic-usage.md)
+The Leo SDK uses NPM for installation (https://npmjs.com)
 
 ```
-$ curl -sS https://getcomposer.org/installer | php
-$ php composer.phar install
+Instructions to install npm
+$ blah
 ```
 
 Example Usage
@@ -24,30 +24,42 @@ Example Usage
 
 Load events to Leo Platform
 ```
-$leo = new Leo(<oauth_token>, <oauth_token_secret>, <args>);
+"use strict";
+process.env.TZ = 'America/Denver';
 
-$stream = $leo->createBufferedWriteStream("SOMETEST", [], function ($checkpointData) {
-	var_dump($checkpointData);
-});
+var leo = require("@leo-sdk/core");
+var stream = leo.createStreamWrite("SOMETEST");
+
 for($i = 0; $i < 1000000; $i++) {
-	$stream->write("neworder-mass",[
-		"id"=>"testing-$i",
-		"data"=>"some order data",
-		"other data"=>"some more data"
-	], ["source"=>null, "start"=>$i]);
+	stream.write("neworder-mass", 
+  	{
+    	"id": "testing-{$i}",
+			"data": "some order data",
+      "other data": "some more data"
+    }, 
+    {
+			"source": null,
+      "start": $i
+    }
+  );	
 }
 
 
-$stream->end();
+stream.end(function (err) {
+	if(err) {
+  	console.log("Error writing");
+  } else {
+  	console.log("Successful write");
+  }
+});
+
 ```
 
 ???????? Read events from a queue ?????????
 ```
-$leo = new Leo(<oauth_token>, <oauth_token_secret>, <args>);
 
-$stream = $leo->createBufferedReadStream("SOMETEST", [], function ($checkpointData) {
-	var_dump($checkpointData);
-});
+var leo = require("@leo-sdk/core");
+var stream = leo.createStreamRead("SOMETEST");
 ```
 
 Logging
@@ -55,11 +67,7 @@ Logging
 The Leo SDK will pass your Nodejs logs up to the Leo Platform so that you can debug them using the Data Innovation Center user interface.
 
 ```
-$args = array (
-  'logging' => true
-);
 
-$leo = new Leo(<oauth_token>, <oauth_token_secret>, $args);
 ```
 
 
@@ -67,7 +75,7 @@ How to Run the Unit Tests
 -------------------------
 
 ```
-Instructions to install phpunit
+Instructions to install mocha
 ```
 
 The unit tests are in the `/tests` directory.
@@ -76,19 +84,19 @@ All Tests
 ---------
 
 ```
-$ phpunit 
+$ npm test 
 ```
 
 Test Groups
 -----------
 ```
-$ phpunit --group <groupName> 
+$ npm test 
 ```
 
 Single Test 
 -----------
 ```
-$ phpunit tests/unit/<file_name.php>
+$ npm test tests/unit/<file_name.php>
 ```
 
 Developer Information
