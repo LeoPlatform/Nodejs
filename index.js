@@ -30,9 +30,38 @@ module.exports = function (data) {
 	var config = extend(true, build(process.cwd()), data);
 	var leoStream = ls(config);
 	return {
+
+		/**
+		 * Stream for writting events to a queue
+		 * @param {string} id - The id of the bot
+		 * @param {string} outQueue - The queue into which events will be written 
+		 * @return {stream} Stream
+		 */
 		load: leoStream.load,
+
+		/**
+		 * Process events from a queue.
+		 * @param {Object} opts
+		 * @param {string} opts.id - The id of the bot
+		 * @param {string} opts.inQueue - The queue from which events will be read
+		 * @param {function} opts.transform - A function to transform data from inQueue
+		 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
+		 * @return {stream} Stream
+		 */
 		offload: leoStream.offload,
+
+		/**
+		 * Enrich events from one queue to another.
+		 * @param {Object} opts
+		 * @param {string} opts.id - The id of the bot
+		 * @param {string} opts.inQueue - The queue from which events will be read
+		 * @param {string} opts.outQueue - The queue into which events will be written 
+		 * @param {function} opts.transform - A function to transform data from inQueue to outQueue
+		 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
+		 * @return {stream} Stream
+		 */
 		enrich: leoStream.enrich,
+
 		streams: leoStream
 	};
 };
