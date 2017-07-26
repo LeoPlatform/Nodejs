@@ -1,3 +1,4 @@
+"use strict";
 let extend = require("extend");
 let build = require('./lib/build-config.js').build;
 var ls = require("./lib/stream/leo-stream");
