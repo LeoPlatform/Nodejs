@@ -20,7 +20,7 @@ if (toRun == "load") {
 		});
 	}
 	stream.end(err => {
-		console.log("done writting events");
+		console.log("done writing events");
 	});
 
 } else if (toRun == "enrich") {
