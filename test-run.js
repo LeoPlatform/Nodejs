@@ -1,9 +1,9 @@
 "use strict";
 var moment = require("moment");
 var leo = require("leo-sdk")({
-	s3: "leo-s3bus-1r0aubze8imm5",
-	firehose: "Leo-BusToS3-3JQJ49ZBNP1P",
-	kinesis: "Leo-KinesisStream-ATNV3XQO0YHV",
+	mass: "leo-s3bus-1r0aubze8imm5",
+	standard: "Leo-BusToS3-3JQJ49ZBNP1P",
+	realtime: "Leo-KinesisStream-ATNV3XQO0YHV",
 	region: "us-west-2"
 });
 

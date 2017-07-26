@@ -19,42 +19,10 @@ Your access key and secret key can be obtained in your AWS console. If you were 
 
 Install SDK
 -----------
-1. Create or add to your composer.json
+1. Install using npm
 
 ```
-{
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/LeoPlatform/PHP.git"
-        }
-    ],
-    "require": {
-        "leoplatform/php": "dev-master"
-    }
-}
-```
-
-2. Use Composer to install the SDK.  (https://getcomposer.org/doc/01-basic-usage.md)
-
-```
-$ curl -sS https://getcomposer.org/installer | php
-$ php composer.phar install
-```
-
-Or if you already have composer installed:
-
-```
-$ composer install
-```
-
-Autoload
----------------------
-
-The Leo PHP SDK uses Composer's autoload functionality to include classes that are needed.  Including the following code into any php file in your project will automatically load the Leo SDK.
-
-```
-require_once("vendor/autoload.php");
+npm install leo-sdk
 ```
 
 Example Usage
@@ -65,103 +33,63 @@ They can be found in your AWS console.  For more information on how to obtain th
 
 ## Load events to Leo Platform
 ```
-<?php
+"use strict";
+var leo = require("leo-sdk")({
+	s3: "leo-s3bus-1ivp7pn7ci485",
+	firehose: "Leo-BusToS3-14917F12E42HL",
+	kinesis: "Leo-KinesisStream-1NT04ZIMSYUKV",
+	region: "us-west-2"
+});
 
-require_once("vendor/autoload.php");
+var loaderBot = "LoaderBot";
+var queueName = "TestQueue";
 
-use LEO\Stream;
 
-$config = [
-	"enableLogging"	=> true,
-	"config"	=> [
-		"realtime"  => "Leo-LeoStream-??????????",
-		"standard" => "Leo-BusToS3-??????????",
-		"mass"	   => "leo-s3bus-??????????"
-	]
-];
-$bot_name = "LoaderBot";
-$queue_name = "TestQueue";
-
-$leo = new Stream($bot_name, $config);
-
-$stream_options = [];
-$checkpoint_function = function ($checkpointData) {
-	//This function is called with every checkpoint
-	var_dump($checkpointData);
-};
-
-$stream = $leo->createLoadStream($stream_options, $checkpoint_function);
-
-for($i = 0; $i < 10000; $i++) {
-	$event = [
-		"id"=>"testing-$i",
-		"data"=>"some test data",
-		"other data"=>"some more data"
-	];
-	$meta = ["source"=>null, "start"=>$i];
-	
-	$stream->write($queue_name, $event, $meta);
+var stream = leo.load(loaderBot, queueName);
+for (var i = 0; i < 100; i++) {
+	var event = {
+		now: Date.now(),
+		index: i,
+		number: Math.round(Math.random() * 10000)
+	};
+	console.log(event);
+	stream.write(event);
 }
-$stream->end();
+stream.end(err => {
+	err && console.log("Error:", err);
+	console.log("done writing events");
+});
 ```
-
-### Possible values for config:
-
-* **enableLogging:** if true, your php log output will be sent to AWS and associated with this bot to view through the UI
-* **version:** which platform version should be used, *default* = 'latest'
-* **server:** identifier of the location where this code is being run.  Used for debug purposes
-* **uploader:** One of 4 values. *kinesis*, *firehose*, *mass*, *auto*.  
-* **config.region:** AWS region where your Leo platform is installed
-* **config.realtime:** stream identifier for the Leo realtime stream
-* **config.standard:** stream identifier for the Leo standard stream
-* **config.mass:** stream identifier for the Leo mass stream
-	
 
 ## Enrich events on the Leo Platform
 ```
-<?php 
-require_once("vendor/autoload.php");
+"use strict";
+var leo = require("leo-sdk")({
+	s3: "leo-s3bus-1ivp7pn7ci485",
+	firehose: "Leo-BusToS3-14917F12E42HL",
+	kinesis: "Leo-KinesisStream-1NT04ZIMSYUKV",
+	region: "us-west-2"
+});
 
-use LEO\Stream;
+var loaderBot = "LoaderBot";
+var queueName = "TestQueue";
 
-$config = [
-	"enableLogging"	=> true,
-	"config"	=> [
-		"realtime"  => "Leo-LeoStream-??????????",
-		"standard" => "Leo-BusToS3-??????????",
-		"mass"	   => "leo-s3bus-??????????"
-	]
-];
 
-$bot_name = "EnrichmentBot";
-$queue_name = "TestQueue";
-$enriched_queue_name = "EnrichedQueueName";
-$read_options = ['limit'=>50, 'run_time'=> "5 seconds"];
-
-$transform_function = function ($event) {
-			var_dump($event);
-			$event["newdata"] = "this is some new data";
-			return [
-				"modified"=>$event
-			];
-		};
-
-$leo = new Stream($bot_name, $config);
-
-$stream = $leo->createEnrichStream($queue_name, $enriched_queue_name, $read_options, $transform_function);
-
-$stream->end();
+var stream = leo.load(loaderBot, queueName);
+for (var i = 0; i < 100; i++) {
+	var event = {
+		now: Date.now(),
+		index: i,
+		number: Math.round(Math.random() * 10000)
+	};
+	console.log(event);
+	stream.write(event);
+}
+stream.end(err => {
+	err && console.log("Error:", err);
+	console.log("done writing events");
+});
 ```
-
-### Possible values for read_options:
-
-* **buffer:** Number of events to read into buffer before the sdk begins processing.
-* **loops:** How many iterations to execute before finishing
-* **start:** Checkpoint from where you want to begin reading events
-* **limit:** Number events to fetch during this execution
-* **size:** size of the buffer. e.g. 5M
-* **debug:** whether or not to run in debug mode. e.g. *true* or *false*
-* **run_time:** max time that the script should run before shutting down and completing execution e.g. *5 seconds*
 
 ## Offload events off the Leo Platform
 ```
