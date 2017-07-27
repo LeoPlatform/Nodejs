@@ -19,14 +19,14 @@ Your access key and secret key can be obtained in your AWS console. If you were 
 
 Install SDK
 -----------
-1. Install using npm
+1. Install using npm.  In your project folder run the following command.
 
 ```
-npm install leo-sdk
+npm install leo-sdk --save
 ```
 
 Example Usage
--------------
+=============
 
 Replace the ???? values in this example script with the appropriate values from your installation.  
 They can be found in your AWS console.  For more information on how to obtain these values, see [AWS Configuration](https://docs.leoplatform.io/docs/aws-configuration)
@@ -34,12 +34,21 @@ They can be found in your AWS console.  For more information on how to obtain th
 ## Load events to Leo Platform
 ```
 "use strict";
+
+var aws = require("aws-sdk");
+var awsProfile = "omadi";
+var credentials = new aws.SharedIniFileCredentials({
+	profile: "omadi"
+});
+aws.config.credentials = credentials;
+
 var leo = require("leo-sdk")({
 	s3: "leo-s3bus-1ivp7pn7ci485",
 	firehose: "Leo-BusToS3-14917F12E42HL",
 	kinesis: "Leo-KinesisStream-1NT04ZIMSYUKV",
 	region: "us-west-2"
 });
+
 
 var loaderBot = "LoaderBot";
 var queueName = "TestQueue";
@@ -64,6 +73,7 @@ stream.end(err => {
 ## Enrich events on the Leo Platform
 ```
 "use strict";
+
 var leo = require("leo-sdk")({
 	s3: "leo-s3bus-1ivp7pn7ci485",
 	firehose: "Leo-BusToS3-14917F12E42HL",
@@ -71,89 +81,57 @@ var leo = require("leo-sdk")({
 	region: "us-west-2"
 });
 
-var loaderBot = "LoaderBot";
-var queueName = "TestQueue";
-
-
-var stream = leo.load(loaderBot, queueName);
-for (var i = 0; i < 100; i++) {
-	var event = {
-		now: Date.now(),
-		index: i,
-		number: Math.round(Math.random() * 10000)
-	};
-	console.log(event);
-	stream.write(event);
-}
-stream.end(err => {
-	err && console.log("Error:", err);
-	console.log("done writing events");
+var credentials = new aws.SharedIniFileCredentials({
+	profile: "omadi"
 });
+aws.config.credentials = credentials;
+
+
+leo.enrich({
+	id: "EnrichBot",
+	inQueue: "TestQueue",
+	outQueue: "EnrichedQueue",
+	transform: (payload, metadata, done) => {
+		done(null, {
+			time: Date.now(),
+			number: payload.number * -1,
+			newdata: "this is enriched"
+		});
+	}
+}, (err) => {
+	console.log("finished", err || "");
+});
+
 ```
 
 ## Offload events off the Leo Platform
 ```
-<?php 
-require_once("vendor/autoload.php");
+"use strict";
+var moment = require("moment");
+var leo = require("leo-sdk")({
+	mass: "leo-s3bus-1r0aubze8imm5",
+	standard: "Leo-BusToS3-3JQJ49ZBNP1P",
+	realtime: "Leo-KinesisStream-ATNV3XQO0YHV",
+	region: "us-west-2"
+});
 
-use LEO\Stream;
 
-$config = [
-	"enableLogging"	=> true,
-	"config"	=> [
-		"realtime"  => "Leo-LeoStream-??????????",
-		"standard" => "Leo-BusToS3-??????????",
-		"mass"	   => "leo-s3bus-??????????"
-	]
-];
-
-$bot_name = "OffloaderBot";
-$queue_name = "EnrichedQueueName";
-$target_name = "TargetSystem";
-$read_options = ['limit'=>50, 'run_time'=> "5 seconds"];
-
-$offload_function = function ($event) {
-			var_dump($event);
-			
-			//Do some API calling to offload the data
-			
-			return [
-				"result"=>$result
-			];
-		};
-
-$leo = new Stream($bot_name, $config);
-
-$stream = $leo->createOffloadStream($queue_name, $target_name, $read_options, $offload_function);
-
-$stream->end();
+leo.offload({
+	id: "ckzSDK_offload",
+	queue: "ckzOutQueue3",
+	batch: {
+		size: 10000,
+		map: (payload, meta, done) => {
+			//console.log("My Batch Map", payload)
+			done(null, payload);
+		}
+	}, // object or number 
+	each: (payload, meta, done) => {
+		console.log("Each", meta.eid, meta.units);
+		done(null, true);
+	}
+}, (err) => {
+	console.log("All Done processing events", err);
+});
 ```
 
-### Possible values for read_options:
-
-* **buffer:** Number of events to read into buffer before the sdk begins processing.
-* **loops:** How many iterations to execute before finishing
-* **start:** Checkpoint from where you want to begin reading events
-* **limit:** Number events to fetch during this execution
-* **size:** size of the buffer. e.g. 5M
-* **debug:** whether or not to run in debug mode. e.g. *true* or *false*
-* **run_time:** max time that the script should run before shutting down and completing execution e.g. *5 seconds*
-
-
-Logging
--------
-The Leo SDK will pass your PHP logs up to the Leo Platform so that you can debug them using the Data Innovation Center user interface.
-
-You do this when you instantiate a new LEO/Stream object by passing in **enableLogging** with a value of **true**.
-
-```
-$test = new Stream("Test Bot", [
-	"enableLogging"=>true,
-	"config"=>[
-		"realtime"  => "Leo-LeoStream-??????????",
-		"standard" => "Leo-BusToS3-??????????",
-		"mass"	   => "leo-s3bus-??????????"
-	]
-]);
-
-```
