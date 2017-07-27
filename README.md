@@ -34,6 +34,14 @@ They can be found in your AWS console.  For more information on how to obtain th
 ## Load events to Leo Platform
 ```
 "use strict";
+
+var aws = require("aws-sdk");
+var awsProfile = "omadi";
+var credentials = new aws.SharedIniFileCredentials({
+	profile: "omadi"
+});
+aws.config.credentials = credentials;
+
 var leo = require("leo-sdk")({
 	s3: "leo-s3bus-1ivp7pn7ci485",
 	firehose: "Leo-BusToS3-14917F12E42HL",
@@ -41,10 +49,6 @@ var leo = require("leo-sdk")({
 	region: "us-west-2"
 });
 
-var credentials = new aws.SharedIniFileCredentials({
-	profile: "omadi"
-});
-aws.config.credentials = credentials;
 
 var loaderBot = "LoaderBot";
 var queueName = "TestQueue";
