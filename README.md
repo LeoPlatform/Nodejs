@@ -26,7 +26,7 @@ npm install leo-sdk --save
 ```
 
 Example Usage
--------------
+=============
 
 Replace the ???? values in this example script with the appropriate values from your installation.  
 They can be found in your AWS console.  For more information on how to obtain these values, see [AWS Configuration](https://docs.leoplatform.io/docs/aws-configuration)
@@ -40,6 +40,11 @@ var leo = require("leo-sdk")({
 	kinesis: "Leo-KinesisStream-1NT04ZIMSYUKV",
 	region: "us-west-2"
 });
+
+var credentials = new aws.SharedIniFileCredentials({
+	profile: "omadi"
+});
+aws.config.credentials = credentials;
 
 var loaderBot = "LoaderBot";
 var queueName = "TestQueue";
@@ -71,6 +76,11 @@ var leo = require("leo-sdk")({
 	kinesis: "Leo-KinesisStream-1NT04ZIMSYUKV",
 	region: "us-west-2"
 });
+
+var credentials = new aws.SharedIniFileCredentials({
+	profile: "omadi"
+});
+aws.config.credentials = credentials;
 
 
 leo.enrich({
