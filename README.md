@@ -29,26 +29,26 @@ Example Usage
 =============
 
 Replace the ???? values in this example script with the appropriate values from your installation.  
-They can be found in your AWS console.  For more information on how to obtain these values, see [AWS Configuration](https://docs.leoplatform.io/docs/aws-configuration)
+They can be found in Leo console.  For more information on how to obtain these values, see [AWS Configuration](https://docs.leoplatform.io/docs/aws-configuration)
 
 ## Load events to Leo Platform
 ```
 "use strict";
 
 var aws = require("aws-sdk");
-var awsProfile = "omadi";
+var awsProfile = "default";
+
 var credentials = new aws.SharedIniFileCredentials({
-	profile: "omadi"
+	profile: awsProfile
 });
 aws.config.credentials = credentials;
 
 var leo = require("leo-sdk")({
-	s3: "leo-s3bus-1ivp7pn7ci485",
-	firehose: "Leo-BusToS3-14917F12E42HL",
-	kinesis: "Leo-KinesisStream-1NT04ZIMSYUKV",
+	s3: "leo-s3bus-????????",
+	firehose: "Leo-BusToS3-????????",
+	kinesis: "Leo-KinesisStream-????????",
 	region: "us-west-2"
 });
-
 
 var loaderBot = "LoaderBot";
 var queueName = "TestQueue";
@@ -61,7 +61,6 @@ for (var i = 0; i < 100; i++) {
 		index: i,
 		number: Math.round(Math.random() * 10000)
 	};
-	console.log(event);
 	stream.write(event);
 }
 stream.end(err => {
@@ -74,29 +73,39 @@ stream.end(err => {
 ```
 "use strict";
 
-var leo = require("leo-sdk")({
-	s3: "leo-s3bus-1ivp7pn7ci485",
-	firehose: "Leo-BusToS3-14917F12E42HL",
-	kinesis: "Leo-KinesisStream-1NT04ZIMSYUKV",
-	region: "us-west-2"
-});
+var aws = require("aws-sdk");
+var awsProfile = "default";
 
 var credentials = new aws.SharedIniFileCredentials({
-	profile: "omadi"
+	profile: awsProfile
 });
 aws.config.credentials = credentials;
 
+var leo = require("leo-sdk")({
+	s3: "leo-s3bus-????????",
+	firehose: "Leo-BusToS3-????????",
+	kinesis: "Leo-KinesisStream-????????",
+	region: "us-west-2"
+});
+
+var enrichmentBot = "EnrichBot";
+var sourceQueue = "TestQueue";
+var destinationQueue = "EnrichedQueue";
+
 
 leo.enrich({
-	id: "EnrichBot",
-	inQueue: "TestQueue",
-	outQueue: "EnrichedQueue",
+	id: enrichmentBot,
+	inQueue: sourceQueue,
+	outQueue: destinationQueue,
 	transform: (payload, metadata, done) => {
-		done(null, {
+		
+		var event = {
 			time: Date.now(),
 			number: payload.number * -1,
 			newdata: "this is enriched"
-		});
+		};
+		
+		done(null, event);
 	}
 }, (err) => {
 	console.log("finished", err || "");
@@ -107,31 +116,44 @@ leo.enrich({
 ## Offload events off the Leo Platform
 ```
 "use strict";
-var moment = require("moment");
+
+var aws = require("aws-sdk");
+var awsProfile = "default";
+
+var credentials = new aws.SharedIniFileCredentials({
+	profile: "omadi"
+});
+aws.config.credentials = credentials;
+
 var leo = require("leo-sdk")({
-	mass: "leo-s3bus-1r0aubze8imm5",
-	standard: "Leo-BusToS3-3JQJ49ZBNP1P",
-	realtime: "Leo-KinesisStream-ATNV3XQO0YHV",
+	s3: "leo-s3bus-????????",
+	firehose: "Leo-BusToS3-????????",
+	kinesis: "Leo-KinesisStream-????????",
 	region: "us-west-2"
 });
 
 
+var offloaderBot = "OffloaderBot";
+var sourceQueue = "EnrichedQueue";
+
 leo.offload({
-	id: "ckzSDK_offload",
-	queue: "ckzOutQueue3",
+	id: offloaderBot,
+	queue: sourceQueue,
 	batch: {
 		size: 10000,
 		map: (payload, meta, done) => {
-			//console.log("My Batch Map", payload)
+			console.log("Batch Map", payload)
 			done(null, payload);
 		}
 	}, // object or number 
 	each: (payload, meta, done) => {
 		console.log("Each", meta.eid, meta.units);
+		//Do something with this payload like load to Elastic Search
 		done(null, true);
 	}
 }, (err) => {
-	console.log("All Done processing events", err);
+	console.log("All Done processing events", err || "");
 });
+
 ```
 
