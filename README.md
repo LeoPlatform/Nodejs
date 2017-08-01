@@ -84,7 +84,7 @@ These values are not usually necessary.  Only use these if you know what you are
 * **size**: Size in bytes (after gzipping) of the buffer before sending to kinesis *default:* 204800 - (200K)
 * **time**: maximum time to wait after write call before it sends to kinesis *default:*{ seconds: 3 } **NOTE:** This is a moment.duration parseable object [moment.js](https://momentjs.com/docs/#/durations/)
 * **debug**: turn off and on some extra logging
-* **enableLogging:** if true, your php log output will be sent to AWS and associated with this bot to view through the UI (not yet implemented) *default:* true
+* **enableLogging:** if true, your process's log output will be sent to AWS and associated with this bot to view through the UI (not yet implemented) *default:* true
 * **chunk.records:** Max number of records to include before zipping and chunking records
 * **chunk.size:** Max size in bytes of records before zipping and chunking records
 * **chunk.time:** Max time to wait before zipping and chunking records
@@ -169,7 +169,7 @@ These values are not usually necessary.  Only use these if you know what you are
 * **size**: Size in bytes (after gzipping) of the buffer before sending to kinesis *default:* 204800 - (200K)
 * **time**: maximum time to wait after write call before it sends to kinesis *default:*{ seconds: 3 } **NOTE:** This is a moment.duration parseable object [moment.js](https://momentjs.com/docs/#/durations/)
 * **debug**: turn off and on some extra logging
-* **enableLogging:** if true, your php log output will be sent to AWS and associated with this bot to view through the UI (not yet implemented) *default:* true
+* **enableLogging:** if true, your process's log output will be sent to AWS and associated with this bot to view through the UI (not yet implemented) *default:* true
 * **chunk.records:** Max number of records to include before zipping and chunking records
 * **chunk.size:** Max size in bytes of records before zipping and chunking records
 * **chunk.time:** Max time to wait before zipping and chunking records
