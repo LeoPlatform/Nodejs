@@ -1,6 +1,5 @@
 "use strict";
 let extend = require("extend");
-let build = require('./lib/build-config.js').build;
 var ls = require("./lib/stream/leo-stream");
 
 module.exports = function (data) {
@@ -19,6 +18,10 @@ module.exports = function (data) {
 		bus.firehose = data.firehose;
 	}
 
+	if(!data.region) {	
+		data.region = aws.region || 'us-west-2';
+	}
+	
 	if (data.region && !aws.region) {
 		aws.region = data.region;
 	}
@@ -28,8 +31,7 @@ module.exports = function (data) {
 	delete data.fireshose;
 	delete data.region;
 
-	var config = extend(true, build(process.cwd()), data);
-	var leoStream = ls(config);
+	var leoStream = ls(data);
 	return {
 
 		/**

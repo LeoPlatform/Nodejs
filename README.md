@@ -183,7 +183,7 @@ These values are not usually necessary.  Only use these if you know what you are
 var aws = require("aws-sdk");
 var awsProfile = "default";
 var credentials = new aws.SharedIniFileCredentials({
-	profile: "omadi"
+	profile: "default"
 });
 aws.config.credentials = credentials;
 
