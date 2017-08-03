@@ -159,7 +159,7 @@ These values are not usually necessary.  Only use these if you know what you are
 * **debug:** whether or not to run in debug mode and enable extra logging. e.g. *true* or *false*
 * **stopTime:** timestamp of when this execution should stop retrieving events 
 * **runTime:** max time that the script should run before shutting down and completing execution e.g.  e.g. moment.now()
-* 
+ 
 
 **NOTE:** You should use either stopTime or runTime, not both.  You may also exclude those values and the SDK will feed you events until size, loops, or limits are hit.
 
@@ -261,6 +261,6 @@ makes sense for bulk loading.
 * **debug:** whether or not to run in debug mode and enable extra logging. e.g. *true* or *false*. *default:* false
 * **stopTime:** timestamp of when this execution should stop retrieving events *default:* 240 seconds from the execution start time
 * **runTime:** max time that the script should run before shutting down and completing execution e.g.  e.g. { minutes: 4 } **NOTE:** This is a moment.duration parseable object [moment.js](https://momentjs.com/docs/#/durations/)
-* 
+ 
 
 **NOTE:** You should use either **stopTime** or **runTime**, not both.  You may also exclude those values and the SDK will feed you events until size, loops, or limits are hit.
