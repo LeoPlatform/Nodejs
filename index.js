@@ -1,8 +1,16 @@
 "use strict";
 let extend = require("extend");
 var ls = require("./lib/stream/leo-stream");
+var util = require('util')
+var logging = require("./lib/logging.js");
 
-module.exports = function (data) {
+
+module.exports = function(id, data) {
+	if (typeof id != "string") {
+		data = id;
+		id = null;
+	}
+
 	var bus = data.bus = data.bus || {};
 	var aws = data.aws = data.aws || {};
 
@@ -18,10 +26,10 @@ module.exports = function (data) {
 		bus.firehose = data.firehose;
 	}
 
-	if(!data.region) {	
+	if (!data.region) {
 		data.region = aws.region || 'us-west-2';
 	}
-	
+
 	if (data.region && !aws.region) {
 		aws.region = data.region;
 	}
@@ -31,9 +39,21 @@ module.exports = function (data) {
 	delete data.fireshose;
 	delete data.region;
 
-	var leoStream = ls(data);
-	return {
 
+
+	var leoStream = ls(data);
+
+
+	var logger = null;
+	if (id && data.logging) {
+		logger = logging(id, data);
+	}
+	return {
+		destroy: (callback) => {
+			if (logger) {
+				logger.end(callback);
+			}
+		},
 		/**
 		 * Stream for writing events to a queue
 		 * @param {string} id - The id of the bot
@@ -68,29 +88,6 @@ module.exports = function (data) {
 		 * @return {stream} Stream
 		 */
 		enrich: leoStream.enrich,
-		
-		/**
-		 * Log a read from an external system to the platform (purely for visual representation on the work flow and to show event counts)
-		 * @param {string} id - The id of the bot
-		 * @param {string} inSystem - The system from which events will be loaded 
-		 * @param {number} recordCount - The number of events you want to log
-		 * @param {Object} config - An object that contains config values that control the flow of events to inSystem (optional)
-		 * @param {function} callback - A function called when the logging operation is complete (optional)
-		 * @return {stream} Stream
-		 */
-		load: leoStream.logSourceRead,
-		
-		/**
-		 * Log a write to an external system to the platform (purely for visual representation on the work flow and to show event counts)
-		 * @param {string} id - The id of the bot
-		 * @param {string} outSystem - The system to which events will be offloaded 
-		 * @param {number} recordCount - The number of events you want to log
-		 * @param {Object} config - An object that contains config values that control the flow of events to outSystem (optional)
-		 * @param {function} callback - A function called when the logging operation is complete (optional)
-		 * @return {stream} Stream
-		 */
-		load: leoStream.logTargetWrite,
-
 
 		streams: leoStream
 	};
