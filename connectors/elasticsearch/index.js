@@ -9,6 +9,7 @@ function ES(configure) {
 		configuration: configuration,
 		write: es.stream,
 		query: es.query,
+		get: es.get,
 		_: es
 	})
 }

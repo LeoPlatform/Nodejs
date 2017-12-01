@@ -65,6 +65,15 @@ function SDK(id, data) {
 
 		read: leoStream.fromLeo,
 		write: leoStream.toLeo,
+		put: function(bot_id, queue, payload, callback) {
+			let stream = this.load(bot_id, queue, {
+				kinesis: {
+					records: 1
+				}
+			});
+			stream.write(payload);
+			stream.end(callback);
+		},
 		checkpoint: leoStream.toCheckpoint,
 		streams: leoStream,
 		bot: leoStream.cron,

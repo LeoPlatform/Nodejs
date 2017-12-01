@@ -194,6 +194,7 @@ module.exports = function (configure) {
 							let key = `files/elasticsearch/${(systemRef && systemRef.id) || "unknown"}/${meta.id || "unknown"}/${timestamp.format("YYYY/MM/DD/HH/mm/")+timestamp.valueOf()}-${++fileCount}-${rand}`;
 
 							if (!settings.dontSaveResults) {
+								settings.debug && console.log(leo.configuration.bus.s3, key)
 								s3.upload({
 									Bucket: leo.configuration.bus.s3,
 									Key: key,
@@ -386,6 +387,27 @@ module.exports = function (configure) {
 					scroll: scroll
 				}, getUntilDone);
 			}
+		},
+		get: function (data, settings, callback) {
+			if (typeof settings === "function") {
+				callback = settings;
+				settings = {};
+			}
+
+			let client = getClient(settings);
+
+			return new Promise((resolve, reject) => {
+				client.get(data, function (err, data) {
+					if (callback) {
+						callback(err, data);
+					}
+					if (err) {
+						reject(err);
+					} else {
+						resolve(data)
+					}
+				})
+			});
 		}
 	}
 };

@@ -66,15 +66,18 @@ function findNewBots(callback) {
 				if (err) {
 					return done(err);
 				}
-				var objectId = (settings.id_column && settings.id_column != "_id") ? a => {
-					return typeof a === "string" && a.match(/[0-9.]+/) ? parseFloat(a) : a;
-				} : ObjectId;
 
 				leo.enrich({
 					id: settings.botId,
 					inQueue: settings.source,
 					outQueue: settings.destination,
 					transform: function (obj, event, done) {
+
+						let id_column = obj.id_column || settings.id_column || "_id";
+						var objectId = (id_column != "_id") ? a => {
+							return typeof a === "string" && a.match(/[0-9.]+/) ? parseFloat(a) : a;
+						} : ObjectId;
+
 						let self = this;
 						console.log("Transform:", obj);
 						async.eachOfSeries(obj.files, (file, i, done) => {
@@ -92,7 +95,7 @@ function findNewBots(callback) {
 								count: settings.maxSendCount || 300,
 								time: settings.maxSendDelay || 500
 							}), ls.through(function (group, done) {
-								let idField = settings.id_column || "_id";
+								let idField = id_column; //settings.id_column || "_id";
 								let toId = idField == "_id" ? ObjectId : a => a;
 								var getObjects = function (data) {
 									var history = {};
