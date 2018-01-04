@@ -14,14 +14,14 @@ Pre-Requisites
 --------------
 1. Install the aws-cli toolkit - Instructions for this are found at http://docs.aws.amazon.com/cli/latest/userguide/installing.html
 2. Configure the aws-cli tools - Instructions are found at http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
-
+3. Install node - https://nodejs.org/en/
 
 Install SDK
 -----------
 1. Install using npm.  In your project folder run the following command.
 
 ```
-npm install leo-sdk --save
+npm install leo-sdk
 ```
 
 Configuration
@@ -29,14 +29,14 @@ Configuration
 
 You can now configure a profile that will be used with your sdk similar to the way the AWS SDK works.  To do this, you must execute a command line script and enter in your configuration settings.
 
-Issue the following command from your project directory, you will be prompted for the values:
+Issue the following command from your project directory:
 
 ```
-node node_modules/leo-sdk/generateProfile.js -r us-west-2 LeoSdkStack
+node node_modules/leo-sdk/generateProfile.js -r ${region} ${LeoSdkStack}
 ```
 
-* "-r us-west-2" is your leo bus AWS region
-* "LeoSdkStack" is the name of your leo bus AWS stack
+* "${region}" is your leo bus AWS region. eg. us-west-2
+* "${LeoSdkStack}" is the name of your leo bus AWS stack. eg. "StagingLeo"
 
 This will create a file in your home directory `~/.leo/config.json` that contains your settings.  You can setup multiple profiles just like you can do with the AWS SDK by specifying a different Stack.  
 
@@ -121,7 +121,7 @@ Manual Configuration Setup
 
 ```
 {
-	"LeoSdkStack": {
+	"${LeoSdkStack}": {
 		"region": "${Region}",
 		"kinesis": "${LeoKinesisStream}",
 		"s3": "${LeoS3}",

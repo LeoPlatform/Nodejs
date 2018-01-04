@@ -75,6 +75,7 @@ cloudformation.listStackResources({
 	//	config.default = profile;
 	//}
 	fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+	console.log("Profile Saved");
 });
 
 function get() {
