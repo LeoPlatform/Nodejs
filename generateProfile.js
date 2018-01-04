@@ -15,8 +15,8 @@ let parsed = parse();
 let options = parsed.options;
 let commands = parsed.commands;
 
-console.log(options);
-console.log(commands);
+//console.log(options);
+//console.log(commands);
 
 if (commands[0] == "show") {
 	let p = options.leoprofile || "default";
@@ -33,7 +33,11 @@ var cloudformation = new aws.CloudFormation({
 let stack = commands[0];
 cloudformation.listStackResources({
 	StackName: stack
-}, function(err, data) {
+}, function (err, data) {
+	if (err) {
+		console.log(err);
+		return;
+	}
 	if (data.NextToken) {
 		console.log("We need to deal with next token");
 	}
@@ -47,10 +51,13 @@ cloudformation.listStackResources({
 	});
 
 	let config = get();
-	let profile = config[stack] = Object.assign({
+	let profile = config[options.leoprofile || stack] = Object.assign({
 		region: options.region,
-		resources: {}
-	}, config[stack] || {});
+		resources: {
+			"Region": options.region
+		},
+		profile: options.awsprofile || undefined
+	}, config[options.leoprofile || stack] || {});
 	Object.keys(resources).forEach((id) => {
 		if (id == "LeoKinesisStream") {
 			profile.kinesis = resources[id].id;
@@ -58,10 +65,15 @@ cloudformation.listStackResources({
 			profile.firehose = resources[id].id;
 		} else if (id == "LeoS3") {
 			profile.s3 = resources[id].id;
-		} else if (resources[id].type.match(/Table|Bucket/)) {
+		}
+		if (resources[id].type.match(/Table|Bucket|DeliveryStream|Stream/)) {
 			profile.resources[id] = resources[id].id;
 		}
 	});
+
+	if (!config.default) {
+		config.default = profile;
+	}
 	fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 });
 
@@ -125,6 +137,14 @@ function parse() {
 			name: "stack",
 			consume: 1
 		},
+		"aws-profile": {
+			name: "awsprofile",
+			consume: 1
+		},
+		"a": {
+			name: "awsprofile",
+			consume: 1
+		}
 	};
 	let options = {};
 	let commands = [];

@@ -32,21 +32,20 @@ You can now configure a profile that will be used with your sdk similar to the w
 Issue the following command from your project directory, you will be prompted for the values:
 
 ```
-$ node node_modules/leo-sdk/generateProfile.js -r us-west-2 DevStream
-{ region: 'us-west-2' }
-[ 'Sample' ]
-
+$ node node_modules/leo-sdk/generateProfile.js -r us-west-2 LeoSdkStack
 ```
 
 This will create a file in your home directory `~/.leo/config.json` that contains your settings.  You can setup multiple profiles just like you can do with the AWS SDK by specifying a different Stack.  
 
 
+How to use the Leo SDK
+===================================
+
 Now you can write to the new Stream
 
 ```
-process.env.LEO_DEFAULT_PROFILE = "DevStream";
 var leo = require("leo-sdk");
-var stream = leo.load("producer", "queuename");
+var stream = leo.load("producerBotId", "queuename");
 for (let i = 0; i < 10; i++) {
   stream.write({
     now: Date.now(),
@@ -62,19 +61,63 @@ stream.end(err=>{
 Next in order to read from the stream
 
 ```
-process.env.LEO_DEFAULT_PROFILE = "DevStream";
 var leo = require("leo-sdk");
-let count=0;
 leo.offload({
-	id: "offload",
+	id: "offloadBotId",
 	queue: "queuename",
 	each: (payload, meta, done) =>{
-		count++;
 		console.log(payload);
 		console.log(meta);
+		done();
 	}
 }, (err)=>{
 	console.log("All done processing events", err);
 	done();
 });
+```
+
+
+You can also enrich from one queue to another 
+
+```
+var leo = require("leo-sdk");
+leo.offload({
+	id: "enrichBotId",
+	inQueue: "queuename",
+	outQueue: "enrichedQueuename",
+	each: (payload, meta, done) =>{
+		done(null, Object.assign({enriched:true}, payload));
+	}
+}, (err)=>{
+	console.log("All done processing events", err);
+	done();
+});
+```
+
+
+Manual Configuration Setup
+===================================
+
+1. Create a file at ~/.leo/config.json
+2. Add profile to the ~/.leo/config.json
+	Values can be found under Resources in the AWS Stack
+
+```
+{
+	"region": "${Region}",
+	"kinesis": "${LeoKinesisStream}",
+	"s3": "${LeoS3}",
+	"firehose": "${LeoFirehoseStream}",
+	"resources": {
+		"LeoStream": "${LeoStream}",
+		"LeoCron": "${LeoCron}",
+		"LeoEvent": "${LeoEvent}",
+		"LeoSettings": "${LeoSettings}",
+		"LeoSystem": "${LeoSystem}",
+		"LeoS3": "${LeoS3}",
+		"LeoKinesisStream": "${LeoKinesisStream}",
+		"LeoFirehoseStream": "${LeoFirehoseStream}",
+		"Region": "${Region}"
+	}
+}
 ```

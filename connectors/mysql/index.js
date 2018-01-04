@@ -40,73 +40,75 @@ module.exports = function(ID, config) {
   let log = logger.sub("process");
   return {
     loadEntities: function(queue, findSqls, builds, outQueue, opts, callback) {
-      return new Promise((resolve, reject) => {
-        let checkpointer = ls.toManualCheckpoint(ID);
-        let idLookups = {};
-        let countIds = 0;
+      let checkpointer = ls.toManualCheckpoint(ID);
+      let idLookups = {};
+      let countIds = 0;
 
-        let stream = leo.load(ID, outQueue, opts);
-        let submit = () => {
-          if (countIds == 0) {
-            return Promise.resolve();
-          }
-          return this.findIds(idLookups, findSqls).then((ids) => {
-            return this.buildEntities(ids, builds).then((entities) => {
-              log.debug(entities);
-              Object.keys(entities).forEach((id) => {
-                stream.write(entities[id]);
-              });
-              checkpointer.flush(() => {});
+      let stream = leo.load(ID, outQueue, opts);
+      let submit = () => {
+        if (countIds == 0) {
+          return Promise.resolve();
+        }
+        return this.findIds(idLookups, findSqls).then((ids) => {
+          return this.buildEntities(ids, builds).then((entities) => {
+            log.debug(entities);
+            Object.keys(entities).forEach((id) => {
+              stream.write(entities[id]);
+            });
+            checkpointer.flush(() => {
+              idLookups = {};
+              countIds = 0;
             });
           });
+        });
+      }
+      ls.pipe(leo.read(ID, queue, opts), ls.through((obj, done) => {
+        let p = null;
+        if (countIds > ID_LIMIT || countIds == 0) {
+          p = submit();
+        } else {
+          p = Promise.resolve(true);
         }
 
 
-        ls.pipe(leo.read(ID, queue, opts), ls.through((obj, done) => {
-          let p = null;
-          if (countIds > ID_LIMIT || countIds == 0) {
-            p = submit();
-          } else {
-            p = Promise.resolve(true);
-          }
-
-
-          p.then(() => {
-            let payload = obj.payload;
-            log.debug(obj.eid);
-            Object.keys(findSqls).forEach(key => {
-              if (key in payload) {
-                if (!(key in idLookups)) {
-                  idLookups[key] = [];
-                }
-                countIds += payload[key].length;
-                idLookups[key] = idLookups[key].concat(payload[key]);
+        p.then(() => {
+          let payload = obj.payload;
+          log.debug(obj.eid);
+          Object.keys(findSqls).forEach(key => {
+            if (key in payload) {
+              if (!(key in idLookups)) {
+                idLookups[key] = [];
               }
-            });
-            log.debug(`have ${countIds}`);
-            done(null, obj);
-          }, (err) => {
-            console.log(err);
-            done(err);
-          })
-        }, function finalize(done) {
-          log.debug("Done", countIds);
-          if (countIds) {
-            submit().then(result => done(), done);
-          } else {
-            done();
-          }
-        }), checkpointer, (err) => {
-          log.debug("done checkpointing", err);
-          if (!err) {
+              countIds += payload[key].length;
+              idLookups[key] = idLookups[key].concat(payload[key]);
+            }
+          });
+          log.debug(`have ${countIds}`);
+          done(null, obj);
+        }, (err) => {
+          console.log(err);
+          done(err);
+        })
+      }, function finalize(done) {
+        log.debug("Done", countIds);
+        if (countIds) {
+          submit().then(result => done(), done);
+        } else {
+          done();
+        }
+      }), checkpointer, (err) => {
+        log.debug("done checkpointing", err);
+        m.end();
+        if (!err) {
+          stream.end(() => {
             checkpointer.finish((err) => {
               log.debug("checkpointer finished", err);
               callback(err)
             });
-          } else {
-            callback(err);
-          }
-        });
+          });
+        } else {
+          callback(err);
+        }
       });
     },
     buildEntities: function(ids, builds, opts) {
