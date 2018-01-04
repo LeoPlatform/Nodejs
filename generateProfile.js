@@ -71,17 +71,15 @@ cloudformation.listStackResources({
 		}
 	});
 
-	if (!config.default) {
-		config.default = profile;
-	}
+	//if (!config.default) {
+	//	config.default = profile;
+	//}
 	fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 });
 
 function get() {
 	createPath(configDir);
-	let config = {
-		default: {}
-	};
+	let config = {};
 
 	if (fs.existsSync(configPath)) {
 		config = require(configPath) || {};

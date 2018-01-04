@@ -32,8 +32,11 @@ You can now configure a profile that will be used with your sdk similar to the w
 Issue the following command from your project directory, you will be prompted for the values:
 
 ```
-$ node node_modules/leo-sdk/generateProfile.js -r us-west-2 LeoSdkStack
+node node_modules/leo-sdk/generateProfile.js -r us-west-2 LeoSdkStack
 ```
+
+* "-r us-west-2" is your leo bus AWS region
+* "LeoSdkStack" is the name of your leo bus AWS stack
 
 This will create a file in your home directory `~/.leo/config.json` that contains your settings.  You can setup multiple profiles just like you can do with the AWS SDK by specifying a different Stack.  
 
@@ -45,7 +48,11 @@ Now you can write to the new Stream
 
 ```
 var leo = require("leo-sdk");
-var stream = leo.load("producerBotId", "queuename");
+var botId = "producerBotId";
+var queueName = "queueName";
+var stream = leo.load(botId, queueName);
+
+// Write 10 events to the leo bus
 for (let i = 0; i < 10; i++) {
   stream.write({
     now: Date.now(),
@@ -54,7 +61,7 @@ for (let i = 0; i < 10; i++) {
   });
 }
 stream.end(err=>{
-	console.log("All done");
+	console.log("All done loading events", err);
 });
 ```
 
@@ -62,17 +69,18 @@ Next in order to read from the stream
 
 ```
 var leo = require("leo-sdk");
+var botId = "offloadBotId";
+var queueName = "queueName";
 leo.offload({
-	id: "offloadBotId",
-	queue: "queuename",
+	id: botId,
+	queue: queueName,
 	each: (payload, meta, done) =>{
 		console.log(payload);
 		console.log(meta);
-		done();
+		done(null, true); // Report this event was handled
 	}
 }, (err)=>{
 	console.log("All done processing events", err);
-	done();
 });
 ```
 
@@ -81,16 +89,25 @@ You can also enrich from one queue to another
 
 ```
 var leo = require("leo-sdk");
-leo.offload({
-	id: "enrichBotId",
-	inQueue: "queuename",
-	outQueue: "enrichedQueuename",
+
+var botId = "enrichBotId";
+var inQueueName = "queueName";
+var outQueueName = "enrichedQueueName";
+leo.enrich({
+	id: botId,
+	inQueue: inQueueName,
+	outQueue:outQueueName,
 	each: (payload, meta, done) =>{
-		done(null, Object.assign({enriched:true}, payload));
+
+		// Add new data to the event payload
+		done(null, Object.assign({
+			enriched: true,
+			numberTimes2: payload.number * 2,
+			enrichedNow: Date.now()
+		}, payload));
 	}
 }, (err)=>{
 	console.log("All done processing events", err);
-	done();
 });
 ```
 
@@ -104,20 +121,22 @@ Manual Configuration Setup
 
 ```
 {
-	"region": "${Region}",
-	"kinesis": "${LeoKinesisStream}",
-	"s3": "${LeoS3}",
-	"firehose": "${LeoFirehoseStream}",
-	"resources": {
-		"LeoStream": "${LeoStream}",
-		"LeoCron": "${LeoCron}",
-		"LeoEvent": "${LeoEvent}",
-		"LeoSettings": "${LeoSettings}",
-		"LeoSystem": "${LeoSystem}",
-		"LeoS3": "${LeoS3}",
-		"LeoKinesisStream": "${LeoKinesisStream}",
-		"LeoFirehoseStream": "${LeoFirehoseStream}",
-		"Region": "${Region}"
+	"LeoSdkStack": {
+		"region": "${Region}",
+		"kinesis": "${LeoKinesisStream}",
+		"s3": "${LeoS3}",
+		"firehose": "${LeoFirehoseStream}",
+		"resources": {
+			"LeoStream": "${LeoStream}",
+			"LeoCron": "${LeoCron}",
+			"LeoEvent": "${LeoEvent}",
+			"LeoSettings": "${LeoSettings}",
+			"LeoSystem": "${LeoSystem}",
+			"LeoS3": "${LeoS3}",
+			"LeoKinesisStream": "${LeoKinesisStream}",
+			"LeoFirehoseStream": "${LeoFirehoseStream}",
+			"Region": "${Region}"
+		}
 	}
 }
 ```
