@@ -15,6 +15,7 @@ Pre-Requisites
 1. Install the aws-cli toolkit - Instructions for this are found at http://docs.aws.amazon.com/cli/latest/userguide/installing.html
 2. Configure the aws-cli tools - Instructions are found at http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 3. Install node - https://nodejs.org/en/
+4. Create a Leo Bus Stack - https://github.com/LeoPlatform/bus
 
 Install SDK
 -----------
