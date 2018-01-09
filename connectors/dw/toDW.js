@@ -1,6 +1,5 @@
 "use strict";
 
-var aws = require("aws-sdk");
 var extend = require("extend");
 var refUtil = require("../../lib/reference.js");
 var moment = require("moment");

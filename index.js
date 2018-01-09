@@ -3,7 +3,10 @@ let extend = require("extend");
 var ls = require("./lib/stream/leo-stream");
 var logging = require("./lib/logging.js");
 var LeoConfiguration = require("./lib/configuration.js");
-
+var aws = require("./lib/leo-aws");
+const fs = require("fs");
+const ini = require('ini');
+const execSync = require("child_process").execSync;
 
 function SDK(id, data) {
 	if (typeof id != "string") {
@@ -12,6 +15,45 @@ function SDK(id, data) {
 	}
 
 	let configuration = new LeoConfiguration(data);
+
+
+	if (configuration.aws.profile) {
+		let profile = configuration.aws.profile;
+		let hasMFA = false;
+		let configFile = `${process.env.HOME || process.env.HOMEPATH}/.aws/config`;
+		if (fs.existsSync(configFile)) {
+			let config = ini.parse(fs.readFileSync(configFile, 'utf-8'));
+			let p = config[`profile ${profile}`];
+			if (p && p.mfa_serial) {
+				let cacheFile = `${process.env.HOME || process.env.HOMEPATH}/.aws/cli/cache/${profile}--${p.role_arn.replace(/:/g, '_').replace(/[^A-Za-z0-9\-_]/g, '-')}.json`;
+				let data = {};
+				try {
+					data = JSON.parse(fs.readFileSync(cacheFile));
+				} catch (e) {
+					// Ignore error, Referesh Credentials
+					data = {};
+				} finally {
+					console.log("Using cached AWS credentials", profile)
+					if (!data.Credentials || data.Credentials.Expiration < new Date(data.Credentials.Expiration)) {
+						execSync('aws sts get-caller-identity --profile ' + profile);
+						data = JSON.parse(fs.readFileSync(cacheFile));
+					}
+				}
+				configuration.credentials = new aws.STS().credentialsFrom(data, data);
+			} else {
+				console.log("Switching AWS Profile", profile)
+				configuration.credentials = new aws.SharedIniFileCredentials({
+					profile: profile
+				});
+			}
+		} else {
+			console.log("Switching AWS Profile", configuration.aws.profile)
+			configuration.credentials = new aws.SharedIniFileCredentials({
+				profile: configuration.aws.profile
+			});
+		}
+	}
+
 
 	let logger = null;
 	if (data && data.logging) {
@@ -65,7 +107,7 @@ function SDK(id, data) {
 
 		read: leoStream.fromLeo,
 		write: leoStream.toLeo,
-		put: function(bot_id, queue, payload, callback) {
+		put: function (bot_id, queue, payload, callback) {
 			let stream = this.load(bot_id, queue, {
 				kinesis: {
 					records: 1
@@ -79,7 +121,11 @@ function SDK(id, data) {
 		bot: leoStream.cron,
 		aws: {
 			dynamodb: leoStream.dynamodb,
-			s3: leoStream.s3
+			s3: leoStream.s3,
+			cloudformation: new aws.CloudFormation({
+				region: configuration.aws.region,
+				credentials: configuration.credentials
+			})
 		}
 	});
 }

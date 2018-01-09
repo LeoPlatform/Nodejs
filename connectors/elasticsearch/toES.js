@@ -1,6 +1,6 @@
 "use strict";
 
-var aws = require("aws-sdk");
+var aws = require("../../lib/leo-aws");
 var extend = require("extend");
 var elasticsearch = require('elasticsearch');
 var refUtil = require("../../lib/reference.js");
@@ -21,8 +21,7 @@ module.exports = function (configure) {
 				keepAlive: true
 			})
 		},
-		accessKeyId: configure.bus.accessKeyId,
-		secretAccessKey: configure.bus.secretAccessKey
+		credentials: configure.credentials
 	});
 
 	function getClient(settings) {
