@@ -236,8 +236,8 @@ module.exports = {
 		};
 		stream.update = function (newSettings) {
 			if (newSettings) {
-				let checkpoint = getCheckpoint(settings);
-				let newCheckpoint = getCheckpoint(newSettings);
+				//let checkpoint = getCheckpoint(settings);
+				//let newCheckpoint = getCheckpoint(newSettings);
 				let restart = settings.server != newSettings.server ||
 					settings.db != newSettings.db ||
 					settings.collection != newSettings.collection;

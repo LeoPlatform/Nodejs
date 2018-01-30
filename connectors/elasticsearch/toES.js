@@ -32,7 +32,7 @@ module.exports = function (configure) {
 			let config = new aws.Config();
 			let esSettings = extend(true, {
 				connectionClass: require('http-aws-es'),
-				amazonES: {
+				awsConfig: {
 					region: configure.aws.region,
 					credentials: config.credentials
 				}
@@ -100,9 +100,9 @@ module.exports = function (configure) {
 							_id: data.id
 						}
 					}, {
-						doc: data.doc,
-						doc_as_upsert: true
-					});
+							doc: data.doc,
+							doc_as_upsert: true
+						});
 				}
 				if (deleteByQuery.length) {
 					self.getIds(deleteByQuery, client, (err, ids) => {
@@ -190,7 +190,7 @@ module.exports = function (configure) {
 
 							let timestamp = moment();
 							let rand = Math.floor(Math.random() * 1000000);
-							let key = `files/elasticsearch/${(systemRef && systemRef.id) || "unknown"}/${meta.id || "unknown"}/${timestamp.format("YYYY/MM/DD/HH/mm/")+timestamp.valueOf()}-${++fileCount}-${rand}`;
+							let key = `files/elasticsearch/${(systemRef && systemRef.id) || "unknown"}/${meta.id || "unknown"}/${timestamp.format("YYYY/MM/DD/HH/mm/") + timestamp.valueOf()}-${++fileCount}-${rand}`;
 
 							if (!settings.dontSaveResults) {
 								settings.debug && console.log(leo.configuration.bus.s3, key)
@@ -246,16 +246,16 @@ module.exports = function (configure) {
 					source: ["_id"],
 					scroll: "15s",
 				}, {
-					client: client
-				}, (err, ids) => {
-					if (err) {
-						callback(err);
-						return;
-					}
-					//console.log(ids)
-					allIds = allIds.concat(ids.items.map(id => id._id));
-					callback();
-				});
+						client: client
+					}, (err, ids) => {
+						if (err) {
+							callback(err);
+							return;
+						}
+						//console.log(ids)
+						allIds = allIds.concat(ids.items.map(id => id._id));
+						callback();
+					});
 
 			}, (err) => {
 				if (err) {

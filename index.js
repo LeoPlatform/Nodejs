@@ -34,8 +34,8 @@ function SDK(id, data) {
 					data = {};
 				} finally {
 					console.log("Using cached AWS credentials", profile)
-					if (!data.Credentials || data.Credentials.Expiration < new Date(data.Credentials.Expiration)) {
-						execSync('aws sts get-caller-identity --profile ' + profile);
+					if (!data.Credentials || new Date() >= new Date(data.Credentials.Expiration)) {
+						execSync('aws sts get-caller-identity --duration-seconds 28800 --profile ' + profile);
 						data = JSON.parse(fs.readFileSync(cacheFile));
 					}
 				}

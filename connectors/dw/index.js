@@ -8,7 +8,8 @@ function DW(configure) {
 	}, {
 		configuration: configuration,
 		write: api.write,
-		stream: api.stream
+		stream: api.stream,
+		run: api.run
 	})
 }
 

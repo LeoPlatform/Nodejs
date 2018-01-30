@@ -1,8 +1,13 @@
+import {
+	clearInterval
+} from "timers";
+
 "use strict";
 
 var leo = require("../../index");
-var cron = require("../../lib/cron.js")(leo.configuration);
+var cron = leo.bot;
 var connectors = require("../index.js")(leo.configuration);
+var refUtil = require("../../lib/reference.js");
 var ls = leo.streams;
 
 exports.handler = function (settings, context, callback) {
@@ -17,6 +22,12 @@ exports.handler = function (settings, context, callback) {
 		} else {
 			done();
 		}
+
+		// settings.checkpoint = settings.checkpoint || {};
+		// settings.checkpoint[settings.source] = {
+		// 	checkpoint: obj.correlation_id.start
+		// }
+		// settings.__tail.update(settings);
 	}), leo.streams.devnull(), (err) => {
 		err && console.log(err);
 		stream.end((err) => {
@@ -57,11 +68,37 @@ if (process.send) {
 			return;
 		}
 
+		if (settings.paused) {
+			console.log("Bot is paused", id)
+			return;
+		};
+
+		// let updater = setInterval(() => {
+		// 	if (settings.__tail) {
+		// 		getSettings(id, (err, newSettings) => {
+		// 			if (err) {
+		// 				console.log("Error getting bot settings", id, err);
+		// 			} else {
+		// 				if (newSettings.paused) {
+		// 					console.log("Bot was paused")
+		// 					settings.__tail.destroy();
+		// 				} else {
+		//					delete newSettings.__cron;
+		// 					settings.__tail.update(newSettings);
+		// 				}
+		// 			}
+		// 		});
+		// 	}
+		// }, 30 * 1000);
+
 		exports.handler(settings, {}, (err) => {
+			clearInterval(updater)
 			console.log(err ? `error: ${err}` : "Finished");
 		});
 
 	});
+
+	settime
 }
 
 function getSettings(id, cb) {

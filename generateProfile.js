@@ -140,6 +140,10 @@ function parse() {
 			name: "awsprofile",
 			consume: 1
 		},
+		awsprofile: {
+			name: "awsprofile",
+			consume: 1
+		},
 		"a": {
 			name: "awsprofile",
 			consume: 1

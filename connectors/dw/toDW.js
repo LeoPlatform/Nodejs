@@ -11,20 +11,39 @@ module.exports = function (configure) {
 
 	return {
 		validate: function () {},
-		stream: function (postfix) {
-			let eventName = "queue:dw.load" + (postfix ? postfix : "");
+		stream: function (suffix) {
+			let eventName = "queue:dw.load" + (suffix ? suffix : "");
 			return ls.through((obj, done) => {
 				obj.event = eventName;
 				done(null, obj);
 			});
 		},
-		write: function (id, postfix) {
-			return ls.pipeline(this.stream(postfix), leo.write(id, {
+		write: function (id, suffix) {
+			return ls.pipeline(this.stream(suffix), leo.write(id, {
 				firehose: true,
 				debug: true
 			}), ls.toCheckpoint({
 				debug: true
 			}));
+		},
+		run: function (id, source, transform, opts, callback) {
+			if (typeof opts === "function") {
+				callback = opts;
+				opts = {};
+			}
+
+			opts = Object.assign({
+				debug: false
+			}, opts);
+
+			return ls.pipe(
+				leo.read(id, source, {
+					debug: opts.debug
+				}),
+				ls.process(id, transform),
+				this.write(id, opts.suffix),
+				callback
+			);
 		}
 	}
 };
