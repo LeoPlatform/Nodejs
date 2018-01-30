@@ -1,7 +1,6 @@
 "use strict";
 
 const mysql = require("mysql");
-var configuration = require("@leo-sdk/core/leoConfigure.js");
 const logger = require("../../lib/logger")("connector.mysql");
 const async = require("async");
 
