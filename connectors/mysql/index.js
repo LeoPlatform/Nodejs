@@ -113,6 +113,13 @@ module.exports = function(ID, config) {
     buildEntities: function(ids, builds, opts) {
       return new Promise((resolve, reject) => {
         log.debug(ids);
+
+        if (ids.length == 0) {
+          console.log("No entities to load");
+          resolve({});
+          return;
+        }
+
         console.log(`Loading ${ids.length} entities`);
         let entities = {};
         let baseEvent = {};
@@ -214,7 +221,7 @@ module.exports = function(ID, config) {
               m.query(s, (err, results, fields) => {
                 if (!err) {
                   let firstColumn = fields[0].name;
-                  finalIds = finalIds.concat(results.map(row => row[firstColumn]));
+                  finalIds = finalIds.concat(results.filter(row => row[firstColumn]).map(row => row[firstColumn]));
                 }
                 done(err);
               });
