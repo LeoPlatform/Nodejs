@@ -107,7 +107,7 @@ function SDK(id, data) {
 
 		read: leoStream.fromLeo,
 		write: leoStream.toLeo,
-		put: function (bot_id, queue, payload, callback) {
+		put: function(bot_id, queue, payload, callback) {
 			let stream = this.load(bot_id, queue, {
 				kinesis: {
 					records: 1
