@@ -44,7 +44,7 @@ function findNewBots(callback) {
 	console.log("Looking for Managed Bots", id);
 
 	var botregex = process.argv[3] && new RegExp(`^${process.argv[3]}`, "i");
-	dynamodb.scan("Leo_cron", {}, (err, items) => {
+	dynamodb.scan(leo.configuration.resources.LeoCron, {}, (err, items) => {
 		var bots = {};
 		var tasks = items.filter(c => {
 			return (!botregex || c.id.match(botregex)) && c.system && refUtil.ref(c.system.id, "system").id == id && c.lambda && c.lambda.settings && c.lambda.settings[0] && c.lambda.settings[0].collection
