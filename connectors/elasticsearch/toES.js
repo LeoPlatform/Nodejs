@@ -30,7 +30,8 @@ module.exports = function (configure) {
 			client = settings.client;
 		} else {
 			let config = new aws.Config({
-				region: configure.aws.region
+				region: configure.aws.region,
+				credentials: configure.credentials
 			});
 			let esSettings = extend(true, {
 				connectionClass: require('http-aws-es'),
