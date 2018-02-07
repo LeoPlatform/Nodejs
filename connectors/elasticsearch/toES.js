@@ -29,13 +29,12 @@ module.exports = function (configure) {
 		if (settings.client) {
 			client = settings.client;
 		} else {
-			let config = new aws.Config();
+			let config = new aws.Config({
+				region: configure.aws.region
+			});
 			let esSettings = extend(true, {
 				connectionClass: require('http-aws-es'),
-				awsConfig: {
-					region: configure.aws.region,
-					credentials: config.credentials
-				}
+				awsConfig: config
 			}, settings);
 			client = elasticsearch.Client(esSettings);
 		}
