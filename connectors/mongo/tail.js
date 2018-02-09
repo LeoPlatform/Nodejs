@@ -216,6 +216,7 @@ module.exports = {
 						}
 					});
 				}, (cb) => {
+					settings.checkpoint = group.payload[group.payload - 1].ts;
 					done();
 					cb();
 				}));

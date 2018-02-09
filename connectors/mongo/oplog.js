@@ -1,7 +1,3 @@
-import {
-	clearInterval
-} from "timers";
-
 "use strict";
 
 var leo = require("../../index");
@@ -92,13 +88,11 @@ if (process.send) {
 		// }, 30 * 1000);
 
 		exports.handler(settings, {}, (err) => {
-			clearInterval(updater)
+			//clearInterval(updater)
 			console.log(err ? `error: ${err}` : "Finished");
 		});
 
 	});
-
-	settime
 }
 
 function getSettings(id, cb) {

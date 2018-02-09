@@ -14,12 +14,18 @@ module.exports = function (configure) {
 		stream: function (suffix) {
 			let eventName = "queue:dw.load" + (suffix ? suffix : "");
 			return ls.through((obj, done) => {
+				if (!obj.payload){
+					obj = {payload:obj};
+				}
 				obj.event = eventName;
 				done(null, obj);
 			});
 		},
 		write: function (id, suffix) {
-			return ls.pipeline(this.stream(suffix), leo.write(id, {
+			return ls.pipeline(this.stream(suffix), ls.through((event, done)=>{
+				event.id = id;
+				done(null, event)
+			}), leo.write(id, {
 				firehose: true,
 				debug: true
 			}), ls.toCheckpoint({
