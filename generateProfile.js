@@ -15,87 +15,13 @@ let parsed = parse();
 let options = parsed.options;
 let commands = parsed.commands;
 
-//console.log(options);
-//console.log(commands);
 
 if (commands[0] == "show") {
 	let p = options.leoprofile || "default";
 	console.log(`\nProfile: ${p}`);
 	console.log(JSON.stringify(get()[p] || {}, null, 2));
-	return;
-}
-
-var cloudformation = new aws.CloudFormation({
-	region: options.region
-});
-
-
-let stack = commands[0];
-cloudformation.listStackResources({
-	StackName: stack
-}, function (err, data) {
-	if (err) {
-		console.log(err);
-		return;
-	}
-	if (data.NextToken) {
-		console.log("We need to deal with next token");
-	}
-	var resources = {};
-	data.StackResourceSummaries.map((resource) => {
-		resources[resource.LogicalResourceId] = {
-			type: resource.ResourceType,
-			id: resource.PhysicalResourceId,
-			name: resource.LogicalResourceId
-		};
-	});
-
-	let config = get();
-	let profile = config[options.leoprofile || stack] = Object.assign({
-		region: options.region,
-		resources: {
-			"Region": options.region
-		},
-		profile: options.awsprofile || undefined
-	}, config[options.leoprofile || stack] || {});
-	Object.keys(resources).forEach((id) => {
-		if (id == "LeoKinesisStream") {
-			profile.kinesis = resources[id].id;
-		} else if (id == "LeoFirehoseStream") {
-			profile.firehose = resources[id].id;
-		} else if (id == "LeoS3") {
-			profile.s3 = resources[id].id;
-		}
-		if (resources[id].type.match(/Table|Bucket|DeliveryStream|Stream/)) {
-			profile.resources[id] = resources[id].id;
-		}
-	});
-
-	//if (!config.default) {
-	//	config.default = profile;
-	//}
-	fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-	console.log("Profile Saved");
-});
-
-function get() {
-	createPath(configDir);
-	let config = {};
-
-	if (fs.existsSync(configPath)) {
-		config = require(configPath) || {};
-	}
-	return config;
-}
-
-function createPath(dir) {
-	if (!fs.existsSync(dir)) {
-		var parent = path.dirname(dir);
-		if (parent) {
-			createPath(parent);
-		}
-		fs.mkdirSync(dir);
-	}
+} else {
+	require("./lib/generateProfile.js")(commands[0], null, options);
 }
 
 function parse() {
