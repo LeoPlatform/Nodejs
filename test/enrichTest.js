@@ -1,10 +1,9 @@
-process.env.LEO_DEFAULT_PROFILE = "Staging";
 var leo = require("../index.js");
 
 var moment = require("moment");
 
-describe("local", function () {
-	it("Should be retrieve a nicely formatted workflow", function (done) {
+describe("local", function() {
+	it("Should be retrieve a nicely formatted workflow", function(done) {
 		this.timeout(60000);
 		leo.enrich({
 			debug: true,
