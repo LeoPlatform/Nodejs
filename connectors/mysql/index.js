@@ -50,7 +50,6 @@ module.exports = function(ID, config) {
         }
         return this.findIds(idLookups, findSqls).then((ids) => {
           return this.buildEntities(ids, builds).then((entities) => {
-            log.debug(entities);
             Object.keys(entities).forEach((id) => {
               stream.write(entities[id]);
             });

@@ -1,4 +1,3 @@
-process.env.LEO_DEFAULT_PROFILE = "Scratch";
 var leo = require("../index.js");
 var moment = require("moment");
 
