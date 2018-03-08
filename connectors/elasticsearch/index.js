@@ -8,6 +8,7 @@ function ES(configure) {
 	}, {
 		configuration: configuration,
 		write: es.stream,
+		writeParallel: es.streamParallel,
 		query: es.query,
 		get: es.get,
 		_: es
