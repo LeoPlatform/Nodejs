@@ -8,12 +8,11 @@
     "test": "test"
   },
   "scripts": {
-    "tests": "mocha --recursive -w",
-    "test": "mocha --recursive -w -g"
+    "test": "mocha --recursive -w"
   },
   "dependencies": {
     "async": "^2.5.0",
-    "aws-sdk": "^2.172.0",
+    "aws-sdk": "^2.206.0",
     "backoff": "^2.5.0",
     "extend": "^3.0.1",
     "fast-csv": "^2.4.0",
