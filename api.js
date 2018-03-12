@@ -61,7 +61,7 @@ module.exports = function (data) {
 				}
 
 				if (!bot) {
-					var timestamp = moment();
+					var timestamp = moment.utc();
 					data.checkpoint = 'z' + timestamp.format('/YYYY/MM/DD/HH/mm/ss/');
 				}
 

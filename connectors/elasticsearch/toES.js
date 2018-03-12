@@ -100,9 +100,9 @@ module.exports = function (configure) {
 							_id: data.id
 						}
 					}, {
-							doc: data.doc,
-							doc_as_upsert: true
-						});
+						doc: data.doc,
+						doc_as_upsert: true
+					});
 				}
 				if (deleteByQuery.length) {
 					self.getIds(deleteByQuery, client, (err, ids) => {
@@ -235,6 +235,256 @@ module.exports = function (configure) {
 			}), send);
 		},
 
+		streamParallel: function (settings) {
+			let parallelLimit = (settings.warmParallelLimit != undefined ? settings.warmParallelLimit : settings.parallelLimit) || 1;
+			let connection = settings.connection || settings
+			let client = getClient(connection);
+			let requireType = settings.requireType || false;
+			let total = settings.startTotal || 0;
+			let startTime = Date.now();
+			let duration = 0;
+			let lastDuration = 0;
+			let lastStartTime = Date.now();
+			let lastAvg = 0;
+			let fileCount = 0;
+			let format = ls.through({
+				highWaterMark: 16
+			}, function (event, done) {
+				let data = event.payload || event;
+
+				if (!data || !data.index || (requireType && !data.type) || data.id == undefined) {
+					console.log("Invalid data. index, type, & id are required", JSON.stringify(data || ""));
+					done("Invalid data. index, type, & id are required " + JSON.stringify(data || ""));
+					return;
+				}
+				let meta = Object.assign({}, event);
+				delete meta.payload;
+				var deleteByQuery = [];
+				if (data.delete && data.delete == true) {
+					if (!data.field || data.field == "_id") {
+						this.push(meta, {
+							delete: {
+								_index: data.index,
+								_type: data.type,
+								_id: data.id
+							}
+						});
+					} else {
+						var ids = Array.isArray(data.id) ? data.id : [data.id];
+						var size = ids.length;
+						var chunk = 1000;
+						for (var i = 0; i < size; i += chunk) {
+							deleteByQuery.push({
+								index: data.index,
+								type: data.type,
+								query: {
+									terms: {
+										[data.field]: ids.slice(i, i + chunk)
+									}
+								}
+							});
+						}
+					}
+				} else {
+					this.push(meta, {
+						update: {
+							_index: data.index,
+							_type: data.type,
+							_id: data.id
+						}
+					}, {
+						doc: data.doc,
+						doc_as_upsert: true
+					});
+				}
+				if (deleteByQuery.length) {
+					self.getIds(deleteByQuery, client, (err, ids) => {
+						if (err) {
+							done(err);
+						} else {
+							ids.forEach(id => this.push(meta, {
+								delete: {
+									_index: data.index,
+									_type: data.type,
+									_id: id
+								}
+							}));
+							done();
+						}
+					});
+				} else {
+					done();
+				}
+			}, function flush(callback) {
+				settings.debug && console.log("Transform: On Flush");
+				callback();
+			});
+
+			format.push = (function (self, push) {
+				return function (meta, command, data) {
+					if (command == null) {
+						push.call(self, null);
+						return;
+					}
+					var result = JSON.stringify(command) + "\n";
+					if (data) {
+						result += JSON.stringify(data) + "\n";
+					}
+					push.call(self, Object.assign({}, meta, {
+						payload: result
+					}));
+				}
+			})(format, format.push);
+
+			// client.bulk = (opts, done) => {
+			// 	//setTimeout(() => {
+			// 	done(null, {})
+			// 	//}, 1);
+			// }
+
+			let systemRef = refUtil.ref(settings.system, "system");
+			let toSend = [];
+			let firstStart = Date.now();
+			let send = ls.through({
+					highWaterMark: 16
+				}, function (input, done) {
+					if (input.payload && input.payload.length) {
+						toSend.push(input);
+						if (toSend.length >= parallelLimit) {
+							parallelLimit = settings.parallelLimit || parallelLimit;
+							batchStream.updateLimits(bufferOpts);
+							let cnt = 0;
+							console.time("es_emit");
+							let batchCnt = 0
+							lastDuration = 0;
+							async.map(toSend, (input, done) => {
+								let index = ++cnt + " ";
+								let meta = Object.assign({}, input);
+								meta.event = systemRef.refId();
+								//meta.units = input.payload.length;
+								delete meta.payload;
+
+								settings.logSummary && console.log(index + "ES Object Size:", input.bytes, input.payload.length, total, (Date.now() - startTime) / total, lastAvg, Date.now() - firstStart, duration, duration / total);
+								batchCnt += input.payload.length;
+								total += input.payload.length;
+								let body = input.payload.map(a => a.payload).join("");
+								if (process.env.dryrun) {
+									done(null, Object.assign(meta, {
+										payload: {
+											body: body,
+											response: data
+										}
+									}));
+								} else {
+									//console.time(index + "es_emit");
+									console.time(index + "es_bulk");
+									client.bulk({
+										body: body,
+										fields: false,
+										_source: false
+									}, function (err, data) {
+										console.timeEnd(index + "es_bulk");
+										console.log(index, !err && data.took);
+
+										lastDuration = Math.max(lastDuration, data.took);
+										if (err || data.errors) {
+											if (data && data.Message) {
+												err = data.Message;
+											} else if (data && data.items) {
+												console.log(data.items.filter((r) => {
+													return 'error' in r.update;
+												}).map(e => JSON.stringify(e, null, 2)));
+												//console.log(JSON.stringify(bulk, null,  2));
+												err = "Cannot load";
+											} else {
+												//console.log(JSON.stringify(bulk, null,  2));
+												console.log(err);
+												err = "Cannot load";
+											}
+										}
+										if (err) {
+											console.log(err)
+										}
+
+										let timestamp = moment();
+										let rand = Math.floor(Math.random() * 1000000);
+										let key = `files/elasticsearch/${(systemRef && systemRef.id) || "unknown"}/${meta.id || "unknown"}/${timestamp.format("YYYY/MM/DD/HH/mm/") + timestamp.valueOf()}-${++fileCount}-${rand}`;
+
+
+										if (!settings.dontSaveResults) {
+
+											console.time(index + "es_save");
+											settings.debug && console.log(leo.configuration.bus.s3, key)
+											s3.upload({
+												Bucket: leo.configuration.bus.s3,
+												Key: key,
+												Body: JSON.stringify({
+													body: body,
+													response: data
+												})
+											}, (uploaderr, data) => {
+												//console.log("ES Done", meta)
+												console.timeEnd(index + "es_save");
+												console.timeEnd(index + "es_emit");
+												done(err, Object.assign(meta, {
+													payload: {
+														file: data && data.Location,
+														error: err || undefined,
+														uploadError: uploaderr || undefined
+													}
+												}));
+											});
+										} else {
+											//console.timeEnd(index + "es_emit");
+											done(err, Object.assign(meta, {
+												payload: {
+													error: err || undefined
+												}
+											}));
+										}
+									});
+								}
+							}, (err, results) => {
+								toSend = [];
+								if (!err) {
+									results.map(r => {
+										this.push(r);
+									})
+								}
+								duration += lastDuration;
+								lastAvg = (Date.now() - lastStartTime) / batchCnt;
+								lastStartTime = Date.now();
+								console.timeEnd("es_emit");
+								console.log(lastAvg)
+								done(err);
+							});
+						} else {
+							done();
+						}
+					} else {
+						done();
+					}
+				},
+				function flush(callback) {
+					settings.debug && console.log("Elasticsearch Upload: On Flush");
+					callback();
+				});
+
+			let bufferOpts = typeof (settings.buffer) === "object" ? settings.buffer : {
+				records: settings.buffer || undefined
+			};
+			let batchStream = ls.batch({
+				records: settings.warmup || bufferOpts.records,
+				bytes: bufferOpts.bytes || 10485760 * 0.95, // 9.5MB
+				time: bufferOpts.time || {
+					milliseconds: 200
+				},
+				field: "payload"
+			});
+			return ls.pipeline(format, batchStream, send);
+		},
+
+
 		getIds: function (queries, client, done) {
 			// Run any deletes and finish
 			var allIds = [];
@@ -246,16 +496,16 @@ module.exports = function (configure) {
 					source: ["_id"],
 					scroll: "15s",
 				}, {
-						client: client
-					}, (err, ids) => {
-						if (err) {
-							callback(err);
-							return;
-						}
-						//console.log(ids)
-						allIds = allIds.concat(ids.items.map(id => id._id));
-						callback();
-					});
+					client: client
+				}, (err, ids) => {
+					if (err) {
+						callback(err);
+						return;
+					}
+					//console.log(ids)
+					allIds = allIds.concat(ids.items.map(id => id._id));
+					callback();
+				});
 
 			}, (err) => {
 				if (err) {
