@@ -8,8 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "tests": "mocha --recursive -w",
-    "test": "mocha --recursive -w -g"
+    "test": "mocha --recursive -w"
   },
   "dependencies": {
     "async": "^2.5.0",
