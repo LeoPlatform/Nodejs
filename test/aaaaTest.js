@@ -62,7 +62,6 @@ describe("Streams", function() {
 				done(null);
 			}
 		}), ls.devnull("afterCmd"), (err) => {
-			console.log(err);
 			done(err);
 		});
 		initialStream.write({
