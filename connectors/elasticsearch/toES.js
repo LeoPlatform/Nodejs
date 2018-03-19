@@ -56,7 +56,7 @@ module.exports = function (configure) {
 			let fileCount = 0;
 			let format = ls.through({
 				highWaterMark: 16
-			}, function (event, done) {
+			}, function (event, done, push) {
 				let data = event.payload || event;
 
 				if (!data || !data.index || (requireType && !data.type) || !data.id) {
@@ -69,7 +69,7 @@ module.exports = function (configure) {
 				var deleteByQuery = [];
 				if (data.delete && data.delete == true) {
 					if (!data.field || data.field == "_id") {
-						this.push(meta, {
+						push(meta, {
 							delete: {
 								_index: data.index,
 								_type: data.type,
@@ -93,7 +93,7 @@ module.exports = function (configure) {
 						}
 					}
 				} else {
-					this.push(meta, {
+					push(meta, {
 						update: {
 							_index: data.index,
 							_type: data.type,
@@ -109,7 +109,7 @@ module.exports = function (configure) {
 						if (err) {
 							done(err);
 						} else {
-							ids.forEach(id => this.push(meta, {
+							ids.forEach(id => push(meta, {
 								delete: {
 									_index: data.index,
 									_type: data.type,
@@ -146,7 +146,7 @@ module.exports = function (configure) {
 			let systemRef = refUtil.ref(settings.system, "system")
 			let send = ls.through({
 				highWaterMark: 16
-			}, (input, done) => {
+			}, (input, done, push) => {
 				if (input.payload && input.payload.length) {
 					let meta = Object.assign({}, input);
 					meta.event = systemRef.refId();
@@ -249,7 +249,7 @@ module.exports = function (configure) {
 			let fileCount = 0;
 			let format = ls.through({
 				highWaterMark: 16
-			}, function (event, done) {
+			}, function (event, done, push) {
 				let data = event.payload || event;
 
 				if (!data || !data.index || (requireType && !data.type) || data.id == undefined) {
@@ -262,7 +262,7 @@ module.exports = function (configure) {
 				var deleteByQuery = [];
 				if (data.delete && data.delete == true) {
 					if (!data.field || data.field == "_id") {
-						this.push(meta, {
+						push(meta, {
 							delete: {
 								_index: data.index,
 								_type: data.type,
@@ -286,7 +286,7 @@ module.exports = function (configure) {
 						}
 					}
 				} else {
-					this.push(meta, {
+					push(meta, {
 						update: {
 							_index: data.index,
 							_type: data.type,
@@ -302,7 +302,7 @@ module.exports = function (configure) {
 						if (err) {
 							done(err);
 						} else {
-							ids.forEach(id => this.push(meta, {
+							ids.forEach(id => push(meta, {
 								delete: {
 									_index: data.index,
 									_type: data.type,
@@ -347,7 +347,7 @@ module.exports = function (configure) {
 			let firstStart = Date.now();
 			let send = ls.through({
 					highWaterMark: 16
-				}, function (input, done) {
+				}, function (input, done, push) {
 					if (input.payload && input.payload.length) {
 						toSend.push(input);
 						if (toSend.length >= parallelLimit) {
@@ -448,7 +448,7 @@ module.exports = function (configure) {
 								toSend = [];
 								if (!err) {
 									results.map(r => {
-										this.push(r);
+										push(r);
 									})
 								}
 								duration += lastDuration;
