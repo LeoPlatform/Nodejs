@@ -16,7 +16,6 @@ function SDK(id, data) {
 
 	let configuration = new LeoConfiguration(data);
 
-
 	if (configuration.aws.profile) {
 		let profile = configuration.aws.profile;
 		let hasMFA = false;
