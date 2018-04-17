@@ -198,7 +198,8 @@ module.exports = {
 					}
 					settings.__code.handler.call({
 						collection: pass.collection,
-						database: pass.database
+						database: pass.database,
+						settings: settings
 					}, data, (err, response) => {
 						if (err) {
 							done(err);
