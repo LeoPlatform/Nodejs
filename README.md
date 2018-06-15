@@ -5,6 +5,8 @@ Leo Nodejs SDK
 
 A Nodejs interface to interact with the Leo Platform
 
+Quick Start Guide: https://github.com/LeoPlatform/Leo
+
 Documentation: https://docs.leoplatform.io
 
 How to install the Leo SDK
@@ -141,3 +143,6 @@ Manual Configuration Setup
 	}
 }
 ```
+
+# Support
+Want to hire an expert, or need technical support? Reach out to the Leo team: https://leoinsights.com/contact
