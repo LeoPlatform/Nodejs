@@ -49,7 +49,8 @@ module.exports = function(configOverride, botHandler) {
 				event.params.path[key] = decodeURIComponent(event.params.path[key]);
 			});
 		}
-
+		event.pathParameters = event.pathParameters || {};
+		event.queryStringParameters = event.queryStringParameters || {};
 		botHandler(event, context, function(err, data) {
 			if (data && typeof data === "object" && "statusCode" in data) {
 				if (config.cors && !("Access-Control-Allow-Origin" in data.headers)) {
