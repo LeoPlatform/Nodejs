@@ -51,7 +51,7 @@ module.exports = function(configOverride, botHandler) {
 		}
 		event.pathParameters = event.pathParameters || {};
 		event.queryStringParameters = event.queryStringParameters || {};
-		botHandler(event, context, function(err, data) {
+		let promise = botHandler(event, context, function(err, data) {
 			if (data && typeof data === "object" && "statusCode" in data) {
 				if (config.cors && !("Access-Control-Allow-Origin" in data.headers)) {
 					data.headers["Access-Control-Allow-Origin"] = config.cors;
@@ -86,5 +86,29 @@ module.exports = function(configOverride, botHandler) {
 				});
 			}
 		});
+
+		if (promise && promise.catch) {
+			promise.catch(err => {
+				if (err === "Access Denied" || err === "Error: Access Denied") {
+					callback(null, {
+						statusCode: 403,
+						headers: {
+							'Content-Type': config.ErrorContentType || 'text/html',
+							"Access-Control-Allow-Origin": config.cors ? config.cors : undefined
+						},
+						body: err.toString()
+					});
+				} else if (err) {
+					callback(null, {
+						statusCode: 500,
+						headers: {
+							'Content-Type': config.ErrorContentType || 'text/html',
+							"Access-Control-Allow-Origin": config.cors ? config.cors : undefined
+						},
+						body: err.toString()
+					});
+				}
+			});
+		}
 	};
 };
