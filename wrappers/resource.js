@@ -7,6 +7,7 @@ module.exports = function(configOverride, botHandler) {
 	}
 	Object.assign(config, configOverride);
 	return function(event, context, callback) {
+		context.callbackWaitsForEmptyEventLoop = false;
 		if (context.identity) { // Called Directly not via Api Gateway
 			event = {
 				body: event.body,
