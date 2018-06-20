@@ -134,16 +134,7 @@ function sendMessage(meta, payload)
     let params = {
         QueueUrl: event.destination, // Queue URL is unique to your SQS queue.
         MessageBody: payload.enriched_event.data,
-        MessageAttributes: {
-            'Bot_ID': {
-                DataType: 'String',
-                StringValue: meta.id
-            },
-            'random_number': {
-                DataType: 'String',
-                StringValue: payload.enriched_event.random_number.toString()
-            }
-        }
+        MessageAttributes: {} // optional. See below.
     };
     
     // get the SQS library from leo-aws
@@ -153,6 +144,22 @@ function sendMessage(meta, payload)
     }).catch(err => {
         throw err;
     });
+}
+```
+
+Message attributes:
+You can define any attributes you want to sent with the message. For a complete list of definitions,
+see the official AWS SDK documentation for SQS.
+
+Example MessageAttributes:
+```javascript
+'Bot_ID': {
+    DataType: 'String',
+    StringValue: meta.id
+},
+'random_number': {
+    DataType: 'String',
+    StringValue: payload.enriched_event.random_number.toString()
 }
 ```
 
