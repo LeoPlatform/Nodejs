@@ -132,7 +132,7 @@ function sendMessage(meta, payload)
 {
     // send message
     let params = {
-        QueueUrl: event.destination,
+        QueueUrl: event.destination, // Queue URL is unique to your SQS queue.
         MessageBody: payload.enriched_event.data,
         MessageAttributes: {
             'Bot_ID': {
