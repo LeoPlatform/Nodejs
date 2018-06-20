@@ -1,88 +1,89 @@
 "use strict";
 
-process.resources = process.env.Resources && JSON.parse(process.env.Resources) || {};
-let config = require("../leoConfigure.js");
-const async = require("async");
-const logger = require("../lib/logger")("cron.wrapper");
-const leosdk = require("../index.js");
-const kms = require("../lib/kms")(leosdk.configuration);
-const refUtil = require("../lib/reference.js");
 
-
-process.__config = config;
-const fill = require("../lib/build-config").fillWithTableReferences;
-process.env.TZ = config.timezone;
-// require('source-map-support').install({
-// 	environment: 'node',
-// 	handleUncaughtExceptions: false
-//});
-
-//const handler = "____HANDLER____";
-//const pkg = require("____PACKAGEJSON____");
-const botId = config.name;
-const settings = config.cron && config.cron.settings || {};
-
-const moment = require("moment");
-let decrypted = false;
-// let botHandler = function(event, context, callback) {
-// 	let tasks = [];
-// 	Object.keys(process.env).forEach(function(key) {
-// 		if (!decrypted && process.env[key] != undefined && (key.toLowerCase().indexOf('kms') !== -1 || process.env[key].match(/^KMS:/)) && !key.match(/^npm_/)) {
-// 			tasks.push(function(done) {
-// 				kms.decryptString(process.env[key].replace(/^KMS:/, ""), function(err, value) {
-// 					if (err) {
-// 						return done(err);
-// 					}
-// 					process.env[key] = value;
-// 					done();
-// 				});
-// 			});
-// 		}
-// 	});
-// 	async.parallelLimit(tasks, 20, function(err, results) {
-// 		if (err) {
-// 			return callback(err);
-// 		}
-// 		decrypted = true;
-// 		require("____FILE____")[handler](event, context, callback);
-// 	});
-// };
-
-const cron = leosdk.bot;
-const dynamodb = leosdk.aws.dynamodb;
-
-for (let x of process.listeners('uncaughtException')) { //remove lambdas default listener
-	process.removeListener('uncaughtException', x);
-}
-let theCallback;
-let theContext;
-let __theEvent;
-process.on('uncaughtException', function(err) {
-	console.log(`[LEOCRON]:end:${config.name}:${theContext.awsRequestId}`);
-	if (__theEvent.__cron) {
-		cron.reportComplete(__theEvent.__cron, theContext.awsRequestId, "error", {
-			msg: err.message,
-			stack: err.stack
-		}, {}, function() {
-			console.log("Cron Lock removed");
-		});
-	} else {
-		cron.removeLock(config.name, theContext.awsRequestId, function() {
-			console.log("Lock removed");
-		});
-	}
-	logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);
-	logger.error(err.stack);
-	theCallback(null, "Application Error");
-});
-
-function empty(obj) {
-	for (let k in obj) {
-		delete obj[k];
-	}
-}
-
+let cachedHandler;
 module.exports = function(configOverride, botHandler) {
+	process.resources = process.env.Resources && JSON.parse(process.env.Resources) || {};
+
+	let config = require("../leoConfigure.js");
+	//const async = require("async");
+	const logger = require("../lib/logger")("cron.wrapper");
+	const leosdk = require("../index.js");
+	//const kms = require("../lib/kms")(leosdk.configuration);
+	const refUtil = require("../lib/reference.js");
+
+	process.__config = config;
+	const fill = require("../lib/build-config").fillWithTableReferences;
+	process.env.TZ = config.timezone;
+	// require('source-map-support').install({
+	// 	environment: 'node',
+	// 	handleUncaughtExceptions: false
+	//});
+
+	//const handler = "____HANDLER____";
+	//const pkg = require("____PACKAGEJSON____");
+	const botId = config.name;
+	const settings = config.cron && config.cron.settings || {};
+
+	const moment = require("moment");
+	let decrypted = false;
+	// let botHandler = function(event, context, callback) {
+	// 	let tasks = [];
+	// 	Object.keys(process.env).forEach(function(key) {
+	// 		if (!decrypted && process.env[key] != undefined && (key.toLowerCase().indexOf('kms') !== -1 || process.env[key].match(/^KMS:/)) && !key.match(/^npm_/)) {
+	// 			tasks.push(function(done) {
+	// 				kms.decryptString(process.env[key].replace(/^KMS:/, ""), function(err, value) {
+	// 					if (err) {
+	// 						return done(err);
+	// 					}
+	// 					process.env[key] = value;
+	// 					done();
+	// 				});
+	// 			});
+	// 		}
+	// 	});
+	// 	async.parallelLimit(tasks, 20, function(err, results) {
+	// 		if (err) {
+	// 			return callback(err);
+	// 		}
+	// 		decrypted = true;
+	// 		require("____FILE____")[handler](event, context, callback);
+	// 	});
+	// };
+
+	const cron = leosdk.bot;
+	const dynamodb = leosdk.aws.dynamodb;
+
+	for (let x of process.listeners('uncaughtException')) { //remove lambdas default listener
+		process.removeListener('uncaughtException', x);
+	}
+	let theCallback;
+	let theContext;
+	let __theEvent;
+	process.on('uncaughtException', function(err) {
+		console.log(`[LEOCRON]:end:${config.name}:${theContext.awsRequestId}`);
+		if (__theEvent.__cron) {
+			cron.reportComplete(__theEvent.__cron, theContext.awsRequestId, "error", {
+				msg: err.message,
+				stack: err.stack
+			}, {}, function() {
+				console.log("Cron Lock removed");
+			});
+		} else {
+			cron.removeLock(config.name, theContext.awsRequestId, function() {
+				console.log("Lock removed");
+			});
+		}
+		logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);
+		logger.error(err.stack);
+		theCallback(null, "Application Error");
+	});
+
+	function empty(obj) {
+		for (let k in obj) {
+			delete obj[k];
+		}
+	}
 	if (!botHandler) {
 		botHandler = configOverride;
 		configOverride = {};

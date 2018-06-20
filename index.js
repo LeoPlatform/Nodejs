@@ -1,4 +1,5 @@
 "use strict";
+let leoconfig = require("leo-config");
 let extend = require("extend");
 var ls = require("./lib/stream/leo-stream");
 var logging = require("./lib/logging.js");
@@ -16,8 +17,10 @@ function SDK(id, data) {
 
 	let configuration = new LeoConfiguration(data);
 
-	if (configuration.aws.profile) {
-		let profile = configuration.aws.profile;
+	let awsConfig = leoconfig.leoaws || configuration.aws;
+
+	if (awsConfig.profile) {
+		let profile = awsConfig.profile;
 		let hasMFA = false;
 		let configFile = `${process.env.HOME || process.env.HOMEPATH}/.aws/config`;
 		if (fs.existsSync(configFile)) {
@@ -41,18 +44,13 @@ function SDK(id, data) {
 				configuration.credentials = new aws.STS().credentialsFrom(data, data);
 			} else {
 				console.log("Switching AWS Profile", profile)
-				configuration.credentials = new aws.SharedIniFileCredentials({
-					profile: profile
-				});
+				configuration.credentials = new aws.SharedIniFileCredentials(awsConfig);
 			}
 		} else {
-			console.log("Switching AWS Profile", configuration.aws.profile)
-			configuration.credentials = new aws.SharedIniFileCredentials({
-				profile: configuration.aws.profile
-			});
+			console.log("Switching AWS Profile", awsConfig.profile)
+			configuration.credentials = new aws.SharedIniFileCredentials(awsConfig);
 		}
 	}
-
 
 	let logger = null;
 	if (data && data.logging) {
@@ -125,7 +123,8 @@ function SDK(id, data) {
 				region: configuration.aws.region,
 				credentials: configuration.credentials
 			}),
-			secrets: require('./lib/secretsManager')(configuration)
+			secrets: require('./lib/secretsManager')(configuration),
+
 		}
 	});
 }
