@@ -50,10 +50,10 @@ How to use the Leo SDK
 Now you can write to the new Stream
 
 ```
-var leo = require("leo-sdk");
-var botId = "producerBotId";
-var queueName = "queueName";
-var stream = leo.load(botId, queueName);
+let leo = require("leo-sdk");
+let botId = "producerBotId";
+let queueName = "queueName";
+let stream = leo.load(botId, queueName);
 
 // Write 10 events to the leo bus
 for (let i = 0; i < 10; i++) {
@@ -64,26 +64,26 @@ for (let i = 0; i < 10; i++) {
   });
 }
 stream.end(err=>{
-	console.log("All done loading events", err);
+    console.log("All done loading events", err);
 });
 ```
 
 Next in order to read from the stream
 
 ```
-var leo = require("leo-sdk");
-var botId = "offloadBotId";
-var queueName = "queueName";
+let leo = require("leo-sdk");
+let botId = "offloadBotId";
+let queueName = "queueName";
 leo.offload({
-	id: botId,
-	queue: queueName,
-	each: (payload, meta, done) =>{
-		console.log(payload);
-		console.log(meta);
-		done(null, true); // Report this event was handled
-	}
+    id: botId,
+    queue: queueName,
+    each: (payload, meta, done) =>{
+        console.log(payload);
+        console.log(meta);
+        done(null, true); // Report this event was handled
+    }
 }, (err)=>{
-	console.log("All done processing events", err);
+    console.log("All done processing events", err);
 });
 ```
 
@@ -91,56 +91,97 @@ leo.offload({
 You can also enrich from one queue to another 
 
 ```
-var leo = require("leo-sdk");
+let leo = require("leo-sdk");
 
-var botId = "enrichBotId";
-var inQueueName = "queueName";
-var outQueueName = "enrichedQueueName";
+let botId = "enrichBotId";
+let inQueueName = "queueName";
+let outQueueName = "enrichedQueueName";
 leo.enrich({
-	id: botId,
-	inQueue: inQueueName,
-	outQueue:outQueueName,
-	each: (payload, meta, done) =>{
+    id: botId,
+    inQueue: inQueueName,
+    outQueue:outQueueName,
+    each: (payload, meta, done) =>{
 
-		// Add new data to the event payload
-		done(null, Object.assign({
-			enriched: true,
-			numberTimes2: payload.number * 2,
-			enrichedNow: Date.now()
-		}, payload));
-	}
+        // Add new data to the event payload
+        done(null, Object.assign({
+            enriched: true,
+            numberTimes2: payload.number * 2,
+            enrichedNow: Date.now()
+        }, payload));
+    }
 }, (err)=>{
-	console.log("All done processing events", err);
+    console.log("All done processing events", err);
 });
 ```
 
+#### Read from queue and write to SQS
+Use an offload, and in the `each` function, send the meta and payload through to a function to send to SQS.
+
+Example:
+```javascript
+each: (payload, meta, done) => {
+    sendMessage(meta, payload);
+
+    done(null, true); // Report this event was handled
+}
+```
+
+SQS sendMessage Example:
+```javascript
+function sendMessage(meta, payload)
+{
+    // send message
+    let params = {
+        QueueUrl: event.destination,
+        MessageBody: payload.enriched_event.data,
+        MessageAttributes: {
+            'Bot_ID': {
+                DataType: 'String',
+                StringValue: meta.id
+            },
+            'random_number': {
+                DataType: 'String',
+                StringValue: payload.enriched_event.random_number.toString()
+            }
+        }
+    };
+    
+    // get the SQS library from leo-aws
+    let sqs = config.leoaws.sqs;
+    sqs.sendMessage(params).then(data => {
+        console.log('SQS response:', data);
+    }).catch(err => {
+        throw err;
+    });
+}
+```
 
 Manual Configuration Setup
 ===================================
 
 1. Create a file at ~/.leo/config.json
 2. Add profile to the ~/.leo/config.json
-	Values can be found under Resources in the AWS Stack
+    Values can be found under Resources in the AWS Stack
 
 ```
 {
-	"${LeoSdkStack}": {
-		"region": "${Region}",
-		"kinesis": "${LeoKinesisStream}",
-		"s3": "${LeoS3}",
-		"firehose": "${LeoFirehoseStream}",
-		"resources": {
-			"LeoStream": "${LeoStream}",
-			"LeoCron": "${LeoCron}",
-			"LeoEvent": "${LeoEvent}",
-			"LeoSettings": "${LeoSettings}",
-			"LeoSystem": "${LeoSystem}",
-			"LeoS3": "${LeoS3}",
-			"LeoKinesisStream": "${LeoKinesisStream}",
-			"LeoFirehoseStream": "${LeoFirehoseStream}",
-			"Region": "${Region}"
-		}
-	}
+    "${LeoSdkStack}": {
+        "region": "${Region}",
+        "kinesis": "${LeoKinesisStream}",
+        "s3": "${LeoS3}",
+        "firehose": "${LeoFirehoseStream}",
+        "resources": {
+            "LeoStream": "${LeoStream}",
+            "LeoCron": "${LeoCron}",
+            "LeoEvent": "${LeoEvent}",
+            "LeoSettings": "${LeoSettings}",
+            "LeoSystem": "${LeoSystem}",
+            "LeoS3": "${LeoS3}",
+            "LeoKinesisStream": "${LeoKinesisStream}",
+            "LeoFirehoseStream": "${LeoFirehoseStream}",
+            "Region": "${Region}"
+        }
+    }
 }
 ```
 
