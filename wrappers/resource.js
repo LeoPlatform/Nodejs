@@ -23,7 +23,6 @@ module.exports = function(configOverride, botHandler) {
 			};
 		}
 		context.botId = config.name;
-		console.log("HOWDY");
 		for (let x of process.listeners('uncaughtException')) { //remove lambdas default listener
 			process.removeListener('uncaughtException', x);
 		}
