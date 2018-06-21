@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "1.1.1",
+	"version": "2.0.0",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -26,7 +26,8 @@
 		"readable-stream": "^2.3.5",
 		"split2": "^2.1.1",
 		"through2": "^2.0.3",
-		"uuid": "^3.2.1"
+		"uuid": "^3.2.1",
+		"leo-config": "^1.0.3"
 	},
 	"devDependencies": {
 		"mocha": "^3.5.3"
