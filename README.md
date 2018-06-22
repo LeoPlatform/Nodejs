@@ -114,55 +114,6 @@ leo.enrich({
 });
 ```
 
-#### Read from queue and write to SQS
-Use an offload, and in the `each` function, send the meta and payload through to a function to send to SQS.
-
-Example:
-```javascript
-each: (payload, meta, done) => {
-    sendMessage(meta, payload);
-
-    done(null, true); // Report this event was handled
-}
-```
-
-SQS sendMessage Example:
-```javascript
-function sendMessage(meta, payload)
-{
-    // send message
-    let params = {
-        QueueUrl: event.destination, // Queue URL is unique to your SQS queue.
-        MessageBody: payload.enriched_event.data,
-        MessageAttributes: {} // optional. See below.
-    };
-    
-    // get the SQS library from leo-aws
-    let sqs = config.leoaws.sqs;
-    sqs.sendMessage(params).then(data => {
-        console.log('SQS response:', data);
-    }).catch(err => {
-        throw err;
-    });
-}
-```
-
-Message attributes:
-You can define any attributes you want to sent with the message. For a complete list of definitions,
-see the official AWS SDK documentation for SQS.
-
-Example MessageAttributes:
-```javascript
-'Bot_ID': {
-    DataType: 'String',
-    StringValue: meta.id
-},
-'random_number': {
-    DataType: 'String',
-    StringValue: payload.enriched_event.random_number.toString()
-}
-```
-
 Manual Configuration Setup
 ===================================
 
