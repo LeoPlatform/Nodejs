@@ -67,6 +67,7 @@ module.exports = function(configOverride, botHandler) {
 					body: err.toString()
 				});
 			} else if (err) {
+				console.log(err);
 				callback(null, {
 					statusCode: 500,
 					headers: {
@@ -99,13 +100,15 @@ module.exports = function(configOverride, botHandler) {
 						body: err.toString()
 					});
 				} else if (err) {
+					console.log(err);
 					callback(null, {
 						statusCode: 500,
 						headers: {
 							'Content-Type': config.ErrorContentType || 'text/html',
 							"Access-Control-Allow-Origin": config.cors ? config.cors : undefined
 						},
-						body: err.toString()
+						//we caught an error they didn't send us, don't reveal it here
+						body: "Unexpected Server Error"
 					});
 				}
 			});
