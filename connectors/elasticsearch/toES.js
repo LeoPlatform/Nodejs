@@ -382,7 +382,7 @@ module.exports = function(configure) {
 							console.timeEnd(index + "es_bulk");
 							console.log(index, !err && data.took);
 
-							lastDuration = Math.max(lastDuration, data.took);
+							lastDuration = Math.max(lastDuration, data && data.took);
 							if (err || data.errors) {
 								if (data && data.Message) {
 									err = data.Message;
