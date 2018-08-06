@@ -107,7 +107,7 @@ leo.enrich({
         count: 50, // batch every 50 records, or:
         bytes: 500, // batch every 500 bytes, or:
         time: 1000, // batch every 1000 milliseconds (1 second)
-	},
+    },
     each: (payload, meta, done) =>{
 
         // Add new data to the event payload
