@@ -1,16 +1,15 @@
 "use strict";
 let leoconfig = require("leo-config");
-let extend = require("extend");
-var ls = require("./lib/stream/leo-stream");
-var logging = require("./lib/logging.js");
-var LeoConfiguration = require("./lib/configuration.js");
-var aws = require("./lib/leo-aws");
+let ls = require("./lib/stream/leo-stream");
+let logging = require("./lib/logging.js");
+let LeoConfiguration = require("./lib/configuration.js");
+let aws = require("./lib/leo-aws");
 const fs = require("fs");
 const ini = require('ini');
 const execSync = require("child_process").execSync;
 
 function SDK(id, data) {
-	if (typeof id != "string") {
+	if (typeof id !== "string") {
 		data = id;
 		id = data.id || "default_bot";
 	}
@@ -21,7 +20,6 @@ function SDK(id, data) {
 
 	if (awsConfig.profile) {
 		let profile = awsConfig.profile;
-		let hasMFA = false;
 		let configFile = `${process.env.HOME || process.env.HOMEPATH}/.aws/config`;
 		if (fs.existsSync(configFile)) {
 			let config = ini.parse(fs.readFileSync(configFile, 'utf-8'));
@@ -35,7 +33,7 @@ function SDK(id, data) {
 					// Ignore error, Referesh Credentials
 					data = {};
 				} finally {
-					console.log("Using cached AWS credentials", profile)
+					console.log("Using cached AWS credentials", profile);
 					if (!data.Credentials || new Date() >= new Date(data.Credentials.Expiration)) {
 						execSync('aws sts get-caller-identity --duration-seconds 28800 --profile ' + profile);
 						data = JSON.parse(fs.readFileSync(cacheFile));
@@ -43,11 +41,11 @@ function SDK(id, data) {
 				}
 				configuration.credentials = new aws.STS().credentialsFrom(data, data);
 			} else {
-				console.log("Switching AWS Profile", profile)
+				console.log("Switching AWS Profile", profile);
 				configuration.credentials = new aws.SharedIniFileCredentials(awsConfig);
 			}
 		} else {
-			console.log("Switching AWS Profile", awsConfig.profile)
+			console.log("Switching AWS Profile", awsConfig.profile);
 			configuration.credentials = new aws.SharedIniFileCredentials(awsConfig);
 		}
 	}
@@ -57,7 +55,7 @@ function SDK(id, data) {
 		logger = logging(id, configuration);
 	}
 
-	var leoStream = ls(configuration);
+	let leoStream = ls(configuration);
 	return Object.assign((id, data) => {
 		return new SDK(id, data)
 	}, {
