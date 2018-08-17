@@ -100,6 +100,14 @@ leo.enrich({
     id: botId,
     inQueue: inQueueName,
     outQueue:outQueueName,
+    // optional batch parameter:
+    batch: 50, // batch every 50 records, or:
+    // optional batch as object with optional parameters:
+    batch: {
+        count: 50, // batch every 50 records, or:
+        bytes: 500, // batch every 500 bytes, or:
+        time: 1000, // batch every 1000 milliseconds (1 second)
+    },
     each: (payload, meta, done) =>{
 
         // Add new data to the event payload
@@ -112,55 +120,6 @@ leo.enrich({
 }, (err)=>{
     console.log("All done processing events", err);
 });
-```
-
-#### Read from queue and write to SQS
-Use an offload, and in the `each` function, send the meta and payload through to a function to send to SQS.
-
-Example:
-```javascript
-each: (payload, meta, done) => {
-    sendMessage(meta, payload);
-
-    done(null, true); // Report this event was handled
-}
-```
-
-SQS sendMessage Example:
-```javascript
-function sendMessage(meta, payload)
-{
-    // send message
-    let params = {
-        QueueUrl: event.destination, // Queue URL is unique to your SQS queue.
-        MessageBody: payload.enriched_event.data,
-        MessageAttributes: {} // optional. See below.
-    };
-    
-    // get the SQS library from leo-aws
-    let sqs = config.leoaws.sqs;
-    sqs.sendMessage(params).then(data => {
-        console.log('SQS response:', data);
-    }).catch(err => {
-        throw err;
-    });
-}
-```
-
-Message attributes:
-You can define any attributes you want to sent with the message. For a complete list of definitions,
-see the official AWS SDK documentation for SQS.
-
-Example MessageAttributes:
-```javascript
-'Bot_ID': {
-    DataType: 'String',
-    StringValue: meta.id
-},
-'random_number': {
-    DataType: 'String',
-    StringValue: payload.enriched_event.random_number.toString()
-}
 ```
 
 Manual Configuration Setup

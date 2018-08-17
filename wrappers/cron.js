@@ -62,21 +62,23 @@ module.exports = function(configOverride, botHandler) {
 	let __theEvent;
 	process.on('uncaughtException', function(err) {
 		console.log(`[LEOCRON]:end:${config.name}:${theContext.awsRequestId}`);
+        logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);
+        logger.error(err.stack);
 		if (__theEvent.__cron) {
 			cron.reportComplete(__theEvent.__cron, theContext.awsRequestId, "error", {
 				msg: err.message,
 				stack: err.stack
 			}, {}, function() {
 				console.log("Cron Lock removed");
+                theCallback(null, "Application Error");
 			});
 		} else {
 			cron.removeLock(config.name, theContext.awsRequestId, function() {
 				console.log("Lock removed");
+                theCallback(null, "Application Error");
 			});
 		}
-		logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);
-		logger.error(err.stack);
-		theCallback(null, "Application Error");
+
 	});
 
 	function empty(obj) {
