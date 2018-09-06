@@ -62,20 +62,20 @@ module.exports = function(configOverride, botHandler) {
 	let __theEvent;
 	process.on('uncaughtException', function(err) {
 		console.log(`[LEOCRON]:end:${config.name}:${theContext.awsRequestId}`);
-        logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);
-        logger.error(err.stack);
+		logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);
+		logger.error(err.stack);
 		if (__theEvent.__cron) {
 			cron.reportComplete(__theEvent.__cron, theContext.awsRequestId, "error", {
 				msg: err.message,
 				stack: err.stack
 			}, {}, function() {
 				console.log("Cron Lock removed");
-                theCallback(null, "Application Error");
+				theCallback(null, "Application Error");
 			});
 		} else {
 			cron.removeLock(config.name, theContext.awsRequestId, function() {
 				console.log("Lock removed");
-                theCallback(null, "Application Error");
+				theCallback(null, "Application Error");
 			});
 		}
 
@@ -150,8 +150,13 @@ module.exports = function(configOverride, botHandler) {
 			let startTime = moment.now();
 			cron.checkLock(event.__cron, context.awsRequestId, context.getRemainingTimeInMillis(), function(err, data) {
 				if (err) {
-					logger.log("LOCK EXISTS, cannot run");
-					callback(null, "already running");
+					if (err && err.code == "ConditionalCheckFailedException") {
+						logger.log("LOCK EXISTS, cannot run");
+						callback(null, "already running");
+					} else {
+						logger.error("Failed getting lock, cannot run");
+						callback(null, "failed getting lock");
+					}
 				} else {
 					try {
 						console.log("[LEOCRON]:start:" + cronkey);
