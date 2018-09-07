@@ -38,6 +38,7 @@ How to use the Leo SDK
 
 Note: If you're using the SDK within a microservice, we bootstrap the config for you, otherwise you'll have to specify the
 path to your leo_config.js.
+
 Bash example:
 ```bash
 export leo_config_bootstrap_path='/path/to/leo_config.js'
