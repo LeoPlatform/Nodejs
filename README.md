@@ -17,11 +17,11 @@ Pre-Requisites
 1. Install the aws-cli toolkit - Instructions for this are found at http://docs.aws.amazon.com/cli/latest/userguide/installing.html
 2. Configure the aws-cli tools - Instructions are found at http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 3. Install node - https://nodejs.org/en/
-4. Create a Leo Bus Stack - https://github.com/LeoPlatform/bus
+4. Create a Leo Bus Stack - https://github.com/LeoPlatform/Leo#install-the-leo-platform-stack
 
 Install SDK
 -----------
-1. Install using npm.  In your project folder run the following command.
+1. Install using npm. In your project folder run the following command.
 
 ```
 npm install leo-sdk
@@ -29,27 +29,30 @@ npm install leo-sdk
 
 Configuration
 -------------
-
-You can now configure a profile that will be used with your sdk similar to the way the AWS SDK works.  To do this, you must execute a command line script and enter in your configuration settings.
-
-Issue the following command from your project directory:
-
-```
-node node_modules/leo-sdk/generateProfile.js -r ${region} ${LeoSdkStack}
-```
-
-* "${region}" is your leo bus AWS region. eg. us-west-2
-* "${LeoSdkStack}" is the name of your leo bus AWS stack. eg. "StagingLeo"
-
-This will create a file in your home directory `~/.leo/config.json` that contains your settings.  You can setup multiple profiles just like you can do with the AWS SDK by specifying a different Stack.  
-
+To load data onto the bus on AWS, you need to have a valid leo_config.js file. If you don't have one already, the easiest
+way to create one is to create a [quickstart project](https://github.com/LeoPlatform/Leo#step-3-create-a-quickstart-project)
+and let the system configure the AWS settings for you.
 
 How to use the Leo SDK
 ===================================
 
-Now you can write to the new Stream
+Note: If you're using the SDK within a microservice, we bootstrap the config for you, otherwise you'll have to specify the
+path to your leo_config.js.
 
+Bash example:
+```bash
+export leo_config_bootstrap_path='/path/to/leo_config.js'
 ```
+Javascript example:
+```javascript
+process.env.leo_config_bootstrap_path = '/path/to/leo_config.js';
+```
+
+Next, you'll have to make sure your NODE_ENV matches the environment configured in leo_config.js.
+
+Now you can write to the new Stream:
+
+```javascript
 let leo = require("leo-sdk");
 let botId = "producerBotId";
 let queueName = "queueName";
@@ -70,7 +73,7 @@ stream.end(err=>{
 
 Next in order to read from the stream
 
-```
+```javascript
 let leo = require("leo-sdk");
 let botId = "offloadBotId";
 let queueName = "queueName";
@@ -90,7 +93,7 @@ leo.offload({
 
 You can also enrich from one queue to another 
 
-```
+```javascript
 let leo = require("leo-sdk");
 
 let botId = "enrichBotId";
@@ -120,35 +123,6 @@ leo.enrich({
 }, (err)=>{
     console.log("All done processing events", err);
 });
-```
-
-Manual Configuration Setup
-===================================
-
-1. Create a file at ~/.leo/config.json
-2. Add profile to the ~/.leo/config.json
-    Values can be found under Resources in the AWS Stack
-
-```
-{
-    "${LeoSdkStack}": {
-        "region": "${Region}",
-        "kinesis": "${LeoKinesisStream}",
-        "s3": "${LeoS3}",
-        "firehose": "${LeoFirehoseStream}",
-        "resources": {
-            "LeoStream": "${LeoStream}",
-            "LeoCron": "${LeoCron}",
-            "LeoEvent": "${LeoEvent}",
-            "LeoSettings": "${LeoSettings}",
-            "LeoSystem": "${LeoSystem}",
-            "LeoS3": "${LeoS3}",
-            "LeoKinesisStream": "${LeoKinesisStream}",
-            "LeoFirehoseStream": "${LeoFirehoseStream}",
-            "Region": "${Region}"
-        }
-    }
-}
 ```
 
 # Support
