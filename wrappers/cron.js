@@ -161,7 +161,7 @@ module.exports = function(configOverride, botHandler) {
 					try {
 						console.log("[LEOCRON]:start:" + cronkey);
 						fill(event || {}, config, dynamodb.docClient).then(filledEvent => {
-							botHandler(filledEvent, context, function(err, data) {
+							let promise = botHandler(filledEvent, context, function(err, data) {
 								console.log("[LEOCRON]:complete:" + cronkey);
 								cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
 									if (err || err2) {
@@ -170,6 +170,25 @@ module.exports = function(configOverride, botHandler) {
 									callback(null, err || data);
 								});
 							});
+							if (promise && typeof promise.then == "function" && botHandler.length < 3) {
+								promise.then(data => {
+									console.log("[LEOCRON]:complete:" + cronkey);
+									cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
+										if (err || err2) {
+											logger.log(err || err2);
+										}
+										callback(null, err || data);
+									});
+								});
+							}
+							if (promise && typeof promise.catch == "function") {
+								promise.catch(err => {
+									console.log("[LEOCRON]:complete:" + cronkey);
+									cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
+										callback(null, err);
+									});
+								});
+							}
 						}).catch(err => {
 							cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
 								callback(null, err);
