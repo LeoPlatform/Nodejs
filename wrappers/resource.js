@@ -68,14 +68,21 @@ module.exports = function(configOverride, botHandler) {
 				});
 			} else if (err) {
 				console.log(err);
-				callback(null, {
-					statusCode: 500,
-					headers: {
-						'Content-Type': config.ErrorContentType || 'text/html',
-						"Access-Control-Allow-Origin": config.cors ? config.cors : undefined
-					},
-					body: err.toString()
-				});
+				if (typeof err === "object" && "statusCode" in err) {
+					if (config.cors && err.headers && !("Access-Control-Allow-Origin" in err.headers)) {
+						err.headers["Access-Control-Allow-Origin"] = config.cors;
+					}
+					callback(null, err)
+				} else {
+					callback(null, {
+						statusCode: 500,
+						headers: {
+							'Content-Type': config.ErrorContentType || 'text/html',
+							"Access-Control-Allow-Origin": config.cors ? config.cors : undefined
+						},
+						body: err.toString()
+					});
+				}
 			} else {
 				callback(null, {
 					statusCode: 200,
