@@ -6,9 +6,9 @@ var connectors = require("../index.js")(leo.configuration);
 var refUtil = require("../../lib/reference.js");
 var ls = leo.streams;
 
-exports.handler = function (settings, context, callback) {
+exports.handler = function(settings, context, callback) {
 	console.log(settings.source, settings.botId, settings.destination);
-	var stream = leo.load(settings.botId, settings.destination);
+	var stream = leo.load(settings.botId, settings.destination, settings.loadOpts);
 	settings.__tail = connectors.mongo.oplogTail(settings);
 	ls.pipe(settings.__tail, ls.through((obj, done) => {
 		if (!stream.write(obj)) {
@@ -42,7 +42,7 @@ if (process.send) {
 	process.on("message", (msg) => {
 		if (msg.action === "start") {
 			settings = msg.cron;
-			exports.handler(settings, {}, function (err, data) {
+			exports.handler(settings, {}, function(err, data) {
 				console.log(err, data);
 			});
 		} else if (msg.action == "update") {
