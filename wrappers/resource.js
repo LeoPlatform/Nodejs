@@ -1,12 +1,12 @@
 "use strict";
 let config = require("../leoConfigure.js");
-module.exports = function(configOverride, botHandler) {
+module.exports = function (configOverride, botHandler) {
 	if (!botHandler) {
 		botHandler = configOverride;
 		configOverride = {};
 	}
 	Object.assign(config, configOverride);
-	return function(event, context, callback) {
+	return function (event, context, callback) {
 		context.callbackWaitsForEmptyEventLoop = false;
 		if (context.identity) { // Called Directly not via Api Gateway
 			event = {
@@ -26,7 +26,7 @@ module.exports = function(configOverride, botHandler) {
 		for (let x of process.listeners('uncaughtException')) { //remove lambdas default listener
 			process.removeListener('uncaughtException', x);
 		}
-		process.on('uncaughtException', function(err) {
+		process.on('uncaughtException', function (err) {
 			console.error((new Date).toUTCString() + ' uncaughtException:', err.message);
 			console.error(err.stack);
 			callback(null, {
@@ -51,7 +51,7 @@ module.exports = function(configOverride, botHandler) {
 		}
 		event.pathParameters = event.pathParameters || {};
 		event.queryStringParameters = event.queryStringParameters || {};
-		let promise = botHandler(event, context, function(err, data) {
+		let promise = botHandler(event, context, function (err, data) {
 			if (data && typeof data === "object" && "statusCode" in data) {
 				if (config.cors && !("Access-Control-Allow-Origin" in data.headers)) {
 					data.headers["Access-Control-Allow-Origin"] = config.cors;
