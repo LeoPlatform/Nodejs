@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "2.1.1",
+	"version": "2.2.0",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -22,7 +22,6 @@
 		"leo-logger": ">=1.0.0",
 		"lodash": "^4.17.5",
 		"moment": "^2.19.3",
-		"moment-timezone": "^0.5.13",
 		"pump": "^1.0.3",
 		"pumpify": "^1.4.0",
 		"readable-stream": "^2.3.5",
