@@ -116,6 +116,7 @@ module.exports = function(configure) {
 									_id: id
 								}
 							}));
+							this.push(meta);
 							done();
 						}
 					});
@@ -129,13 +130,16 @@ module.exports = function(configure) {
 
 			format.push = (function(self, push) {
 				return function(meta, command, data) {
-					if (command == null) {
+					if (meta == null) {
 						push.call(self, null);
 						return;
 					}
-					var result = JSON.stringify(command) + "\n";
-					if (data) {
-						result += JSON.stringify(data) + "\n";
+					var result = "";
+					if (command != undefined) {
+						result = JSON.stringify(command) + "\n";
+						if (data) {
+							result += JSON.stringify(data) + "\n";
+						}
 					}
 					push.call(self, Object.assign({}, meta, {
 						payload: result
@@ -164,6 +168,14 @@ module.exports = function(configure) {
 							}
 						}));
 					} else {
+						if (!body.length) {
+							done(null, Object.assign(meta, {
+								payload: {
+									message: "All deletes.  No body to run."
+								}
+							}));
+							return;
+						}
 						client.bulk({
 							body: body,
 							fields: false,
@@ -309,6 +321,7 @@ module.exports = function(configure) {
 									_id: id
 								}
 							}));
+							this.push(meta);
 							done();
 						}
 					});
@@ -322,13 +335,16 @@ module.exports = function(configure) {
 
 			format.push = (function(self, push) {
 				return function(meta, command, data) {
-					if (command == null) {
+					if (meta == null) {
 						push.call(self, null);
 						return;
 					}
-					var result = JSON.stringify(command) + "\n";
-					if (data) {
-						result += JSON.stringify(data) + "\n";
+					var result = "";
+					if (command != undefined) {
+						result = JSON.stringify(command) + "\n";
+						if (data) {
+							result += JSON.stringify(data) + "\n";
+						}
 					}
 					push.call(self, Object.assign({}, meta, {
 						payload: result
@@ -372,6 +388,14 @@ module.exports = function(configure) {
 							}
 						}));
 					} else {
+						if (!body.length) {
+							done(null, Object.assign(meta, {
+								payload: {
+									message: "All deletes.  No body to run."
+								}
+							}));
+							return;
+						}
 						console.time(index + "es_emit");
 						console.time(index + "es_bulk");
 						client.bulk({
