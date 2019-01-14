@@ -20,7 +20,7 @@ var opNames = {
 
 module.exports = {
 	streams: ls,
-	stream: function (settings) {
+	stream: function(settings) {
 		settings = extend(true, {}, settings);
 		settings.server = settings.server || "localhost"
 		var pass = new PassThrough({
@@ -123,11 +123,11 @@ module.exports = {
 			}), ls.batch({
 				count: settings.maxSendCount || 300,
 				time: settings.maxSendDelay || 500
-			}), ls.through(function (group, done) {
+			}), ls.through(function(group, done) {
 
 				let self = this;
 				let idField = settings.id_column || "_id";
-				var getObjects = function (data) {
+				var getObjects = function(data) {
 					var history = {};
 					let changes = data.filter(c => (c.o._id !== undefined || (c.o2 && c.o2._id !== undefined))).map(c => {
 						var id = c.o._id || c.o2._id;
@@ -187,7 +187,7 @@ module.exports = {
 					}));
 				};
 
-				getObjects(group.payload).pipe(ls.through(function (data, done) {
+				getObjects(group.payload).pipe(ls.through(function(data, done) {
 					let wrapper = {
 						correlation_id: {
 							source: settings.source,
@@ -225,7 +225,7 @@ module.exports = {
 
 		let oldDestroy = stream.destroy;
 		let destroyCalled = false;
-		stream.destroy = function () {
+		stream.destroy = function() {
 			destroyCalled = true;
 			clearTimeout(delayedTimeout);
 			clearTimeout(sendTimeout);
@@ -234,9 +234,12 @@ module.exports = {
 			pass.oplogstream = undefined;
 			pass.dbs = undefined;
 			pass.database = undefined;
+			if (settings.__code.destroy) {
+				settings.__code.destroy();
+			}
 			oldDestroy && oldDestroy.call(stream);
 		};
-		stream.update = function (newSettings) {
+		stream.update = function(newSettings) {
 			if (newSettings) {
 				//let checkpoint = getCheckpoint(settings);
 				//let newCheckpoint = getCheckpoint(newSettings);
@@ -260,7 +263,7 @@ module.exports = {
 		return stream;
 	}
 };
-var ts2ms = exports.ts2ms = function (_ts) {
+var ts2ms = exports.ts2ms = function(_ts) {
 	return _ts.high_ * 1000 + _ts.low_;
 };
 

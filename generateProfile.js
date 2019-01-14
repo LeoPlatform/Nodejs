@@ -21,7 +21,7 @@ if (commands[0] == "show") {
 	console.log(`\nProfile: ${p}`);
 	console.log(JSON.stringify(get()[p] || {}, null, 2));
 } else {
-	require("./lib/generateProfile.js")(commands[0], null, options);
+	require("./lib/generateProfile.js")(commands[0], options, null, () => {});
 }
 
 function parse() {
