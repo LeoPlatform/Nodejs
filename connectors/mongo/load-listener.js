@@ -17,11 +17,11 @@ var opNames = {
 	c: "command"
 };
 
-dynamodb.scan = function (table, filter, callback) {
+dynamodb.scan = function(table, filter, callback) {
 	dynamodb.docClient.scan({
 		TableName: table,
 		"ReturnConsumedCapacity": 'TOTAL'
-	}, function (err, data) {
+	}, function(err, data) {
 		if (err) {
 			console.log(err);
 			callback(err);
@@ -71,7 +71,7 @@ function findNewBots(callback) {
 					id: settings.botId,
 					inQueue: settings.source,
 					outQueue: settings.destination,
-					transform: function (obj, event, done) {
+					transform: function(obj, event, done) {
 
 						let id_column = obj.id_column || settings.id_column || "_id";
 						var objectId = (id_column != "_id") ? a => {
@@ -94,10 +94,10 @@ function findNewBots(callback) {
 							}), ls.batch({
 								count: settings.maxSendCount || 300,
 								time: settings.maxSendDelay || 500
-							}), ls.through(function (group, done) {
+							}), ls.through(function(group, done) {
 								let idField = id_column; //settings.id_column || "_id";
 								let toId = idField == "_id" ? ObjectId : a => a;
-								var getObjects = function (data) {
+								var getObjects = function(data) {
 									var history = {};
 									let changes = data.filter(c => (c.o._id !== undefined || (c.o2 && c.o2._id !== undefined))).map(c => {
 										var id = c.o._id || c.o2._id;
@@ -159,7 +159,7 @@ function findNewBots(callback) {
 								};
 
 								//console.log("group", group);
-								getObjects(group.payload).pipe(ls.through(function (data, done) {
+								getObjects(group.payload).pipe(ls.through(function(data, done) {
 									let wrapper = {
 										correlation_id: {
 											source: settings.source.toString(),
@@ -184,17 +184,17 @@ function findNewBots(callback) {
 									done();
 									cb();
 								}));
-							}), /*ls.log(),*/ ls.devnull(), function (err) {
+							}), /*ls.log(),*/ ls.devnull(), function(err) {
 								console.log("File Done", err || "");
 								done(err);
 							});
 						}, (err, result) => {
 							err && console.log("Error on file async", err)
-							done(err);
+							done(err, true);
 						});
 					},
 					debug: !!settings.debug
-				}, function (err) {
+				}, function(err) {
 					err && console.log("Error:", err);
 					console.log("Completed:", settings.botId);
 					callback(err);
@@ -229,11 +229,11 @@ function getSettings(cron) {
 }
 
 function connect(cronSettings, callback) {
-	mongodb.MongoClient.connect(`mongodb://${cronSettings.server}/${cronSettings.db}?readPreference=secondary&slaveOk=true'`, function (err, db) {
+	mongodb.MongoClient.connect(`mongodb://${cronSettings.server}/${cronSettings.db}?readPreference=secondary&slaveOk=true'`, function(err, db) {
 		if (err) {
 			return callback(err);
 		}
-		db.collection(cronSettings.collection, function (err, collection) {
+		db.collection(cronSettings.collection, function(err, collection) {
 			if (err) {
 				return callback(err);
 			}
@@ -246,7 +246,7 @@ function connect(cronSettings, callback) {
 	});
 }
 
-var ts2ms = exports.ts2ms = function (_ts) {
+var ts2ms = exports.ts2ms = function(_ts) {
 	return _ts.high_ * 1000 + _ts.low_;
 };
 
