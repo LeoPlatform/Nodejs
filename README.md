@@ -1,4 +1,4 @@
-LeoPlatform/Nodejs
+testLeoPlatform/Nodejs
 ===================
 
 Leo Nodejs SDK
