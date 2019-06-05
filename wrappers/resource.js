@@ -37,7 +37,7 @@ module.exports = function (configOverride, botHandler) {
 		});
 		if (event.requestContext) { //new lambda proxy method
 			if (event.isBase64Encoded) {
-				event.body = Buffer.from(event.body, 'base64');
+				event.body = new Buffer(event.body, 'base64');
 			} else if (event.body && typeof event.body !== "object") {
 				event.body = JSON.parse(event.body);
 			}
