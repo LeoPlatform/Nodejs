@@ -178,7 +178,7 @@ module.exports = function(configure) {
 						}
 						client.bulk({
 							body: body,
-							fields: false,
+							fields: settings.fieldsUndefined ? undefined : false,
 							_source: false
 						}, function(err, data) {
 							if (err || data.errors) {
@@ -400,7 +400,7 @@ module.exports = function(configure) {
 						console.time(index + "es_bulk");
 						client.bulk({
 							body: body,
-							fields: false,
+							fields: settings.fieldsUndefined ? undefined : false,
 							_source: false
 						}, function(err, data) {
 							console.timeEnd(index + "es_bulk");
