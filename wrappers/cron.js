@@ -58,8 +58,8 @@ module.exports = function(configOverride, botHandler) {
 		process.removeListener('uncaughtException', x);
 	}
 	let theCallback;
-	let theContext;
-	let __theEvent;
+	let theContext = {};
+	let __theEvent = {};
 	process.on('uncaughtException', function(err) {
 		console.log(`[LEOCRON]:end:${config.name}:${theContext.awsRequestId}`);
 		logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);

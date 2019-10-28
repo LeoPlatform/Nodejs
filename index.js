@@ -125,9 +125,7 @@ function SDK(id, data) {
 			cloudformation: new aws.CloudFormation({
 				region: configuration.aws.region,
 				credentials: configuration.credentials
-			}),
-			secrets: require('./lib/secretsManager')(configuration),
-
+			})
 		}
 	});
 }
