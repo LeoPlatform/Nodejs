@@ -666,6 +666,7 @@ module.exports = function(configure) {
 						size: size,
 						aggs: data.aggs,
 						_source: source,
+						track_total_hits: data.track_total_hits || undefined,
 					},
 					scroll: scroll
 				}, getUntilDone);
