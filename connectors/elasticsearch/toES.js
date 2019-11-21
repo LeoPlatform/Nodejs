@@ -43,7 +43,119 @@ module.exports = function (configure) {
 		return client;
 	}
 
+	function deleteByQuery (context, event, data, client, callback) {
+		let meta = Object.assign({}, event);
+		delete meta.payload;
+		const deleteByQuery = [];
+		if (data.delete) {
+			if (!data.field || data.field === '_id') {
+				context.push(meta, {
+					delete: {
+						_id: data.id,
+						_index: data.index,
+						_type: data.type,
+					},
+				});
+			} else {
+				const ids = Array.isArray(data.id) ? data.id : [data.id];
+				const size = ids.length;
+				const chunk = 1000;
+				for (let i = 0; i < size; i += chunk) {
+					deleteByQuery.push({
+						index: data.index,
+						query: {
+							terms: {
+								[data.field]: ids.slice(i, i + chunk),
+							},
+						},
+						type: data.type,
+					});
+				}
+			}
+		} else {
+			context.push(meta, {
+				update: {
+					_id: data.id,
+					_index: data.index,
+					_type: data.type,
+				},
+			}, {
+				doc: data.doc,
+				doc_as_upsert: true,
+			});
+		}
+
+		if (deleteByQuery.length) {
+			self.getIds(deleteByQuery, client, (err, ids) => {
+				if (err) {
+					callback(err);
+				} else {
+					ids.forEach(id => context.push(meta, {
+						delete: {
+							_id: id,
+							_index: data.index,
+							_type: data.type,
+						},
+					}));
+					context.push(meta);
+					callback();
+				}
+			});
+		} else {
+			callback();
+		}
+	}
+
 	let self = {
+		get: (data, settings, callback) => {
+			if (typeof settings === 'function') {
+				callback = settings;
+				settings = {};
+			}
+
+			let client = getClient(settings);
+
+			return new Promise((resolve, reject) => {
+				client.get(data, function (err, data) {
+					if (callback) {
+						callback(err, data);
+					} else if (err) {
+						reject(err);
+					} else {
+						resolve(data);
+					}
+				});
+			});
+		},
+		getIds: (queries, client, done) => {
+			// Run any deletes and finish
+			let allIds = [];
+			async.eachSeries(queries, (data, callback) => {
+				self.query({
+					index: data.index,
+					query: data.query,
+					scroll: '15s',
+					source: ['_id'],
+					type: data.type,
+				}, {
+					client,
+				}, (err, ids) => {
+					if (err) {
+						callback(err);
+						return;
+					}
+					allIds = allIds.concat(ids.items.map(id => id._id));
+					callback();
+				});
+			}, (err) => {
+				if (err) {
+					logger.error(err);
+					done(err);
+				} else {
+					done(null, allIds);
+				}
+			});
+		},
 		stream: function (settings) {
 			let connection = settings.connection || settings;
 			let client = getClient(connection);
@@ -51,7 +163,7 @@ module.exports = function (configure) {
 			let total = settings.startTotal || 0;
 			let fileCount = 0;
 			let format = ls.through({
-				highWaterMark: 16
+				highWaterMark: 16,
 			}, function (event, done) {
 				let data = event.payload || event;
 
@@ -60,65 +172,7 @@ module.exports = function (configure) {
 					done('Invalid data. index, type, & id are required ' + JSON.stringify(data || ''));
 					return;
 				}
-				let meta = Object.assign({}, event);
-				delete meta.payload;
-				const deleteByQuery = [];
-				if (data.delete) {
-					if (!data.field || data.field === '_id') {
-						this.push(meta, {
-							delete: {
-								_id: data.id,
-								_index: data.index,
-								_type: data.type,
-							},
-						});
-					} else {
-						const ids = Array.isArray(data.id) ? data.id : [data.id];
-						const size = ids.length;
-						const chunk = 1000;
-						for (let i = 0; i < size; i += chunk) {
-							deleteByQuery.push({
-								index: data.index,
-								query: {
-									terms: {
-										[data.field]: ids.slice(i, i + chunk),
-									},
-								},
-								type: data.type,
-							});
-						}
-					}
-				} else {
-					this.push(meta, {
-						update: {
-							_id: data.id,
-							_index: data.index,
-							_type: data.type,
-						},
-					}, {
-						doc: data.doc,
-						doc_as_upsert: true,
-					});
-				}
-				if (deleteByQuery.length) {
-					self.getIds(deleteByQuery, client, (err, ids) => {
-						if (err) {
-							done(err);
-						} else {
-							ids.forEach(id => this.push(meta, {
-								delete: {
-									_id: id,
-									_index: data.index,
-									_type: data.type,
-								},
-							}));
-							this.push(meta);
-							done();
-						}
-					});
-				} else {
-					done();
-				}
+				deleteByQuery(this, event, data, client, done);
 			}, function flush (callback) {
 				logger.debug('Transform: On Flush');
 				callback();
@@ -155,71 +209,63 @@ module.exports = function (configure) {
 					total += input.payload.length;
 					settings.logSummary && logger.info('ES Object Size:', input.bytes, input.payload.length, total);
 					let body = input.payload.map(a => a.payload).join('');
-					if (process.env.dryrun) {
+
+					if (!body.length) {
 						done(null, Object.assign(meta, {
 							payload: {
-								body,
-								response: data,
+								message: 'All deletes.  No body to run.',
 							},
 						}));
-					} else {
-						if (!body.length) {
-							done(null, Object.assign(meta, {
-								payload: {
-									message: 'All deletes.  No body to run.',
-								},
-							}));
-							return;
-						}
-						client.bulk({
-							_source: false,
-							body,
-							fields: settings.fieldsUndefined ? undefined : false,
-						}, function (err, data) {
-							if (err || data.errors) {
-								if (data && data.Message) {
-									err = data.Message;
-								} else if (data && data.items) {
-									logger.error(data.items.filter((r) => {
-										return 'error' in r.update;
-									}).map(e => JSON.stringify(e, null, 2)));
-									err = 'Cannot load';
-								} else {
-									logger.error(err);
-									err = 'Cannot load';
-								}
-							}
-							if (err) {
-								logger.error(err);
-							}
-
-							let timestamp = moment();
-							let rand = Math.floor(Math.random() * 1000000);
-							let key = `files/elasticsearch/${(systemRef && systemRef.id) || 'unknown'}/${meta.id || 'unknown'}/${timestamp.format('YYYY/MM/DD/HH/mm/') + timestamp.valueOf()}-${++fileCount}-${rand}`;
-
-							if (!settings.dontSaveResults) {
-								logger.debug(leo.configuration.bus.s3, key);
-								s3.upload({
-									Body: JSON.stringify({
-										body,
-										response: data,
-									}),
-									Bucket: leo.configuration.bus.s3,
-									Key: key,
-								}, (uploaderr, data) => {
-									done(err, Object.assign(meta, {
-										payload: {
-											error: err || undefined,
-											file: data && data.Location,
-											uploadError: uploaderr || undefined,
-										},
-									}));
-								});
-							} else {
-								done(err);
-							}
-						});
+						return;
 					}
+					client.bulk({
+						_source: false,
+						body,
+						fields: settings.fieldsUndefined ? undefined : false,
+					}, function (err, data) {
+						if (err || data.errors) {
+							if (data && data.Message) {
+								err = data.Message;
+							} else if (data && data.items) {
+								logger.error(data.items.filter((r) => {
+									return 'error' in r.update;
+								}).map(e => JSON.stringify(e, null, 2)));
+								err = 'Cannot load';
+							} else {
+								logger.error(err);
+								err = 'Cannot load';
+							}
+						}
+						if (err) {
+							logger.error(err);
+						}
+
+						let timestamp = moment();
+						let rand = Math.floor(Math.random() * 1000000);
+						let key = `files/elasticsearch/${(systemRef && systemRef.id) || 'unknown'}/${meta.id || 'unknown'}/${timestamp.format('YYYY/MM/DD/HH/mm/') + timestamp.valueOf()}-${++fileCount}-${rand}`;
+
+						if (!settings.dontSaveResults) {
+							logger.debug(leo.configuration.bus.s3, key);
+							s3.upload({
+								Body: JSON.stringify({
+									body,
+									response: data,
+								}),
+								Bucket: leo.configuration.bus.s3,
+								Key: key,
+							}, (uploaderr, data) => {
+								done(err, Object.assign(meta, {
+									payload: {
+										error: err || undefined,
+										file: data && data.Location,
+										uploadError: uploaderr || undefined,
+									},
+								}));
+							});
+						} else {
+							done(err);
+						}
+					});
 				} else {
 					done();
 				}
@@ -236,297 +282,6 @@ module.exports = function (configure) {
 					milliseconds: 200,
 				},
 			}), send);
-		},
-
-		streamParallel: function (settings) {
-			let parallelLimit = (settings.warmParallelLimit != undefined ? settings.warmParallelLimit : settings.parallelLimit) || 1;
-			let connection = settings.connection || settings;
-			let client = getClient(connection);
-			let requireType = settings.requireType || false;
-			let total = settings.startTotal || 0;
-			let startTime = Date.now();
-			let duration = 0;
-			let lastDuration = 0;
-			let lastStartTime = Date.now();
-			let lastAvg = 0;
-			let fileCount = 0;
-			let format = ls.through({
-				highWaterMark: 16
-			}, function (event, done) {
-				let data = event.payload || event;
-
-				if (!data || !data.index || (requireType && !data.type) || data.id == undefined) {
-					logger.error('Invalid data. index, type, & id are required', JSON.stringify(data || ''));
-					done('Invalid data. index, type, & id are required ' + JSON.stringify(data || ''));
-					return;
-				}
-				let meta = Object.assign({}, event);
-				delete meta.payload;
-				const deleteByQuery = [];
-				if (data.delete) {
-					if (!data.field || data.field === '_id') {
-						this.push(meta, {
-							delete: {
-								_id: data.id,
-								_index: data.index,
-								_type: data.type,
-							},
-						});
-					} else {
-						const ids = Array.isArray(data.id) ? data.id : [data.id];
-						const size = ids.length;
-						const chunk = 1000;
-						for (let i = 0; i < size; i += chunk) {
-							deleteByQuery.push({
-								index: data.index,
-								query: {
-									terms: {
-										[data.field]: ids.slice(i, i + chunk),
-									},
-								},
-								type: data.type,
-							});
-						}
-					}
-				} else {
-					this.push(meta, {
-						update: {
-							_id: data.id,
-							_index: data.index,
-							_type: data.type,
-						}
-					}, {
-						doc: data.doc,
-						doc_as_upsert: true,
-					});
-				}
-				if (deleteByQuery.length) {
-					self.getIds(deleteByQuery, client, (err, ids) => {
-						if (err) {
-							done(err);
-						} else {
-							ids.forEach(id => this.push(meta, {
-								delete: {
-									_id: id,
-									_index: data.index,
-									_type: data.type,
-								},
-							}));
-							this.push(meta);
-							done();
-						}
-					});
-				} else {
-					done();
-				}
-			}, function flush (callback) {
-				logger.debug('Transform: On Flush');
-				callback();
-			});
-
-			format.push = (function (self, push) {
-				return function (meta, command, data) {
-					if (meta == null) {
-						push.call(self, null);
-						return;
-					}
-					let result = '';
-					if (command != undefined) {
-						result = JSON.stringify(command) + '\n';
-						if (data) {
-							result += JSON.stringify(data) + '\n';
-						}
-					}
-					push.call(self, Object.assign({}, meta, {
-						payload: result
-					}));
-				};
-			})(format, format.push);
-
-			let systemRef = refUtil.ref(settings.system, 'system');
-			let toSend = [];
-			let firstStart = Date.now();
-
-			let sendFunc = function (done) {
-				parallelLimit = settings.parallelLimit || parallelLimit;
-				batchStream.updateLimits(bufferOpts);
-				let cnt = 0;
-				logger.time('es_emit');
-				let batchCnt = 0;
-				lastDuration = 0;
-				async.map(toSend, (input, done) => {
-					let index = ++cnt + ' ';
-					let meta = Object.assign({}, input);
-					meta.event = systemRef.refId();
-					delete meta.payload;
-
-					settings.logSummary && logger.info(index + 'ES Object Size:', input.bytes, input.payload.length, total, (Date.now() - startTime) / total, lastAvg, Date.now() - firstStart, duration, duration / total);
-					batchCnt += input.payload.length;
-					total += input.payload.length;
-					let body = input.payload.map(a => a.payload).join('');
-					if (process.env.dryrun) {
-						done(null, Object.assign(meta, {
-							payload: {
-								body: body,
-								response: data
-							}
-						}));
-					} else {
-						if (!body.length) {
-							done(null, Object.assign(meta, {
-								payload: {
-									message: 'All deletes.  No body to run.'
-								}
-							}));
-							return;
-						}
-						logger.time(index + 'es_emit');
-						logger.time(index + 'es_bulk');
-						client.bulk({
-							body: body,
-							fields: settings.fieldsUndefined ? undefined : false,
-							_source: false
-						}, function (err, data) {
-							logger.timeEnd(index + 'es_bulk');
-							logger.info(index, !err && data.took);
-
-							if (data && data.took) {
-								lastDuration = Math.max(lastDuration, data.took);
-							}
-							if (err || data.errors) {
-								if (data && data.Message) {
-									err = data.Message;
-								} else if (data && data.items) {
-									logger.error(data.items.filter((r) => {
-										return 'error' in r.update;
-									}).map(e => JSON.stringify(e, null, 2)));
-									err = 'Cannot load';
-								} else {
-									logger.error(err);
-									err = 'Cannot load';
-								}
-							}
-							if (err) {
-								logger.error(err);
-							}
-
-							let timestamp = moment();
-							let rand = Math.floor(Math.random() * 1000000);
-							let key = `files/elasticsearch/${(systemRef && systemRef.id) || 'unknown'}/${meta.id || 'unknown'}/${timestamp.format('YYYY/MM/DD/HH/mm/') + timestamp.valueOf()}-${++fileCount}-${rand}`;
-
-							if (!settings.dontSaveResults) {
-
-								logger.time(index + 'es_save');
-								logger.debug(leo.configuration.bus.s3, key);
-								s3.upload({
-									Body: JSON.stringify({
-										body,
-										response: data,
-									}),
-									Bucket: leo.configuration.bus.s3,
-									Key: key,
-								}, (uploaderr, data) => {
-									logger.timeEnd(index + 'es_save');
-									logger.timeEnd(index + 'es_emit');
-									done(err, Object.assign(meta, {
-										payload: {
-											error: err || undefined,
-											file: data && data.Location,
-											uploadError: uploaderr || undefined,
-										},
-									}));
-								});
-							} else {
-								logger.timeEnd(index + 'es_emit');
-								done(err, Object.assign(meta, {
-									payload: {
-										error: err || undefined,
-									},
-								}));
-							}
-						});
-					}
-				}, (err, results) => {
-					toSend = [];
-					if (!err) {
-						results.map(r => {
-							this.push(r);
-						});
-					}
-					duration += lastDuration;
-					lastAvg = (Date.now() - lastStartTime) / batchCnt;
-					lastStartTime = Date.now();
-					logger.timeEnd('es_emit');
-					logger.info(lastAvg);
-					done && done(err);
-				});
-			};
-			let send = ls.through({
-					highWaterMark: 16,
-				}, function (input, done) {
-					if (input.payload && input.payload.length) {
-						toSend.push(input);
-						if (toSend.length >= parallelLimit) {
-							sendFunc.call(this, done);
-						} else {
-							done();
-						}
-					} else {
-						done();
-					}
-				},
-				function flush (callback) {
-					logger.debug('Elasticsearch Upload: On Flush');
-					if (toSend.length) {
-						sendFunc.call(this, callback);
-					} else {
-						callback();
-					}
-				});
-
-			let bufferOpts = typeof (settings.buffer) === 'object' ? settings.buffer : {
-				records: settings.buffer || undefined
-			};
-			let batchStream = ls.batch({
-				records: settings.warmup || bufferOpts.records,
-				bytes: bufferOpts.bytes || 10485760 * 0.95, // 9.5MB
-				time: bufferOpts.time || {
-					milliseconds: 200
-				},
-				field: 'payload'
-			});
-			return ls.pipeline(format, batchStream, send);
-		},
-
-		getIds: function (queries, client, done) {
-			// Run any deletes and finish
-			var allIds = [];
-			async.eachSeries(queries, (data, callback) => {
-				this.query({
-					index: data.index,
-					type: data.type,
-					query: data.query,
-					source: ['_id'],
-					scroll: '15s',
-				}, {
-					client: client
-				}, (err, ids) => {
-					if (err) {
-						callback(err);
-						return;
-					}
-					allIds = allIds.concat(ids.items.map(id => id._id));
-					callback();
-				});
-
-			}, (err) => {
-				if (err) {
-					logger.error(err);
-					done(err);
-				} else {
-					done(null, allIds);
-				}
-			});
 		},
 		query: function (data, settings, callback) {
 			if (!callback) {
@@ -621,25 +376,197 @@ module.exports = function (configure) {
 				client.search(searchObj, getUntilDone);
 			}
 		},
-		get: function (data, settings, callback) {
-			if (typeof settings === 'function') {
-				callback = settings;
-				settings = {};
-			}
+		streamParallel: (settings) => {
+			let parallelLimit = (settings.warmParallelLimit != undefined ? settings.warmParallelLimit : settings.parallelLimit) || 1;
+			let connection = settings.connection || settings;
+			let client = getClient(connection);
+			let requireType = settings.requireType || false;
+			let total = settings.startTotal || 0;
+			let startTime = Date.now();
+			let duration = 0;
+			let lastDuration = 0;
+			let lastStartTime = Date.now();
+			let lastAvg = 0;
+			let fileCount = 0;
+			let format = ls.through({
+				highWaterMark: 16,
+			}, function (event, done) {
+				let data = event.payload || event;
 
-			let client = getClient(settings);
-
-			return new Promise((resolve, reject) => {
-				client.get(data, function (err, data) {
-					if (callback) {
-						callback(err, data);
-					} else if (err) {
-						reject(err);
-					}
-
-					resolve(data);
-				});
+				if (!data || !data.index || (requireType && !data.type) || data.id == undefined) {
+					logger.error('Invalid data. index, type, & id are required', JSON.stringify(data || ''));
+					done('Invalid data. index, type, & id are required ' + JSON.stringify(data || ''));
+					return;
+				}
+				deleteByQuery(this, event, data, client, done);
+			}, function flush (callback) {
+				logger.debug('Transform: On Flush');
+				callback();
 			});
+
+			format.push = (function (self, push) {
+				return function (meta, command, data) {
+					if (meta == null) {
+						push.call(self, null);
+						return;
+					}
+					let result = '';
+					if (command != undefined) {
+						result = JSON.stringify(command) + '\n';
+						if (data) {
+							result += JSON.stringify(data) + '\n';
+						}
+					}
+					push.call(self, Object.assign({}, meta, {
+						payload: result,
+					}));
+				};
+			})(format, format.push);
+
+			let systemRef = refUtil.ref(settings.system, 'system');
+			let toSend = [];
+			let firstStart = Date.now();
+
+			let sendFunc = function (done) {
+				let cnt = 0;
+				let batchCnt = 0;
+				lastDuration = 0;
+
+				parallelLimit = settings.parallelLimit || parallelLimit;
+				batchStream.updateLimits(bufferOpts);
+				logger.time('es_emit');
+
+				async.map(toSend, (input, done) => {
+					let index = ++cnt + ' ';
+					let meta = Object.assign({}, input);
+					meta.event = systemRef.refId();
+					delete meta.payload;
+
+					settings.logSummary && logger.info(index + 'ES Object Size:', input.bytes, input.payload.length, total, (Date.now() - startTime) / total, lastAvg, Date.now() - firstStart, duration, duration / total);
+					batchCnt += input.payload.length;
+					total += input.payload.length;
+					let body = input.payload.map(a => a.payload).join('');
+					if (!body.length) {
+						done(null, Object.assign(meta, {
+							payload: {
+								message: 'All deletes.  No body to run.',
+							},
+						}));
+						return;
+					}
+					logger.time(index + 'es_emit');
+					logger.time(index + 'es_bulk');
+					client.bulk({
+						_source: false,
+						body,
+						fields: settings.fieldsUndefined ? undefined : false,
+					}, function (err, data) {
+						logger.timeEnd(index + 'es_bulk');
+						logger.info(index, !err && data.took);
+
+						if (data && data.took) {
+							lastDuration = Math.max(lastDuration, data.took);
+						}
+						if (err || data.errors) {
+							if (data && data.Message) {
+								err = data.Message;
+							} else if (data && data.items) {
+								logger.error(data.items.filter((r) => {
+									return 'error' in r.update;
+								}).map(e => JSON.stringify(e, null, 2)));
+								err = 'Cannot load';
+							} else {
+								logger.error(err);
+								err = 'Cannot load';
+							}
+						}
+						if (err) {
+							logger.error(err);
+						}
+
+						let timestamp = moment();
+						let rand = Math.floor(Math.random() * 1000000);
+						let key = `files/elasticsearch/${(systemRef && systemRef.id) || 'unknown'}/${meta.id || 'unknown'}/${timestamp.format('YYYY/MM/DD/HH/mm/') + timestamp.valueOf()}-${++fileCount}-${rand}`;
+
+						if (!settings.dontSaveResults) {
+							logger.time(index + 'es_save');
+							logger.debug(leo.configuration.bus.s3, key);
+							s3.upload({
+								Body: JSON.stringify({
+									body,
+									response: data,
+								}),
+								Bucket: leo.configuration.bus.s3,
+								Key: key,
+							}, (uploaderr, data) => {
+								logger.timeEnd(index + 'es_save');
+								logger.timeEnd(index + 'es_emit');
+								done(err, Object.assign(meta, {
+									payload: {
+										error: err,
+										file: data && data.Location,
+										uploadError: uploaderr,
+									},
+								}));
+							});
+						} else {
+							logger.timeEnd(index + 'es_emit');
+							done(err, Object.assign(meta, {
+								payload: {
+									error: err,
+								},
+							}));
+						}
+					});
+				}, (err, results) => {
+					toSend = [];
+					if (!err) {
+						results.map(r => {
+							this.push(r);
+						});
+					}
+					duration += lastDuration;
+					lastAvg = (Date.now() - lastStartTime) / batchCnt;
+					lastStartTime = Date.now();
+					logger.timeEnd('es_emit');
+					logger.info(lastAvg);
+					done && done(err);
+				});
+			};
+			let send = ls.through({
+				highWaterMark: 16,
+			}, function (input, done) {
+				if (input.payload && input.payload.length) {
+					toSend.push(input);
+					if (toSend.length >= parallelLimit) {
+						sendFunc.call(this, done);
+						return;
+					}
+				}
+				done();
+			},
+			function flush (callback) {
+				logger.debug('Elasticsearch Upload: On Flush');
+				if (toSend.length) {
+					sendFunc.call(this, callback);
+				} else {
+					callback();
+				}
+			});
+
+			const bufferOpts = (typeof (settings.buffer) === 'object') ? settings.buffer : {
+				records: settings.buffer,
+			};
+
+			let batchStream = ls.batch({
+				bytes: bufferOpts.bytes || 10485760 * 0.95, // 9.5MB
+				field: 'payload',
+				records: settings.warmup || bufferOpts.records,
+				time: bufferOpts.time || {
+					milliseconds: 200,
+				},
+			});
+			return ls.pipeline(format, batchStream, send);
 		},
 	};
 
