@@ -156,7 +156,100 @@ module.exports = function (configure) {
 				}
 			});
 		},
-		stream: function (settings) {
+		query: (data, settings, callback) => {
+			if (!callback) {
+				callback = settings;
+				settings = {};
+			}
+
+			const client = getClient(settings.connection || settings);
+			const results = {
+				items: [],
+				qty: 0,
+				scrolls: [],
+				took: 0,
+			};
+
+			const max = (data.max >= 0) ? data.max : 100000;
+			let transforms = {
+				full: (item) => item,
+				source: (item) => item._source,
+			};
+
+			let transform;
+			if (typeof data.return === 'function') {
+				transform = data.return;
+			} else {
+				transform = transforms[data.return || 'full'] || transforms.full;
+			}
+
+			let scroll = data.scroll;
+
+			function getUntilDone (err, data) {
+				if (err) {
+					logger.error(err);
+					callback(err);
+					return;
+				}
+				if (data.aggregations) {
+					results.aggregations = data.aggregations;
+				}
+				let info = data.hits;
+				info.qty = info.hits.length;
+				results.qty += info.qty;
+				results.took += data.took;
+
+				info.hits.forEach(item => {
+					results.items.push(transform(item));
+				});
+				delete info.hits;
+
+				results.total = info.total;
+				results.scrolls.push(info);
+
+				delete results.scrollid;
+
+				if (info.qty > 0 && info.total !== results.qty) {
+					results.scrollid = data._scroll_id;
+				}
+
+				if (scroll && info.total !== results.qty && max > results.qty && results.scrollid) {
+					client.scroll({
+						scroll,
+						scrollId: data._scroll_id,
+					}, getUntilDone);
+				} else {
+					callback(null, results);
+				}
+			}
+
+			if (data.scrollid) {
+				logger.debug('Starting As Scroll');
+				client.scroll({
+					scroll,
+					scrollId: data.scrollid,
+				}, getUntilDone);
+			} else {
+				logger.debug('Starting As Query');
+				const searchObj = {
+					body: {
+						_source: data.source,
+						aggs: data.aggs,
+						from: data.from || 0, // From doesn't seem to work properly.  It appears to be ignored
+						query: data.query,
+						size: Math.min(max, data.size >= 0 ? data.size : 10000),
+						sort: data.sort,
+						track_total_hits: data.track_total_hits,
+					},
+					index: data.index,
+					scroll,
+					type: data.type,
+				};
+				logger.debug(JSON.stringify(searchObj, null, 2));
+				client.search(searchObj, getUntilDone);
+			}
+		},
+		stream: (settings) => {
 			let connection = settings.connection || settings;
 			let client = getClient(connection);
 			let requireType = settings.requireType || false;
@@ -256,9 +349,9 @@ module.exports = function (configure) {
 							}, (uploaderr, data) => {
 								done(err, Object.assign(meta, {
 									payload: {
-										error: err || undefined,
+										error: err,
 										file: data && data.Location,
-										uploadError: uploaderr || undefined,
+										uploadError: uploaderr,
 									},
 								}));
 							});
@@ -282,99 +375,6 @@ module.exports = function (configure) {
 					milliseconds: 200,
 				},
 			}), send);
-		},
-		query: function (data, settings, callback) {
-			if (!callback) {
-				callback = settings;
-				settings = {};
-			}
-
-			const client = getClient(settings.connection || settings);
-			const results = {
-				items: [],
-				qty: 0,
-				scrolls: [],
-				took: 0,
-			};
-
-			const max = (data.max >= 0) ? data.max : 100000;
-			let transforms = {
-				full: (item) => item,
-				source: (item) => item._source,
-			};
-
-			let transform;
-			if (typeof data.return === 'function') {
-				transform = data.return;
-			} else {
-				transform = transforms[data.return || 'full'] || transforms.full;
-			}
-
-			let scroll = data.scroll;
-
-			function getUntilDone (err, data) {
-				if (err) {
-					logger.error(err);
-					callback(err);
-					return;
-				}
-				if (data.aggregations) {
-					results.aggregations = data.aggregations;
-				}
-				let info = data.hits;
-				info.qty = info.hits.length;
-				results.qty += info.qty;
-				results.took += data.took;
-
-				info.hits.forEach(item => {
-					results.items.push(transform(item));
-				});
-				delete info.hits;
-
-				results.total = info.total;
-				results.scrolls.push(info);
-
-				delete results.scrollid;
-
-				if (info.qty > 0 && info.total !== results.qty) {
-					results.scrollid = data._scroll_id;
-				}
-
-				if (scroll && info.total !== results.qty && max > results.qty && results.scrollid) {
-					client.scroll({
-						scroll,
-						scrollId: data._scroll_id,
-					}, getUntilDone);
-				} else {
-					callback(null, results);
-				}
-			}
-
-			if (data.scrollid) {
-				logger.debug('Starting As Scroll');
-				client.scroll({
-					scroll,
-					scrollId: data.scrollid,
-				}, getUntilDone);
-			} else {
-				logger.debug('Starting As Query');
-				const searchObj = {
-					body: {
-						_source: data.source,
-						aggs: data.aggs,
-						from: data.from || 0, // From doesn't seem to work properly.  It appears to be ignored
-						query: data.query,
-						size: Math.min(max, data.size >= 0 ? data.size : 10000),
-						sort: data.sort,
-						track_total_hits: data.track_total_hits,
-					},
-					index: data.index,
-					scroll,
-					type: data.type,
-				};
-				logger.debug(JSON.stringify(searchObj, null, 2));
-				client.search(searchObj, getUntilDone);
-			}
 		},
 		streamParallel: (settings) => {
 			let parallelLimit = (settings.warmParallelLimit != undefined ? settings.warmParallelLimit : settings.parallelLimit) || 1;
