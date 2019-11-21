@@ -1,41 +1,41 @@
-"use strict";
+'use strict';
 
-var aws = require("../../lib/leo-aws");
-var extend = require("extend");
-var elasticsearch = require('elasticsearch');
-var refUtil = require("../../lib/reference.js");
-var moment = require("moment");
-var https = require("https");
+const aws = require('../../lib/leo-aws');
+const extend = require('extend');
+const elasticsearch = require('elasticsearch');
+const refUtil = require('../../lib/reference.js');
+const moment = require('moment');
+const https = require('https');
+const async = require('async');
+const logger = require('leo-logger');
 
-var async = require("async");
-
-module.exports = function(configure) {
+module.exports = function (configure) {
 	configure = configure || {};
-	let leo = require("../../index")(configure);
+	let leo = require('../../index')(configure);
 	let ls = leo.streams;
 
-	var s3 = new aws.S3({
+	const s3 = new aws.S3({
 		apiVersion: '2006-03-01',
+		credentials: configure.credentials,
 		httpOptions: {
 			agent: new https.Agent({
-				keepAlive: true
-			})
+				keepAlive: true,
+			}),
 		},
-		credentials: configure.credentials
 	});
 
-	function getClient(settings) {
-		var client;
+	function getClient (settings) {
+		let client;
 		if (settings.client) {
 			client = settings.client;
 		} else {
 			let config = new aws.Config({
+				credentials: configure.credentials,
 				region: configure.aws.region,
-				credentials: configure.credentials
 			});
 			let esSettings = extend(true, {
+				awsConfig: config,
 				connectionClass: require('http-aws-es'),
-				awsConfig: config
 			}, settings);
 			client = elasticsearch.Client(esSettings);
 		}
@@ -43,65 +43,61 @@ module.exports = function(configure) {
 		return client;
 	}
 
-	let self;
-	return self = {
-		validate: function() {
-
-		},
-		stream: function(settings) {
-			let connection = settings.connection || settings
+	let self = {
+		stream: function (settings) {
+			let connection = settings.connection || settings;
 			let client = getClient(connection);
 			let requireType = settings.requireType || false;
 			let total = settings.startTotal || 0;
 			let fileCount = 0;
 			let format = ls.through({
 				highWaterMark: 16
-			}, function(event, done) {
+			}, function (event, done) {
 				let data = event.payload || event;
 
 				if (!data || !data.index || (requireType && !data.type) || !data.id) {
-					console.log("Invalid data. index, type, & id are required", JSON.stringify(data || ""));
-					done("Invalid data. index, type, & id are required " + JSON.stringify(data || ""));
+					logger.error('Invalid data. index, type, & id are required', JSON.stringify(data || ''));
+					done('Invalid data. index, type, & id are required ' + JSON.stringify(data || ''));
 					return;
 				}
 				let meta = Object.assign({}, event);
 				delete meta.payload;
-				var deleteByQuery = [];
-				if (data.delete && data.delete == true) {
-					if (!data.field || data.field == "_id") {
+				const deleteByQuery = [];
+				if (data.delete) {
+					if (!data.field || data.field === '_id') {
 						this.push(meta, {
 							delete: {
+								_id: data.id,
 								_index: data.index,
 								_type: data.type,
-								_id: data.id
-							}
+							},
 						});
 					} else {
-						var ids = Array.isArray(data.id) ? data.id : [data.id];
-						var size = ids.length;
-						var chunk = 1000;
-						for (var i = 0; i < size; i += chunk) {
+						const ids = Array.isArray(data.id) ? data.id : [data.id];
+						const size = ids.length;
+						const chunk = 1000;
+						for (let i = 0; i < size; i += chunk) {
 							deleteByQuery.push({
 								index: data.index,
-								type: data.type,
 								query: {
 									terms: {
-										[data.field]: ids.slice(i, i + chunk)
-									}
-								}
+										[data.field]: ids.slice(i, i + chunk),
+									},
+								},
+								type: data.type,
 							});
 						}
 					}
 				} else {
 					this.push(meta, {
 						update: {
+							_id: data.id,
 							_index: data.index,
 							_type: data.type,
-							_id: data.id
-						}
+						},
 					}, {
 						doc: data.doc,
-						doc_as_upsert: true
+						doc_as_upsert: true,
 					});
 				}
 				if (deleteByQuery.length) {
@@ -111,10 +107,10 @@ module.exports = function(configure) {
 						} else {
 							ids.forEach(id => this.push(meta, {
 								delete: {
+									_id: id,
 									_index: data.index,
 									_type: data.type,
-									_id: id
-								}
+								},
 							}));
 							this.push(meta);
 							done();
@@ -123,104 +119,100 @@ module.exports = function(configure) {
 				} else {
 					done();
 				}
-			}, function flush(callback) {
-				settings.debug && console.log("Transform: On Flush");
+			}, function flush (callback) {
+				logger.debug('Transform: On Flush');
 				callback();
 			});
 
-			format.push = (function(self, push) {
-				return function(meta, command, data) {
+			format.push = (function (self, push) {
+				return function (meta, command, data) {
 					if (meta == null) {
 						push.call(self, null);
 						return;
 					}
-					var result = "";
+					let result = '';
 					if (command != undefined) {
-						result = JSON.stringify(command) + "\n";
+						result = JSON.stringify(command) + '\n';
 						if (data) {
-							result += JSON.stringify(data) + "\n";
+							result += JSON.stringify(data) + '\n';
 						}
 					}
 					push.call(self, Object.assign({}, meta, {
-						payload: result
+						payload: result,
 					}));
-				}
+				};
 			})(format, format.push);
 
-			let systemRef = refUtil.ref(settings.system, "system")
+			let systemRef = refUtil.ref(settings.system, 'system');
 			let send = ls.through({
-				highWaterMark: 16
+				highWaterMark: 16,
 			}, (input, done) => {
 				if (input.payload && input.payload.length) {
 					let meta = Object.assign({}, input);
 					meta.event = systemRef.refId();
-					//meta.units = input.payload.length;
 					delete meta.payload;
 
 					total += input.payload.length;
-					settings.logSummary && console.log("ES Object Size:", input.bytes, input.payload.length, total);
-					let body = input.payload.map(a => a.payload).join("");
+					settings.logSummary && logger.info('ES Object Size:', input.bytes, input.payload.length, total);
+					let body = input.payload.map(a => a.payload).join('');
 					if (process.env.dryrun) {
 						done(null, Object.assign(meta, {
 							payload: {
-								body: body,
-								response: data
-							}
+								body,
+								response: data,
+							},
 						}));
 					} else {
 						if (!body.length) {
 							done(null, Object.assign(meta, {
 								payload: {
-									message: "All deletes.  No body to run."
-								}
+									message: 'All deletes.  No body to run.',
+								},
 							}));
 							return;
 						}
 						client.bulk({
-							body: body,
+							_source: false,
+							body,
 							fields: settings.fieldsUndefined ? undefined : false,
-							_source: false
-						}, function(err, data) {
+						}, function (err, data) {
 							if (err || data.errors) {
 								if (data && data.Message) {
 									err = data.Message;
 								} else if (data && data.items) {
-									console.log(data.items.filter((r) => {
+									logger.error(data.items.filter((r) => {
 										return 'error' in r.update;
 									}).map(e => JSON.stringify(e, null, 2)));
-									//console.log(JSON.stringify(bulk, null,  2));
-									err = "Cannot load";
+									err = 'Cannot load';
 								} else {
-									//console.log(JSON.stringify(bulk, null,  2));
-									console.log(err);
-									err = "Cannot load";
+									logger.error(err);
+									err = 'Cannot load';
 								}
 							}
 							if (err) {
-								console.log(err)
+								logger.error(err);
 							}
 
 							let timestamp = moment();
 							let rand = Math.floor(Math.random() * 1000000);
-							let key = `files/elasticsearch/${(systemRef && systemRef.id) || "unknown"}/${meta.id || "unknown"}/${timestamp.format("YYYY/MM/DD/HH/mm/") + timestamp.valueOf()}-${++fileCount}-${rand}`;
+							let key = `files/elasticsearch/${(systemRef && systemRef.id) || 'unknown'}/${meta.id || 'unknown'}/${timestamp.format('YYYY/MM/DD/HH/mm/') + timestamp.valueOf()}-${++fileCount}-${rand}`;
 
 							if (!settings.dontSaveResults) {
-								settings.debug && console.log(leo.configuration.bus.s3, key)
+								logger.debug(leo.configuration.bus.s3, key);
 								s3.upload({
+									Body: JSON.stringify({
+										body,
+										response: data,
+									}),
 									Bucket: leo.configuration.bus.s3,
 									Key: key,
-									Body: JSON.stringify({
-										body: body,
-										response: data
-									})
 								}, (uploaderr, data) => {
-									//console.log("ES Done", meta)
 									done(err, Object.assign(meta, {
 										payload: {
-											file: data && data.Location,
 											error: err || undefined,
-											uploadError: uploaderr || undefined
-										}
+											file: data && data.Location,
+											uploadError: uploaderr || undefined,
+										},
 									}));
 								});
 							} else {
@@ -231,25 +223,24 @@ module.exports = function(configure) {
 				} else {
 					done();
 				}
-			}, function flush(callback) {
-				settings.debug && console.log("Elasticsearch Upload: On Flush");
+			}, function flush (callback) {
+				logger.debug('Elasticsearch Upload: On Flush');
 				callback();
 			});
 
-
 			return ls.pipeline(format, ls.batch({
-				count: 1000,
 				bytes: 10485760 * 0.95, // 9.5MB
+				count: 1000,
+				field: 'payload',
 				time: {
-					milliseconds: 200
+					milliseconds: 200,
 				},
-				field: "payload"
 			}), send);
 		},
 
-		streamParallel: function(settings) {
+		streamParallel: function (settings) {
 			let parallelLimit = (settings.warmParallelLimit != undefined ? settings.warmParallelLimit : settings.parallelLimit) || 1;
-			let connection = settings.connection || settings
+			let connection = settings.connection || settings;
 			let client = getClient(connection);
 			let requireType = settings.requireType || false;
 			let total = settings.startTotal || 0;
@@ -261,52 +252,52 @@ module.exports = function(configure) {
 			let fileCount = 0;
 			let format = ls.through({
 				highWaterMark: 16
-			}, function(event, done) {
+			}, function (event, done) {
 				let data = event.payload || event;
 
 				if (!data || !data.index || (requireType && !data.type) || data.id == undefined) {
-					console.log("Invalid data. index, type, & id are required", JSON.stringify(data || ""));
-					done("Invalid data. index, type, & id are required " + JSON.stringify(data || ""));
+					logger.error('Invalid data. index, type, & id are required', JSON.stringify(data || ''));
+					done('Invalid data. index, type, & id are required ' + JSON.stringify(data || ''));
 					return;
 				}
 				let meta = Object.assign({}, event);
 				delete meta.payload;
-				var deleteByQuery = [];
-				if (data.delete && data.delete == true) {
-					if (!data.field || data.field == "_id") {
+				const deleteByQuery = [];
+				if (data.delete) {
+					if (!data.field || data.field === '_id') {
 						this.push(meta, {
 							delete: {
+								_id: data.id,
 								_index: data.index,
 								_type: data.type,
-								_id: data.id
-							}
+							},
 						});
 					} else {
-						var ids = Array.isArray(data.id) ? data.id : [data.id];
-						var size = ids.length;
-						var chunk = 1000;
-						for (var i = 0; i < size; i += chunk) {
+						const ids = Array.isArray(data.id) ? data.id : [data.id];
+						const size = ids.length;
+						const chunk = 1000;
+						for (let i = 0; i < size; i += chunk) {
 							deleteByQuery.push({
 								index: data.index,
-								type: data.type,
 								query: {
 									terms: {
-										[data.field]: ids.slice(i, i + chunk)
-									}
-								}
+										[data.field]: ids.slice(i, i + chunk),
+									},
+								},
+								type: data.type,
 							});
 						}
 					}
 				} else {
 					this.push(meta, {
 						update: {
+							_id: data.id,
 							_index: data.index,
 							_type: data.type,
-							_id: data.id
 						}
 					}, {
 						doc: data.doc,
-						doc_as_upsert: true
+						doc_as_upsert: true,
 					});
 				}
 				if (deleteByQuery.length) {
@@ -316,10 +307,10 @@ module.exports = function(configure) {
 						} else {
 							ids.forEach(id => this.push(meta, {
 								delete: {
+									_id: id,
 									_index: data.index,
 									_type: data.type,
-									_id: id
-								}
+								},
 							}));
 							this.push(meta);
 							done();
@@ -328,58 +319,51 @@ module.exports = function(configure) {
 				} else {
 					done();
 				}
-			}, function flush(callback) {
-				settings.debug && console.log("Transform: On Flush");
+			}, function flush (callback) {
+				logger.debug('Transform: On Flush');
 				callback();
 			});
 
-			format.push = (function(self, push) {
-				return function(meta, command, data) {
+			format.push = (function (self, push) {
+				return function (meta, command, data) {
 					if (meta == null) {
 						push.call(self, null);
 						return;
 					}
-					var result = "";
+					let result = '';
 					if (command != undefined) {
-						result = JSON.stringify(command) + "\n";
+						result = JSON.stringify(command) + '\n';
 						if (data) {
-							result += JSON.stringify(data) + "\n";
+							result += JSON.stringify(data) + '\n';
 						}
 					}
 					push.call(self, Object.assign({}, meta, {
 						payload: result
 					}));
-				}
+				};
 			})(format, format.push);
 
-			// client.bulk = (opts, done) => {
-			// 	//setTimeout(() => {
-			// 	done(null, {})
-			// 	//}, 1);
-			// }
-
-			let systemRef = refUtil.ref(settings.system, "system");
+			let systemRef = refUtil.ref(settings.system, 'system');
 			let toSend = [];
 			let firstStart = Date.now();
 
-			let sendFunc = function(done) {
+			let sendFunc = function (done) {
 				parallelLimit = settings.parallelLimit || parallelLimit;
 				batchStream.updateLimits(bufferOpts);
 				let cnt = 0;
-				console.time("es_emit");
-				let batchCnt = 0
+				logger.time('es_emit');
+				let batchCnt = 0;
 				lastDuration = 0;
 				async.map(toSend, (input, done) => {
-					let index = ++cnt + " ";
+					let index = ++cnt + ' ';
 					let meta = Object.assign({}, input);
 					meta.event = systemRef.refId();
-					//meta.units = input.payload.length;
 					delete meta.payload;
 
-					settings.logSummary && console.log(index + "ES Object Size:", input.bytes, input.payload.length, total, (Date.now() - startTime) / total, lastAvg, Date.now() - firstStart, duration, duration / total);
+					settings.logSummary && logger.info(index + 'ES Object Size:', input.bytes, input.payload.length, total, (Date.now() - startTime) / total, lastAvg, Date.now() - firstStart, duration, duration / total);
 					batchCnt += input.payload.length;
 					total += input.payload.length;
-					let body = input.payload.map(a => a.payload).join("");
+					let body = input.payload.map(a => a.payload).join('');
 					if (process.env.dryrun) {
 						done(null, Object.assign(meta, {
 							payload: {
@@ -391,20 +375,20 @@ module.exports = function(configure) {
 						if (!body.length) {
 							done(null, Object.assign(meta, {
 								payload: {
-									message: "All deletes.  No body to run."
+									message: 'All deletes.  No body to run.'
 								}
 							}));
 							return;
 						}
-						console.time(index + "es_emit");
-						console.time(index + "es_bulk");
+						logger.time(index + 'es_emit');
+						logger.time(index + 'es_bulk');
 						client.bulk({
 							body: body,
 							fields: settings.fieldsUndefined ? undefined : false,
 							_source: false
-						}, function(err, data) {
-							console.timeEnd(index + "es_bulk");
-							console.log(index, !err && data.took);
+						}, function (err, data) {
+							logger.timeEnd(index + 'es_bulk');
+							logger.info(index, !err && data.took);
 
 							if (data && data.took) {
 								lastDuration = Math.max(lastDuration, data.took);
@@ -413,55 +397,51 @@ module.exports = function(configure) {
 								if (data && data.Message) {
 									err = data.Message;
 								} else if (data && data.items) {
-									console.log(data.items.filter((r) => {
+									logger.error(data.items.filter((r) => {
 										return 'error' in r.update;
 									}).map(e => JSON.stringify(e, null, 2)));
-									//console.log(JSON.stringify(bulk, null,  2));
-									err = "Cannot load";
+									err = 'Cannot load';
 								} else {
-									//console.log(JSON.stringify(bulk, null,  2));
-									console.log(err);
-									err = "Cannot load";
+									logger.error(err);
+									err = 'Cannot load';
 								}
 							}
 							if (err) {
-								console.log(err)
+								logger.error(err);
 							}
 
 							let timestamp = moment();
 							let rand = Math.floor(Math.random() * 1000000);
-							let key = `files/elasticsearch/${(systemRef && systemRef.id) || "unknown"}/${meta.id || "unknown"}/${timestamp.format("YYYY/MM/DD/HH/mm/") + timestamp.valueOf()}-${++fileCount}-${rand}`;
-
+							let key = `files/elasticsearch/${(systemRef && systemRef.id) || 'unknown'}/${meta.id || 'unknown'}/${timestamp.format('YYYY/MM/DD/HH/mm/') + timestamp.valueOf()}-${++fileCount}-${rand}`;
 
 							if (!settings.dontSaveResults) {
 
-								console.time(index + "es_save");
-								settings.debug && console.log(leo.configuration.bus.s3, key)
+								logger.time(index + 'es_save');
+								logger.debug(leo.configuration.bus.s3, key);
 								s3.upload({
+									Body: JSON.stringify({
+										body,
+										response: data,
+									}),
 									Bucket: leo.configuration.bus.s3,
 									Key: key,
-									Body: JSON.stringify({
-										body: body,
-										response: data
-									})
 								}, (uploaderr, data) => {
-									//console.log("ES Done", meta)
-									console.timeEnd(index + "es_save");
-									console.timeEnd(index + "es_emit");
+									logger.timeEnd(index + 'es_save');
+									logger.timeEnd(index + 'es_emit');
 									done(err, Object.assign(meta, {
 										payload: {
-											file: data && data.Location,
 											error: err || undefined,
-											uploadError: uploaderr || undefined
-										}
+											file: data && data.Location,
+											uploadError: uploaderr || undefined,
+										},
 									}));
 								});
 							} else {
-								console.timeEnd(index + "es_emit");
+								logger.timeEnd(index + 'es_emit');
 								done(err, Object.assign(meta, {
 									payload: {
-										error: err || undefined
-									}
+										error: err || undefined,
+									},
 								}));
 							}
 						});
@@ -471,40 +451,40 @@ module.exports = function(configure) {
 					if (!err) {
 						results.map(r => {
 							this.push(r);
-						})
+						});
 					}
 					duration += lastDuration;
 					lastAvg = (Date.now() - lastStartTime) / batchCnt;
 					lastStartTime = Date.now();
-					console.timeEnd("es_emit");
-					console.log(lastAvg)
+					logger.timeEnd('es_emit');
+					logger.info(lastAvg);
 					done && done(err);
 				});
-			}
+			};
 			let send = ls.through({
-					highWaterMark: 16
-				}, function(input, done) {
-					if (input.payload && input.payload.length) {
-						toSend.push(input);
-						if (toSend.length >= parallelLimit) {
-							sendFunc.call(this, done);
-						} else {
-							done();
-						}
+				highWaterMark: 16,
+			}, function (input, done) {
+				if (input.payload && input.payload.length) {
+					toSend.push(input);
+					if (toSend.length >= parallelLimit) {
+						sendFunc.call(this, done);
 					} else {
 						done();
 					}
-				},
-				function flush(callback) {
-					settings.debug && console.log("Elasticsearch Upload: On Flush");
-					if (toSend.length) {
-						sendFunc.call(this, callback);
-					} else {
-						callback();
-					}
-				});
+				} else {
+					done();
+				}
+			},
+			function flush (callback) {
+				logger.debug('Elasticsearch Upload: On Flush');
+				if (toSend.length) {
+					sendFunc.call(this, callback);
+				} else {
+					callback();
+				}
+			});
 
-			let bufferOpts = typeof(settings.buffer) === "object" ? settings.buffer : {
+			let bufferOpts = typeof (settings.buffer) === 'object' ? settings.buffer : {
 				records: settings.buffer || undefined
 			};
 			let batchStream = ls.batch({
@@ -513,13 +493,12 @@ module.exports = function(configure) {
 				time: bufferOpts.time || {
 					milliseconds: 200
 				},
-				field: "payload"
+				field: 'payload'
 			});
 			return ls.pipeline(format, batchStream, send);
 		},
 
-
-		getIds: function(queries, client, done) {
+		getIds: function (queries, client, done) {
 			// Run any deletes and finish
 			var allIds = [];
 			async.eachSeries(queries, (data, callback) => {
@@ -527,8 +506,8 @@ module.exports = function(configure) {
 					index: data.index,
 					type: data.type,
 					query: data.query,
-					source: ["_id"],
-					scroll: "15s",
+					source: ['_id'],
+					scroll: '15s',
 				}, {
 					client: client
 				}, (err, ids) => {
@@ -536,27 +515,26 @@ module.exports = function(configure) {
 						callback(err);
 						return;
 					}
-					//console.log(ids)
 					allIds = allIds.concat(ids.items.map(id => id._id));
 					callback();
 				});
 
 			}, (err) => {
 				if (err) {
-					console.log(err)
+					logger.error(err);
 					done(err);
 				} else {
 					done(null, allIds);
 				}
-			})
+			});
 		},
-		query: function(data, settings, callback) {
+		query: function (data, settings, callback) {
 			if (!callback) {
 				callback = settings;
 				settings = {};
 			}
 
-			let connection = settings.connection || settings
+			let connection = settings.connection || settings;
 			var client = getClient(connection);
 
 			var results = {
@@ -569,26 +547,26 @@ module.exports = function(configure) {
 			var max = data.max != undefined ? data.max : 100000;
 			var source = data.source;
 			var transforms = {
-				full: function(item) {
+				full: function (item) {
 					return item;
 				},
-				source: function(item) {
+				source: function (item) {
 					return item._source;
 				}
-			}
+			};
 			var transform;
 
-			if (typeof data.return == "function") {
+			if (typeof data.return == 'function') {
 				transform = data.return;
 			} else {
-				transform = transforms[data.return || "full"] || transforms.full;
+				transform = transforms[data.return || 'full'] || transforms.full;
 			}
 
 			var scroll = data.scroll;
 
-			function getUntilDone(err, data) {
+			function getUntilDone (err, data) {
 				if (err) {
-					console.log(err);
+					logger.error(err);
 					callback(err);
 					return;
 				}
@@ -603,36 +581,35 @@ module.exports = function(configure) {
 				info.hits.forEach(item => {
 					results.items.push(transform(item));
 				});
-				delete info.hits
+				delete info.hits;
 
-				results.total = info.total
-				results.scrolls.push(info)
+				results.total = info.total;
+				results.scrolls.push(info);
 
 				delete results.scrollid;
 
 				if (info.qty > 0 && info.total !== results.qty) {
-					results.scrollid = data._scroll_id
+					results.scrollid = data._scroll_id;
 				}
 
 				if (scroll && info.total !== results.qty && max > results.qty && results.scrollid) {
 					client.scroll({
 						scrollId: data._scroll_id,
 						scroll: scroll
-					}, getUntilDone)
+					}, getUntilDone);
 				} else {
-					//console.log(JSON.stringify(results, null, 2))
 					callback(null, results);
-				};
+				}
 			}
 
 			if (data.scrollid) {
-				configure.debug && console.log("Starting As Scroll");
+				logger.debug('Starting As Scroll');
 				client.scroll({
 					scrollId: data.scrollid,
 					scroll: scroll
 				}, getUntilDone);
 			} else {
-				configure.debug && console.log("Starting As Query")
+				logger.debug('Starting As Query');
 				var index = data.index;
 				var type = data.type;
 				var query = data.query;
@@ -642,7 +619,7 @@ module.exports = function(configure) {
 				// From doesn't seem to work properly.  It appears to be ignored
 				var from = data.from || 0;
 
-				configure.debug && console.log(JSON.stringify({
+				logger.debug(JSON.stringify({
 					index: index,
 					type: type,
 					body: {
@@ -673,8 +650,8 @@ module.exports = function(configure) {
 				}, getUntilDone);
 			}
 		},
-		get: function(data, settings, callback) {
-			if (typeof settings === "function") {
+		get: function (data, settings, callback) {
+			if (typeof settings === 'function') {
 				callback = settings;
 				settings = {};
 			}
@@ -682,17 +659,19 @@ module.exports = function(configure) {
 			let client = getClient(settings);
 
 			return new Promise((resolve, reject) => {
-				client.get(data, function(err, data) {
+				client.get(data, function (err, data) {
 					if (callback) {
 						callback(err, data);
 					}
 					if (err) {
 						reject(err);
 					} else {
-						resolve(data)
+						resolve(data);
 					}
-				})
+				});
 			});
 		}
-	}
+	};
+
+	return self;
 };
