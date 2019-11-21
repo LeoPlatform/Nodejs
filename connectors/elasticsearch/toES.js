@@ -462,27 +462,27 @@ module.exports = function (configure) {
 				});
 			};
 			let send = ls.through({
-				highWaterMark: 16,
-			}, function (input, done) {
-				if (input.payload && input.payload.length) {
-					toSend.push(input);
-					if (toSend.length >= parallelLimit) {
-						sendFunc.call(this, done);
+					highWaterMark: 16,
+				}, function (input, done) {
+					if (input.payload && input.payload.length) {
+						toSend.push(input);
+						if (toSend.length >= parallelLimit) {
+							sendFunc.call(this, done);
+						} else {
+							done();
+						}
 					} else {
 						done();
 					}
-				} else {
-					done();
-				}
-			},
-			function flush (callback) {
-				logger.debug('Elasticsearch Upload: On Flush');
-				if (toSend.length) {
-					sendFunc.call(this, callback);
-				} else {
-					callback();
-				}
-			});
+				},
+				function flush (callback) {
+					logger.debug('Elasticsearch Upload: On Flush');
+					if (toSend.length) {
+						sendFunc.call(this, callback);
+					} else {
+						callback();
+					}
+				});
 
 			let bufferOpts = typeof (settings.buffer) === 'object' ? settings.buffer : {
 				records: settings.buffer || undefined
@@ -534,35 +534,28 @@ module.exports = function (configure) {
 				settings = {};
 			}
 
-			let connection = settings.connection || settings;
-			var client = getClient(connection);
-
-			var results = {
-				took: 0,
-				qty: 0,
+			const client = getClient(settings.connection || settings);
+			const results = {
 				items: [],
-				scrolls: []
+				qty: 0,
+				scrolls: [],
+				took: 0,
 			};
 
-			var max = data.max != undefined ? data.max : 100000;
-			var source = data.source;
-			var transforms = {
-				full: function (item) {
-					return item;
-				},
-				source: function (item) {
-					return item._source;
-				}
+			const max = (data.max >= 0) ? data.max : 100000;
+			let transforms = {
+				full: (item) => item,
+				source: (item) => item._source,
 			};
-			var transform;
 
-			if (typeof data.return == 'function') {
+			let transform;
+			if (typeof data.return === 'function') {
 				transform = data.return;
 			} else {
 				transform = transforms[data.return || 'full'] || transforms.full;
 			}
 
-			var scroll = data.scroll;
+			let scroll = data.scroll;
 
 			function getUntilDone (err, data) {
 				if (err) {
@@ -573,7 +566,7 @@ module.exports = function (configure) {
 				if (data.aggregations) {
 					results.aggregations = data.aggregations;
 				}
-				var info = data.hits;
+				let info = data.hits;
 				info.qty = info.hits.length;
 				results.qty += info.qty;
 				results.took += data.took;
@@ -594,8 +587,8 @@ module.exports = function (configure) {
 
 				if (scroll && info.total !== results.qty && max > results.qty && results.scrollid) {
 					client.scroll({
+						scroll,
 						scrollId: data._scroll_id,
-						scroll: scroll
 					}, getUntilDone);
 				} else {
 					callback(null, results);
@@ -605,49 +598,27 @@ module.exports = function (configure) {
 			if (data.scrollid) {
 				logger.debug('Starting As Scroll');
 				client.scroll({
+					scroll,
 					scrollId: data.scrollid,
-					scroll: scroll
 				}, getUntilDone);
 			} else {
 				logger.debug('Starting As Query');
-				var index = data.index;
-				var type = data.type;
-				var query = data.query;
-				var sort = data.sort;
-				var size = Math.min(max, data.size != undefined ? data.size : 10000);
-
-				// From doesn't seem to work properly.  It appears to be ignored
-				var from = data.from || 0;
-
-				logger.debug(JSON.stringify({
-					index: index,
-					type: type,
+				const searchObj = {
 					body: {
-						query: query,
-						sort: sort,
-						from: from,
-						size: size,
+						_source: data.source,
 						aggs: data.aggs,
-						_source: source,
+						from: data.from || 0, // From doesn't seem to work properly.  It appears to be ignored
+						query: data.query,
+						size: Math.min(max, data.size >= 0 ? data.size : 10000),
+						sort: data.sort,
 						track_total_hits: data.track_total_hits,
 					},
-					scroll: scroll
-				}, null, 2));
-
-				client.search({
-					index: index,
-					type: type,
-					body: {
-						query: query,
-						sort: sort,
-						from: from,
-						size: size,
-						aggs: data.aggs,
-						_source: source,
-						track_total_hits: data.track_total_hits,
-					},
-					scroll: scroll
-				}, getUntilDone);
+					index: data.index,
+					scroll,
+					type: data.type,
+				};
+				logger.debug(JSON.stringify(searchObj, null, 2));
+				client.search(searchObj, getUntilDone);
 			}
 		},
 		get: function (data, settings, callback) {
@@ -662,15 +633,14 @@ module.exports = function (configure) {
 				client.get(data, function (err, data) {
 					if (callback) {
 						callback(err, data);
-					}
-					if (err) {
+					} else if (err) {
 						reject(err);
-					} else {
-						resolve(data);
 					}
+
+					resolve(data);
 				});
 			});
-		}
+		},
 	};
 
 	return self;
