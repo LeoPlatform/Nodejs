@@ -70,12 +70,16 @@ module.exports = function(configOverride, botHandler) {
 				stack: err.stack
 			}, {}, function() {
 				console.log("Cron Lock removed");
-				theCallback(null, "Application Error");
+				if (theCallback) {
+					theCallback(null, "Application Error");
+				}
 			});
 		} else {
 			cron.removeLock(config.name, theContext.awsRequestId, function() {
 				console.log("Lock removed");
-				theCallback(null, "Application Error");
+				if (theCallback) {
+					theCallback(null, "Application Error");
+				}
 			});
 		}
 
