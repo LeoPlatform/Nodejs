@@ -8,7 +8,8 @@
 		"test": "test"
 	},
 	"scripts": {
-		"test": "mocha --recursive -w"
+		"test": "mocha --recursive -w",
+		"jest": "jest"
 	},
 	"dependencies": {
 		"async": "2.6.2",
@@ -32,6 +33,7 @@
 		"uuid": "3.3.2"
 	},
 	"devDependencies": {
+		"jest": "^25.1.0",
 		"mocha": "6.1.4"
 	},
 	"peerDependencies": {

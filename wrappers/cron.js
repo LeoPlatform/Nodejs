@@ -1,7 +1,7 @@
 "use strict";
 
 
-let cachedHandler;
+// let cachedHandler;
 module.exports = function(configOverride, botHandler) {
 	process.resources = process.env.Resources && JSON.parse(process.env.Resources) || {};
 
@@ -25,8 +25,8 @@ module.exports = function(configOverride, botHandler) {
 	const botId = config.name;
 	const settings = config.cron && config.cron.settings || {};
 
-	const moment = require("moment");
-	let decrypted = false;
+	// const moment = require("moment");
+	// let decrypted = false;
 	// let botHandler = function(event, context, callback) {
 	// 	let tasks = [];
 	// 	Object.keys(process.env).forEach(function(key) {
@@ -151,8 +151,8 @@ module.exports = function(configOverride, botHandler) {
 			let cronkey = event.__cron.id + ":" + event.__cron.iid + ":" + event.__cron.ts + ":" + context.awsRequestId;
 			console.log("[LEOCRON]:check:" + cronkey);
 			logger.log("Locking on  __cron", event.__cron);
-			let startTime = moment.now();
-			cron.checkLock(event.__cron, context.awsRequestId, context.getRemainingTimeInMillis(), function(err, data) {
+			// let startTime = moment.now();
+			cron.checkLock(event.__cron, context.awsRequestId, context.getRemainingTimeInMillis(), function(err/*, data*/) {
 				if (err) {
 					if (err && err.code == "ConditionalCheckFailedException") {
 						logger.log("LOCK EXISTS, cannot run");
@@ -167,7 +167,7 @@ module.exports = function(configOverride, botHandler) {
 						fill(event || {}, config, dynamodb.docClient).then(filledEvent => {
 							let promise = botHandler(filledEvent, context, function(err, data) {
 								console.log("[LEOCRON]:complete:" + cronkey);
-								cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
+								cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2/*, data2*/) {
 									if (err || err2) {
 										logger.log(err || err2);
 									}
@@ -177,7 +177,7 @@ module.exports = function(configOverride, botHandler) {
 							if (promise && typeof promise.then == "function" && botHandler.length < 3) {
 								promise.then(data => {
 									console.log("[LEOCRON]:complete:" + cronkey);
-									cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
+									cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2/*, data2*/) {
 										if (err || err2) {
 											logger.log(err || err2);
 										}
@@ -214,7 +214,7 @@ module.exports = function(configOverride, botHandler) {
 		} else {
 			console.log("Locking Settings");
 
-			cron.createLock(config.name, context.awsRequestId, context.getRemainingTimeInMillis() + 100, function(err, data) {
+			cron.createLock(config.name, context.awsRequestId, context.getRemainingTimeInMillis() + 100, function(err/*, data*/) {
 				if (err) {
 					logger.log("LOCK EXISTS, cannot run");
 					callback(null, "already running");
@@ -224,7 +224,7 @@ module.exports = function(configOverride, botHandler) {
 						fill(event || {}, config, dynamodb.docClient).then(filledEvent => {
 							botHandler(filledEvent, context, function(err, data) {
 								logger.log("removing lock", config.name, context.awsRequestId);
-								cron.removeLock(config.name, context.awsRequestId, function(err2, data2) {
+								cron.removeLock(config.name, context.awsRequestId, function(err2/*, data2*/) {
 									if (err || err2) {
 										logger.log(err || err2);
 									}
@@ -247,5 +247,5 @@ module.exports = function(configOverride, botHandler) {
 				}
 			});
 		}
-	}
-}
+	};
+};
