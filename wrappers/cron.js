@@ -7,7 +7,7 @@ module.exports = function(configOverride, botHandler) {
 
 	let config = require("../leoConfigure.js");
 	//const async = require("async");
-	const logger = require("../lib/logger")("cron.wrapper");
+	const logger = require('leo-logger')('cron.wrapper');
 	const leosdk = require("../index.js");
 	//const kms = require("../lib/kms")(leosdk.configuration);
 	const refUtil = require("../lib/reference.js");
@@ -70,12 +70,16 @@ module.exports = function(configOverride, botHandler) {
 				stack: err.stack
 			}, {}, function() {
 				console.log("Cron Lock removed");
-				theCallback(null, "Application Error");
+				if (theCallback) {
+					theCallback(null, "Application Error");
+				}
 			});
 		} else {
 			cron.removeLock(config.name, theContext.awsRequestId, function() {
 				console.log("Lock removed");
-				theCallback(null, "Application Error");
+				if (theCallback) {
+					theCallback(null, "Application Error");
+				}
 			});
 		}
 

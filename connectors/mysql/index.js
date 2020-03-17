@@ -1,7 +1,7 @@
 "use strict";
 
 const mysql = require("mysql");
-const logger = require("../../lib/logger")("connector.mysql");
+const logger = require('leo-logger')('connector.mysql');
 const async = require("async");
 
 const leo = require("../../index.js");
