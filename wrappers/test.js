@@ -6,7 +6,7 @@ module.exports = function(configOverride, botHandler) {
 	process.resources = process.env.Resources && JSON.parse(process.env.Resources) || {};
 
 	let config = require("../leoConfigure.js");
-	const logger = require("../lib/logger")("test.wrapper");
+	const logger = require('leo-logger')('test.wrapper');
 	const leosdk = require("../index.js");
 	const refUtil = require("../lib/reference.js");
 	const assert = require("../lib/assert.js");
