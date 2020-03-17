@@ -7,7 +7,7 @@ module.exports = function(configOverride, botHandler) {
 
 	let config = require("../leoConfigure.js");
 	//const async = require("async");
-	const logger = require("../lib/logger")("cron.wrapper");
+	const logger = require('leo-logger')('cron.wrapper');
 	const leosdk = require("../index.js");
 	//const kms = require("../lib/kms")(leosdk.configuration);
 	const refUtil = require("../lib/reference.js");
