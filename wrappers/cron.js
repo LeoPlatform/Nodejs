@@ -213,7 +213,7 @@ module.exports = function(configOverride, botHandler) {
 			});
 		} else {
 			console.log("Locking Settings");
-
+			debugger;
 			cron.createLock(config.name, context.awsRequestId, context.getRemainingTimeInMillis() + 100, function(err/*, data*/) {
 				if (err) {
 					logger.log("LOCK EXISTS, cannot run");

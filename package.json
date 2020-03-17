@@ -9,7 +9,7 @@
 	},
 	"scripts": {
 		"test": "mocha --recursive -w",
-		"jest": "jest"
+		"jest": "LEO_LOGGER=/.*/a jest"
 	},
 	"dependencies": {
 		"async": "2.6.2",
@@ -33,6 +33,10 @@
 		"uuid": "3.3.2"
 	},
 	"devDependencies": {
+		"@shelf/jest-dynamodb": "^1.7.0",
+		"aws-sdk": "^2.636.0",
+		"aws-sdk-mock": "^5.0.0",
+		"dynamodb-local": "0.0.31",
 		"jest": "^25.1.0",
 		"mocha": "6.1.4"
 	},
