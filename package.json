@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "5.0.4",
+	"version": "5.0.5",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -18,7 +18,7 @@
 		"fast-csv": "2.5.0",
 		"flush-write-stream": "2.0.0",
 		"ini": "1.3.5",
-		"leo-aws": "2.0.0",
+		"leo-aws": "2.0.1",
 		"leo-config": "1.1.0",
 		"leo-logger": "1.0.1",
 		"leo-streams": "2.0.0",
