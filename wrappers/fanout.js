@@ -2,6 +2,7 @@ const aws = require("aws-sdk");
 const async = require("async");
 const eventIdFormat = "[z/]YYYY/MM/DD/HH/mm/";
 const moment = require("moment");
+const logger = require("leo-logger")("======= [ leo-fanout ] =======");
 /**
  * @param {function(BotEvent, LambdaContext, Callback)} handler function to the code handler
  * @param {function(QueueEvent): any} eventPartition function to return the value representing what partition for the event 
@@ -16,7 +17,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 		allowCheckpoint: false
 	}, opts);
 
-	//console.log("Fanout start");
+	//logger.log("Fanout start");
 	eventPartition = eventPartition || (event => event.eid);
 	let leo = require("../index.js");
 	let leoBotCheckpoint = leo.bot.checkpoint;
@@ -38,14 +39,16 @@ module.exports = (handler, eventPartition, opts = {}) => {
 	// Override reading from leo to only read up to the max event id send from the master.
 	leo.streams.fromLeo = leo.read = (ID, queue, opts = {}) => {
 		opts.maxOverride = min(opts.maxOverride, cronData.maxeid);
-		console.log(`Reading Queue Wrapper. Bot: ${ID}, IID: ${cronData.iid}, Queue: ${queue}, Max: ${opts.maxOverride}`);
+		logger.log(`Reading Queue Wrapper. Bot: ${ID}, IID: ${cronData.iid}, Queue: ${queue}, Max: ${opts.maxOverride}`);
 		let reader = leoStreamsFromLeo.call(leo.streams, ID, queue, opts)
 		let stream = leo.streams.pipe(reader, leo.streams.through((obj, done) => {
 			let partition = Math.abs(hashCode(eventPartition(obj))) % cronData.icount;
-			//console.log(partition, cronData.iid, obj.eid)
+			logger.log("[partition]", partition, "[iid]", cronData.iid, "[eid]", obj.eid, "[icount]", cronData.icount)
 			if (partition == cronData.iid) {
+				logger.log("------ PROCESSING: matched on partition ------")
 				done(null, obj);
 			} else {
+				logger.log("------ NOT PROCESSING: no match on partition ------")
 				done();
 			}
 		}));
@@ -78,7 +81,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			botData[event].source_timestamp = params.source_timestamp;
 			botData[event].started_timestamp = params.started_timestamp;
 			botData[event].ended_timestamp = params.ended_timestamp;
-			console.log(`Checkpoint Wrapper. Bot: ${id}:${cronData.iid}, Queue: ${event}, data: ${JSON.stringify(params)}`);
+			logger.log(`Checkpoint Wrapper. Bot: ${id}:${cronData.iid}, Queue: ${event}, data: ${JSON.stringify(params)}`);
 			done();
 		}
 	}
@@ -86,26 +89,26 @@ module.exports = (handler, eventPartition, opts = {}) => {
 	// Override checking for bot lock.  This has already been done in the master
 	leo.bot.checkLock = function(cron, runid, remainingTime, callback) {
 		fixInstanceForLocal(cron);
-		console.log("Fanout Check Lock", cron.iid);
+		logger.log("Fanout Check Lock", cron.iid);
 		if (cron.iid == 0) {
 			leoBotCheckLock(cron, runid, remainingTime, callback);
 		} else {
-			console.log(`Worker Instance CheckLock: ${cron.iid}`);
+			logger.log(`Worker Instance CheckLock: ${cron.iid}`);
 			callback(null, {});
 		}
 	};
 	leo.bot.reportComplete = function(cron, runid, status, log, opts, callback) {
-		console.log("Fanout Report Complete", cron.iid);
+		logger.log("Fanout Report Complete", cron.iid);
 		if (cron.iid == 0) {
 			leoBotReportComplete(cron, runid, status, log, opts, callback);
 		} else {
-			console.log(`Worker Instance ReportComplete: ${cron.iid}`);
+			logger.log(`Worker Instance ReportComplete: ${cron.iid}`);
 			callback(null, {});
 		}
 	};
 
 
-	//console.log("Fanout Return", process.env.FANOUT_iid, process.env.FANOUT_icount, process.env.FANOUT_maxeid);
+	logger.log("Fanout Return", process.env.FANOUT_iid, process.env.FANOUT_icount, process.env.FANOUT_maxeid);
 	return (event, context, callback) => {
 
 		cronData = event.__cron || {};
@@ -118,12 +121,12 @@ module.exports = (handler, eventPartition, opts = {}) => {
 		// }
 		fixInstanceForLocal(cronData);
 
-		console.log("Fanout Handler", cronData.iid);
+		logger.log("Fanout Handler", cronData.iid);
 		checkpoints = {};
 
 		// If this is a worker then report back the checkpoints or error
 		if (cronData.iid && cronData.icount) {
-			console.log("Fanout Worker", cronData.iid);
+			logger.log("Fanout Worker", cronData.iid);
 			let context_getRemainingTimeInMillis = context.getRemainingTimeInMillis;
 			context.getRemainingTimeInMillis = () => {
 				return context_getRemainingTimeInMillis.call(context) - (1000 * 3);
@@ -135,7 +138,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 					data: data,
 					iid: cronData.iid
 				};
-				console.log("Worker sending data back", cronData.iid);
+				logger.log("Worker sending data back", cronData.iid);
 				if (process.send) {
 					process.send(response);
 				}
@@ -145,7 +148,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			let timestamp = moment.utc();
 			cronData.maxeid = timestamp.format(eventIdFormat) + timestamp.valueOf();
 			cronData.iid = 0;
-			console.log("Fanout Master", cronData.iid);
+			logger.log("Fanout Master", cronData.iid);
 			// If this is the master start the workers needed Workers
 			let instances = opts.instances;
 			if (typeof instances === "function") {
@@ -156,9 +159,10 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			let workers = [
 				new Promise(resolve => {
 					setTimeout(() => {
-						console.log(`Invoking 1/${instances}`);
+						logger.log(`Invoking 1/${instances}`);
 						return handler(event, context, (err, data) => {
-							console.log(`Done with instance 1/${instances}`);
+							
+							logger.log(`Done with master instance 1/${instances}`);
 							resolve({
 								error: err,
 								checkpoints: checkpoints,
@@ -175,9 +179,33 @@ module.exports = (handler, eventPartition, opts = {}) => {
 
 			// Wait for all workers to return and figure out what checkpoint to persist
 			Promise.all(workers).then(responses => {
-				let checkpoints = reduceCheckpoints(responses).map(data => (done) => leoBotCheckpoint(data.id, data.event, data.params, done));
-				async.parallelLimit(checkpoints, 5, callback);
-			}).catch(callback)
+				let checkpoints = reduceCheckpoints(responses).map((data) => {
+					logger.log("[data]", data)
+					return Object.keys(data).map((botId) => {
+						logger.log("[botId]", botId)
+						return Object.keys(data[botId].read || {}).map((queue) => {
+							logger.log("[queue]", queue)
+							let params = data[botId].read[queue]
+							logger.log("[params]", params)
+							return (done) => {
+								logger.log("---------------------- Executing checkpoint ---------------", params)
+								leoBotCheckpoint(botId, queue, params, done)
+							}
+						})
+					})
+				});
+				logger.log("[promise all checkpoints]", checkpoints)
+				if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
+					console.log("---- calling checkpoints ----")
+					async.parallelLimit(checkpoints[0][0], 5, callback);
+				} else {
+					console.log("---- no events processed ----")
+					callback(null, true)
+				}
+			}).catch((err) => { 
+				console.log("[err]", err)
+				return callback(err)
+			})
 		}
 	}
 }
@@ -190,7 +218,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
  * @param {function(BotEvent, LambdaContext, Callback)} handler
  */
 function invokeSelf(event, iid, count, context, handler) {
-	console.log(`Invoking ${iid+1}/${count}`);
+	logger.log(`Invoking ${iid+1}/${count}`);
 	let newEvent = JSON.parse(JSON.stringify(event));
 	newEvent.__cron.iid = iid;
 	newEvent.__cron.icount = count;
@@ -199,12 +227,15 @@ function invokeSelf(event, iid, count, context, handler) {
 			let lambdaApi = new aws.Lambda({
 				region: process.env.AWS_DEFAULT_REGION
 			});
+			// logger.log("[lambda]", process.env.AWS_LAMBDA_FUNCTION_NAME)
 			lambdaApi.invoke({
 				FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
 				InvocationType: 'RequestResponse',
 				Payload: JSON.stringify(newEvent),
 				Qualifier: process.env.AWS_LAMBDA_FUNCTION_VERSION
 			}, (err, data) => {
+				logger.log("[lambda err]", err)
+				logger.log("[lambda data]", data)
 				if (!err && data.FunctionError) {
 					err = data.Payload;
 					data = undefined;
@@ -212,7 +243,7 @@ function invokeSelf(event, iid, count, context, handler) {
 					data = JSON.parse(data.Payload);
 				}
 
-				console.log(`Done with instance ${iid+1}/${count}`);
+				logger.log(`Done with Lambda instance ${iid+1}/${count}`);
 				resolve(data);
 			})
 		} else {
@@ -231,11 +262,12 @@ function invokeSelf(event, iid, count, context, handler) {
 			});
 			let responseData = {};
 			worker.once("message", (response) => {
-				console.log(`Got Response with instance ${iid+1}/${count}`);
+				logger.log(`Got Response with instance ${iid+1}/${count}`);
 				responseData = response;
 			})
 			worker.once("exit", () => {
-				console.log(`Done with instance ${iid+1}/${count}`);
+				logger.log(`Done with child instance ${iid+1}/${count}`);
+				console.log("[responseData]", responseData)
 				resolve(responseData);
 			});
 		}
@@ -249,35 +281,54 @@ function invokeSelf(event, iid, count, context, handler) {
  */
 function reduceCheckpoints(responses) {
 	let checkpoints = responses.reduce((agg, curr) => {
-		if (curr.error) {
+		if (curr && curr.error) {
 			agg.errors.push(curr.error);
 		}
-		Object.keys(curr.checkpoints).map(botId => {
-			if (!(botId in agg.checkpoints)) {
-				agg.checkpoints[botId] = curr.checkpoints[botId];
-			} else {
-				let checkpointData = agg.checkpoints[botId].read;
-				Object.keys(curr.checkpoints[botId].read || {}).map(queue => {
-					if (!(queue in checkpointData)) {
-						checkpointData[queue] = curr.checkpoints[botId].read[queue];
-					} else {
-						let minCheckpoint = min(checkpointData[queue].checkpoint, curr.checkpoints[botId].read[queue].checkpoint);
-						if (minCheckpoint && minCheckpoint == curr.checkpoints[botId].read[queue].checkpoint) {
+		if(curr && curr.checkpoints) {
+			Object.keys(curr.checkpoints).map(botId => {
+				if (!(botId in agg.checkpoints)) {
+					agg.checkpoints[botId] = curr.checkpoints[botId];
+					Object.keys(curr.checkpoints[botId].read || {}).map(queue => {
+						agg.checkpoints[botId].read[queue].eid = curr.checkpoints[botId].read[queue].checkpoint
+					});
+				} else {
+					let checkpointData = agg.checkpoints[botId].read;
+					Object.keys(curr.checkpoints[botId].read || {}).map(queue => {
+						if (!(queue in checkpointData)) {
 							checkpointData[queue] = curr.checkpoints[botId].read[queue];
+							checkpointData.read[queue].eid = curr.checkpoints[botId].read[queue].checkpoint
+						} else {
+							let minCheckpoint = min(checkpointData[queue].checkpoint, curr.checkpoints[botId].read[queue].checkpoint);
+							if (minCheckpoint && minCheckpoint == curr.checkpoints[botId].read[queue].checkpoint) {
+								checkpointData[queue] = curr.checkpoints[botId].read[queue];
+								checkpointData[queue].eid = curr.checkpoints[botId].read[queue].checkpoint
+								agg.checkpoints[botId].read = checkpointData
+							}
 						}
-					}
-				});
-			}
-		})
+					});
+				}
+				
+			})
+		}
 		return agg;
 	}, {
 		errors: [],
 		checkpoints: {}
 	});
-	console.log(JSON.stringify(responses, null, 2));
-	console.log(JSON.stringify(checkpoints, null, 2))
-	//return Object.values(checkpoints);
-	return [];
+	logger.log("[responses]", JSON.stringify(responses, null, 2));
+	logger.log("[checkpoints]", JSON.stringify(checkpoints, null, 2))
+	if(checkpoints.errors && checkpoints.errors.length) {
+		throw new Error("errors from sub lambdas")
+	} else {
+		delete checkpoints.errors
+	}
+	let vals = Object.values(checkpoints)
+	
+	if(vals) {
+		return Object.values(vals)
+	} else {
+		return [];
+	}
 }
 
 /**
