@@ -40,15 +40,15 @@ module.exports = (handler, eventPartition, opts = {}) => {
 	leo.streams.fromLeo = leo.read = (ID, queue, opts = {}) => {
 		opts.maxOverride = min(opts.maxOverride, cronData.maxeid);
 		logger.log(`Reading Queue Wrapper. Bot: ${ID}, IID: ${cronData.iid}, Queue: ${queue}, Max: ${opts.maxOverride}`);
-		let reader = leoStreamsFromLeo.call(leo.streams, ID, queue, opts)
+		let reader = leoStreamsFromLeo.call(leo.streams, ID, queue, opts);
 		let stream = leo.streams.pipe(reader, leo.streams.through((obj, done) => {
 			let partition = Math.abs(hashCode(eventPartition(obj))) % cronData.icount;
-			logger.log("[partition]", partition, "[iid]", cronData.iid, "[eid]", obj.eid, "[icount]", cronData.icount)
+			logger.log("[partition]", partition, "[iid]", cronData.iid, "[eid]", obj.eid, "[icount]", cronData.icount);
 			if (partition == cronData.iid) {
-				logger.log("------ PROCESSING: matched on partition ------")
+				logger.log("------ PROCESSING: matched on partition ------");
 				done(null, obj);
 			} else {
-				logger.log("------ NOT PROCESSING: no match on partition ------")
+				logger.log("------ NOT PROCESSING: no match on partition ------");
 				done();
 			}
 		}));
@@ -83,7 +83,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			botData[event].ended_timestamp = params.ended_timestamp;
 			logger.log(`Checkpoint Wrapper. Bot: ${id}:${cronData.iid}, Queue: ${event}, data: ${JSON.stringify(params)}`);
 			done();
-		}
+		};
 	}
 
 	// Override checking for bot lock.  This has already been done in the master
@@ -130,7 +130,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			let context_getRemainingTimeInMillis = context.getRemainingTimeInMillis;
 			context.getRemainingTimeInMillis = () => {
 				return context_getRemainingTimeInMillis.call(context) - (1000 * 3);
-			}
+			};
 			return handler(event, context, (err, data) => {
 				let response = {
 					error: err,
@@ -159,17 +159,25 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			let workers = [
 				new Promise(resolve => {
 					setTimeout(() => {
-						logger.log(`Invoking 1/${instances}`);
-						return handler(event, context, (err, data) => {
-							
-							logger.log(`Done with master instance 1/${instances}`);
-							resolve({
-								error: err,
-								checkpoints: checkpoints,
-								data: data,
-								iid: 0
-							});
-						});
+						console.log(`Invoking 1/${instances}`);
+						let wasCalled = false; 
+						const myFunc = (err, data) => {
+							if (!wasCalled) {
+								wasCalled = true;
+								console.log(`Done with instance 1/${instances}`);
+								resolve({
+									error: err,
+									checkpoints: checkpoints,
+									data: data,
+									iid: 0
+								});
+							}
+						};
+						const myVar = handler(event, context, myFunc);
+						if (typeof myVar.then === 'function') {
+							myVar.then((data) => myFunc(null, data)).catch(err=> myFunc(err));
+						}
+						return myVar;
 					}, 200);
 				})
 			];
@@ -180,35 +188,35 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			// Wait for all workers to return and figure out what checkpoint to persist
 			Promise.all(workers).then(responses => {
 				let checkpoints = reduceCheckpoints(responses).map((data) => {
-					logger.log("[data]", data)
+					logger.log("[data]", data);
 					return Object.keys(data).map((botId) => {
-						logger.log("[botId]", botId)
+						logger.log("[botId]", botId);
 						return Object.keys(data[botId].read || {}).map((queue) => {
-							logger.log("[queue]", queue)
-							let params = data[botId].read[queue]
-							logger.log("[params]", params)
+							logger.log("[queue]", queue);
+							let params = data[botId].read[queue];
+							logger.log("[params]", params);
 							return (done) => {
-								logger.log("---------------------- Executing checkpoint ---------------", params)
-								leoBotCheckpoint(botId, queue, params, done)
-							}
-						})
-					})
+								logger.log("---------------------- Executing checkpoint ---------------", params);
+								leoBotCheckpoint(botId, queue, params, done);
+							};
+						});
+					});
 				});
-				logger.log("[promise all checkpoints]", checkpoints)
+				logger.log("[promise all checkpoints]", checkpoints);
 				if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
-					console.log("---- calling checkpoints ----")
+					console.log("---- calling checkpoints ----");
 					async.parallelLimit(checkpoints[0][0], 5, callback);
 				} else {
-					console.log("---- no events processed ----")
-					callback(null, true)
+					console.log("---- no events processed ----");
+					callback(null, true);
 				}
 			}).catch((err) => { 
-				console.log("[err]", err)
-				return callback(err)
-			})
+				console.log("[err]", err);
+				return callback(err);
+			});
 		}
-	}
-}
+	};
+};
 
 /**
  * @param {*} event The base event to send to the worker
@@ -217,7 +225,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
  * @param {*} context Lambda context object
  * @param {function(BotEvent, LambdaContext, Callback)} handler
  */
-function invokeSelf(event, iid, count, context, handler) {
+function invokeSelf(event, iid, count) {
 	logger.log(`Invoking ${iid+1}/${count}`);
 	let newEvent = JSON.parse(JSON.stringify(event));
 	newEvent.__cron.iid = iid;
@@ -234,8 +242,8 @@ function invokeSelf(event, iid, count, context, handler) {
 				Payload: JSON.stringify(newEvent),
 				Qualifier: process.env.AWS_LAMBDA_FUNCTION_VERSION
 			}, (err, data) => {
-				logger.log("[lambda err]", err)
-				logger.log("[lambda data]", data)
+				logger.log("[lambda err]", err);
+				logger.log("[lambda data]", data);
 				if (!err && data.FunctionError) {
 					err = data.Payload;
 					data = undefined;
@@ -245,7 +253,7 @@ function invokeSelf(event, iid, count, context, handler) {
 
 				logger.log(`Done with Lambda instance ${iid+1}/${count}`);
 				resolve(data);
-			})
+			});
 		} else {
 			// Fork process with event
 			let worker = require("child_process").fork(process.argv[1], process.argv.slice(2), {
@@ -264,10 +272,10 @@ function invokeSelf(event, iid, count, context, handler) {
 			worker.once("message", (response) => {
 				logger.log(`Got Response with instance ${iid+1}/${count}`);
 				responseData = response;
-			})
+			});
 			worker.once("exit", () => {
 				logger.log(`Done with child instance ${iid+1}/${count}`);
-				console.log("[responseData]", responseData)
+				console.log("[responseData]", responseData);
 				resolve(responseData);
 			});
 		}
@@ -289,26 +297,26 @@ function reduceCheckpoints(responses) {
 				if (!(botId in agg.checkpoints)) {
 					agg.checkpoints[botId] = curr.checkpoints[botId];
 					Object.keys(curr.checkpoints[botId].read || {}).map(queue => {
-						agg.checkpoints[botId].read[queue].eid = curr.checkpoints[botId].read[queue].checkpoint
+						agg.checkpoints[botId].read[queue].eid = curr.checkpoints[botId].read[queue].checkpoint;
 					});
 				} else {
 					let checkpointData = agg.checkpoints[botId].read;
 					Object.keys(curr.checkpoints[botId].read || {}).map(queue => {
 						if (!(queue in checkpointData)) {
 							checkpointData[queue] = curr.checkpoints[botId].read[queue];
-							checkpointData.read[queue].eid = curr.checkpoints[botId].read[queue].checkpoint
+							checkpointData.read[queue].eid = curr.checkpoints[botId].read[queue].checkpoint;
 						} else {
 							let minCheckpoint = min(checkpointData[queue].checkpoint, curr.checkpoints[botId].read[queue].checkpoint);
 							if (minCheckpoint && minCheckpoint == curr.checkpoints[botId].read[queue].checkpoint) {
 								checkpointData[queue] = curr.checkpoints[botId].read[queue];
-								checkpointData[queue].eid = curr.checkpoints[botId].read[queue].checkpoint
-								agg.checkpoints[botId].read = checkpointData
+								checkpointData[queue].eid = curr.checkpoints[botId].read[queue].checkpoint;
+								agg.checkpoints[botId].read = checkpointData;
 							}
 						}
 					});
 				}
 				
-			})
+			});
 		}
 		return agg;
 	}, {
@@ -316,16 +324,16 @@ function reduceCheckpoints(responses) {
 		checkpoints: {}
 	});
 	logger.log("[responses]", JSON.stringify(responses, null, 2));
-	logger.log("[checkpoints]", JSON.stringify(checkpoints, null, 2))
+	logger.log("[checkpoints]", JSON.stringify(checkpoints, null, 2));
 	if(checkpoints.errors && checkpoints.errors.length) {
-		throw new Error("errors from sub lambdas")
+		throw new Error("errors from sub lambdas");
 	} else {
-		delete checkpoints.errors
+		delete checkpoints.errors;
 	}
-	let vals = Object.values(checkpoints)
+	let vals = Object.values(checkpoints);
 	
 	if(vals) {
-		return Object.values(vals)
+		return Object.values(vals);
 	} else {
 		return [];
 	}
@@ -365,34 +373,4 @@ function min(...args) {
 		}
 	}
 	return current;
-}
-
-let numberRegex = /^\d+(?:\.\d*)?$/;
-let boolRegex = /^(?:false|true)$/i;
-let nullRegex = /^null$/;
-let undefinedRegex = /^undefined$/;
-
-function fixTypes(node) {
-	let type = typeof node;
-	if (Array.isArray(node)) {
-		for (let i = 0; i < node.length; i++) {
-			node[i] = fixTypes(node[i])
-		}
-	} else if (type == "object" && node !== null) {
-		Object.keys(node).map(key => {
-			node[key] = fixTypes(node[key]);
-		})
-	} else if (type == "string") {
-		if (numberRegex.test(node)) {
-			return parseFloat(node);
-		} else if (boolRegex.test(node)) {
-			return node.toLowerCase() == "true"
-		} else if (nullRegex.test(node)) {
-			return null;
-		} else if (undefinedRegex.test(node)) {
-			return undefined;
-		}
-	}
-
-	return node;
 }
