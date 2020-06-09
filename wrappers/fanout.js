@@ -113,12 +113,6 @@ module.exports = (handler, eventPartition, opts = {}) => {
 
 		cronData = event.__cron || {};
 
-		// // Get fanout data from process env if running locally
-		// if (process.env.FANOUT_iid) {
-		// 	cronData.iid = parseInt(process.env.FANOUT_iid);
-		// 	cronData.icount = parseInt(process.env.FANOUT_icount);
-		// 	cronData.maxeid = process.env.FANOUT_maxeid;
-		// }
 		fixInstanceForLocal(cronData);
 
 		logger.log("Fanout Handler", cronData.iid);
@@ -131,19 +125,28 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			context.getRemainingTimeInMillis = () => {
 				return context_getRemainingTimeInMillis.call(context) - (1000 * 3);
 			};
-			return handler(event, context, (err, data) => {
-				let response = {
-					error: err,
-					checkpoints: checkpoints,
-					data: data,
-					iid: cronData.iid
-				};
-				logger.log("Worker sending data back", cronData.iid);
-				if (process.send) {
-					process.send(response);
+			let wasCalled = false;
+			const handlerCallback = (err, data) => {
+				if (!wasCalled) {
+					wasCalled = true;
+					let response = {
+						error: err,
+						checkpoints: checkpoints,
+						data: data,
+						iid: cronData.iid
+					};
+					logger.log("Worker sending data back", cronData.iid);
+					if (process.send) {
+						process.send(response);
+					}
+					callback(null, response);
 				}
-				callback(null, response);
-			});
+			};
+			const handlerResponse = handler(event, context, handlerCallback);
+			if (typeof handlerResponse.then === 'function') {
+				handlerResponse.then(data => handlerCallback(null, data)).catch(err=> handlerCallback(err));
+			}
+			return handlerResponse;
 		} else {
 			let timestamp = moment.utc();
 			cronData.maxeid = timestamp.format(eventIdFormat) + timestamp.valueOf();
@@ -159,12 +162,12 @@ module.exports = (handler, eventPartition, opts = {}) => {
 			let workers = [
 				new Promise(resolve => {
 					setTimeout(() => {
-						console.log(`Invoking 1/${instances}`);
+						logger.log(`Invoking 1/${instances}`);
 						let wasCalled = false; 
-						const myFunc = (err, data) => {
+						const handlerCallback = (err, data) => {
 							if (!wasCalled) {
 								wasCalled = true;
-								console.log(`Done with instance 1/${instances}`);
+								logger.log(`Done with instance 1/${instances}`);
 								resolve({
 									error: err,
 									checkpoints: checkpoints,
@@ -173,11 +176,11 @@ module.exports = (handler, eventPartition, opts = {}) => {
 								});
 							}
 						};
-						const myVar = handler(event, context, myFunc);
-						if (typeof myVar.then === 'function') {
-							myVar.then((data) => myFunc(null, data)).catch(err=> myFunc(err));
+						const handlerResponse = handler(event, context, handlerCallback);
+						if (typeof handlerResponse.then === 'function') {
+							handlerResponse.then((data) => handlerCallback(null, data)).catch(err=> handlerCallback(err));
 						}
-						return myVar;
+						return handlerResponse;
 					}, 200);
 				})
 			];
@@ -225,7 +228,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
  * @param {*} context Lambda context object
  * @param {function(BotEvent, LambdaContext, Callback)} handler
  */
-function invokeSelf(event, iid, count) {
+function invokeSelf(event, iid, count, context, handler) {
 	logger.log(`Invoking ${iid+1}/${count}`);
 	let newEvent = JSON.parse(JSON.stringify(event));
 	newEvent.__cron.iid = iid;
