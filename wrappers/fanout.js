@@ -116,6 +116,8 @@ module.exports = (handler, eventPartition, opts = {}) => {
 		fixInstanceForLocal(cronData);
 
 		logger.log("Fanout Handler", cronData.iid);
+		logger.debug("Fanout Handler Event", JSON.stringify(event, null, 2));
+		logger.debug("Fanout Handler Context", JSON.stringify(context, null, 2));
 		checkpoints = {};
 
 		// If this is a worker then report back the checkpoints or error
@@ -136,6 +138,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 						iid: cronData.iid
 					};
 					logger.log("Worker sending data back", cronData.iid);
+					logger.debug("Worker sending back response", JSON.stringify(response, null, 2));
 					if (process.send) {
 						process.send(response);
 					}
@@ -185,11 +188,13 @@ module.exports = (handler, eventPartition, opts = {}) => {
 				})
 			];
 			for (let i = 1; i < instances; i++) {
-				workers.unshift(invokeSelf(event, i, instances, context, handler));
+				workers.unshift(invokeSelf(event, i, instances, context));
 			}
 
 			// Wait for all workers to return and figure out what checkpoint to persist
+			logger.debug(`Waiting on all Fanout workers: count ${workers.length}`);
 			Promise.all(workers).then(responses => {
+				logger.log("Return from all workers, reducing checkpoints");
 				let checkpoints = reduceCheckpoints(responses).map((data) => {
 					logger.log("[data]", data);
 					return Object.keys(data).map((botId) => {
@@ -207,14 +212,14 @@ module.exports = (handler, eventPartition, opts = {}) => {
 				});
 				logger.log("[promise all checkpoints]", checkpoints);
 				if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
-					console.log("---- calling checkpoints ----");
+					logger.log("---- calling checkpoints ----");
 					async.parallelLimit(checkpoints[0][0], 5, callback);
 				} else {
-					console.log("---- no events processed ----");
+					logger.log("---- no events processed ----");
 					callback(null, true);
 				}
 			}).catch((err) => { 
-				console.log("[err]", err);
+				logger.error("[err]", err);
 				return callback(err);
 			});
 		}
@@ -228,59 +233,85 @@ module.exports = (handler, eventPartition, opts = {}) => {
  * @param {*} context Lambda context object
  * @param {function(BotEvent, LambdaContext, Callback)} handler
  */
-function invokeSelf(event, iid, count, context, handler) {
-	logger.log(`Invoking ${iid+1}/${count}`);
-	let newEvent = JSON.parse(JSON.stringify(event));
-	newEvent.__cron.iid = iid;
-	newEvent.__cron.icount = count;
-	return new Promise(resolve => {
+function invokeSelf(event, iid, count, context) {
+	let newEvent = {
+		__cron: {
+			iid,
+			icount: count
+		}
+	};
+	try {
+		logger.log(`Invoking ${iid+1}/${count}`);
+		newEvent = Object.assign(JSON.parse(JSON.stringify(event)), newEvent);
+	} catch (err) {
+		return Promise.reject(err);
+	}
+	return new Promise((resolve, reject) => {
 		if (process.env.AWS_LAMBDA_FUNCTION_NAME) {
-			let lambdaApi = new aws.Lambda({
-				region: process.env.AWS_DEFAULT_REGION
-			});
-			// logger.log("[lambda]", process.env.AWS_LAMBDA_FUNCTION_NAME)
-			lambdaApi.invoke({
-				FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
-				InvocationType: 'RequestResponse',
-				Payload: JSON.stringify(newEvent),
-				Qualifier: process.env.AWS_LAMBDA_FUNCTION_VERSION
-			}, (err, data) => {
-				logger.log("[lambda err]", err);
-				logger.log("[lambda data]", data);
-				if (!err && data.FunctionError) {
-					err = data.Payload;
-					data = undefined;
-				} else if (!err && data.Payload != undefined && data.Payload != 'null') {
-					data = JSON.parse(data.Payload);
-				}
-
-				logger.log(`Done with Lambda instance ${iid+1}/${count}`);
-				resolve(data);
-			});
+			try {
+				let lambdaApi = new aws.Lambda({
+					region: process.env.AWS_DEFAULT_REGION,
+					httpOptions: {
+						timeout: context.getRemainingTimeInMillis() // Default: 120000 // Two minutes
+					}
+				});
+				logger.log("[lambda]", process.env.AWS_LAMBDA_FUNCTION_NAME);
+				const lambdaInvocation = lambdaApi.invoke({
+					FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
+					InvocationType: 'RequestResponse',
+					Payload: JSON.stringify(newEvent),
+					Qualifier: process.env.AWS_LAMBDA_FUNCTION_VERSION
+				}, (err, data) => {
+					logger.log(`Done with Lambda instance ${iid+1}/${count}`);
+					try {
+						logger.log("[lambda err]", err);
+						logger.log("[lambda data]", data);
+						if (err) {
+							return reject(err);
+						} else if (!err && data.FunctionError) {
+							err = data.Payload;
+							return reject(err);
+						} else if (!err && data.Payload != undefined && data.Payload != 'null') {
+							data = JSON.parse(data.Payload);
+						}
+		
+						resolve(data);
+					} catch (err) {
+						reject(err);
+					}
+				});
+				logger.debug("[lambda invoked invocation/payload]", lambdaInvocation, JSON.stringify(newEvent, null, 2));
+			} catch (err) {
+				reject(err);
+			}
 		} else {
+			try {
 			// Fork process with event
-			let worker = require("child_process").fork(process.argv[1], process.argv.slice(2), {
-				cwd: process.cwd(),
-				env: Object.assign({}, process.env, {
-					FANOUT_iid: iid,
-					FANOUT_icount: count,
-					FANOUT_maxeid: newEvent.__cron.maxeid,
-					runner_keep_cmd: true
-				}),
-				execArgv: process.execArgv,
+				let worker = require("child_process").fork(process.argv[1], process.argv.slice(2), {
+					cwd: process.cwd(),
+					env: Object.assign({}, process.env, {
+						FANOUT_iid: iid,
+						FANOUT_icount: count,
+						FANOUT_maxeid: newEvent.__cron.maxeid,
+						runner_keep_cmd: true
+					}),
+					execArgv: process.execArgv,
 				//stdio: [s, s, s, 'ipc'],
 				//shell: true
-			});
-			let responseData = {};
-			worker.once("message", (response) => {
-				logger.log(`Got Response with instance ${iid+1}/${count}`);
-				responseData = response;
-			});
-			worker.once("exit", () => {
-				logger.log(`Done with child instance ${iid+1}/${count}`);
-				console.log("[responseData]", responseData);
-				resolve(responseData);
-			});
+				});
+				let responseData = {};
+				worker.once("message", (response) => {
+					logger.log(`Got Response with instance ${iid+1}/${count}`);
+					responseData = response;
+				});
+				worker.once("exit", () => {
+					logger.log(`Done with child instance ${iid+1}/${count}`);
+					logger.log("[responseData]", responseData);
+					resolve(responseData);
+				});
+			} catch (err) {
+				reject(err);
+			}
 		}
 	});
 }
