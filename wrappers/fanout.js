@@ -146,7 +146,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 				}
 			};
 			const handlerResponse = handler(event, context, handlerCallback);
-			if (typeof handlerResponse.then === 'function') {
+			if (handlerResponse && typeof handlerResponse.then === 'function') {
 				handlerResponse.then(data => handlerCallback(null, data)).catch(err=> handlerCallback(err));
 			}
 			return handlerResponse;
@@ -180,7 +180,7 @@ module.exports = (handler, eventPartition, opts = {}) => {
 							}
 						};
 						const handlerResponse = handler(event, context, handlerCallback);
-						if (typeof handlerResponse.then === 'function') {
+						if (handlerResponse && typeof handlerResponse.then === 'function') {
 							handlerResponse.then((data) => handlerCallback(null, data)).catch(err=> handlerCallback(err));
 						}
 						return handlerResponse;
