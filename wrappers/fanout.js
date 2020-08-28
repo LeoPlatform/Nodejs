@@ -7,7 +7,7 @@ const logger = require("leo-logger")("======= [ leo-fanout ] =======");
  * @param {function(BotEvent, LambdaContext, Callback)} handler function to the code handler
  * @param {function(QueueEvent): any} eventPartition function to return the value representing what partition for the event 
  */
-module.exports = (handler, eventPartition, opts = {}) => {
+const fanoutFactory = (handler, eventPartition, opts = {}) => {
 	if (typeof eventPartition !== "function") {
 		opts = eventPartition || {};
 		eventPartition = opts.eventPartition;
@@ -322,6 +322,7 @@ function invokeSelf(event, iid, count, context) {
  * @returns {[checkpoint]} Consolidated checkpoint
  */
 function reduceCheckpoints(responses) {
+	logger.log("[responses]", JSON.stringify(responses, null, 2));
 	let checkpoints = responses.reduce((agg, curr) => {
 		if (curr && curr.error) {
 			agg.errors.push(curr.error);
@@ -357,7 +358,6 @@ function reduceCheckpoints(responses) {
 		errors: [],
 		checkpoints: {}
 	});
-	logger.log("[responses]", JSON.stringify(responses, null, 2));
 	logger.log("[checkpoints]", JSON.stringify(checkpoints, null, 2));
 	if(checkpoints.errors && checkpoints.errors.length) {
 		throw new Error("errors from sub lambdas");
@@ -408,3 +408,7 @@ function min(...args) {
 	}
 	return current;
 }
+
+fanoutFactory.reduceCheckpoints = reduceCheckpoints;
+
+module.exports = fanoutFactory;
