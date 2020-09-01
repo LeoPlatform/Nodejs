@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "5.0.12-beta.1",
+	"version": "5.0.12-beta.2",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -34,8 +34,7 @@
 	},
 	"devDependencies": {
 		"chai": "^4.2.0",
-		"mocha": "6.1.4",
-		"sinon": "^9.0.3"
+		"mocha": "6.1.4"
 	},
 	"peerDependencies": {
 		"aws-sdk": "^2.581.0"
