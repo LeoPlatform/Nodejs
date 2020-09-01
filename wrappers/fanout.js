@@ -193,38 +193,56 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 
 			// Wait for all workers to return and figure out what checkpoint to persist
 			logger.debug(`Waiting on all Fanout workers: count ${workers.length}`);
-			Promise.all(workers).then(responses => {
-				logger.log("Return from all workers, reducing checkpoints");
-				let checkpoints = reduceCheckpoints(responses).map((data) => {
-					logger.log("[data]", data);
-					return Object.keys(data).map((botId) => {
-						logger.log("[botId]", botId);
-						return Object.keys(data[botId].read || {}).map((queue) => {
-							logger.log("[queue]", queue);
-							let params = data[botId].read[queue];
-							logger.log("[params]", params);
-							return (done) => {
-								logger.log("---------------------- Executing checkpoint ---------------", params);
-								leoBotCheckpoint(botId, queue, params, done);
-							};
-						});
-					});
-				});
-				logger.log("[promise all checkpoints]", checkpoints);
-				if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
-					logger.log("---- calling checkpoints ----");
-					async.parallelLimit(checkpoints[0][0], 5, callback);
-				} else {
-					logger.log("---- no events processed ----");
-					callback(null, true);
-				}
-			}).catch((err) => { 
+			Promise.all(workers).then(callCheckpointOnResponses(leoBotCheckpoint, callback)).catch((err) => { 
 				logger.error("[err]", err);
 				return callback(err);
 			});
 		}
 	};
 };
+
+function callCheckpointOnResponses(leoBotCheckpoint, callback) { 
+	return function (responses) {
+		logger.log("Return from all workers, reducing checkpoints");
+		let checkpoints = reduceCheckpoints(responses).map((data) => {
+			logger.log("[data]", data);
+			return Object.keys(data).map((botId) => {
+				logger.log("[botId]", botId);
+				const checkpointTasks = [];
+				Object.keys(data[botId].read || {}).map((queue) => {
+					logger.log("[queue]", queue);
+					let params = data[botId].read[queue];
+					params.type = "read";
+					logger.log("[params]", params);
+					checkpointTasks.push((done) => {
+						logger.log(`---------------------- Executing read checkpoint against ${queue} ---------------`, params);
+						leoBotCheckpoint(botId, queue, params, done);
+					});
+				});
+				Object.keys(data[botId].write || {}).map((queue) => {
+					logger.log("[queue]", queue);
+					let params = data[botId].write[queue];
+					params.type = "write";
+					logger.log("[params]", params);
+					checkpointTasks.push((done) => {
+						logger.log(`---------------------- Executing write checkpoint against ${queue} ---------------`, params);
+						leoBotCheckpoint(botId, queue, params, done);
+					});
+				});
+				return checkpointTasks;
+			});
+		});
+		logger.log("[promise all checkpoints]", checkpoints);
+		if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
+			logger.log("---- calling checkpoints ----");
+			async.parallelLimit(checkpoints[0][0], 5, callback);
+		} else {
+			logger.log("---- no events processed ----");
+			callback(null, true);
+		}
+	};
+}
+
 
 /**
  * @param {*} event The base event to send to the worker
@@ -410,5 +428,6 @@ function min(...args) {
 }
 
 fanoutFactory.reduceCheckpoints = reduceCheckpoints;
+fanoutFactory.callCheckpointOnResponses = callCheckpointOnResponses;
 
 module.exports = fanoutFactory;

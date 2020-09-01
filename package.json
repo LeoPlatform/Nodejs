@@ -34,7 +34,8 @@
 	},
 	"devDependencies": {
 		"chai": "^4.2.0",
-		"mocha": "6.1.4"
+		"mocha": "6.1.4",
+		"sinon": "^9.0.3"
 	},
 	"peerDependencies": {
 		"aws-sdk": "^2.581.0"

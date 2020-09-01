@@ -8,6 +8,9 @@
 			"type": "node",
 			"request": "launch",
 			"name": "Unit Tests",
+			"env": {
+				"LEO_LOGGER": "/.*/a"
+			},
 			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
 			"args": [
 				"-u",
