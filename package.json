@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "5.0.12",
+	"version": "5.0.13",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -8,7 +8,8 @@
 		"test": "test"
 	},
 	"scripts": {
-		"test": "mocha --recursive -w"
+		"test": "mocha --recursive -w",
+		"utest": "mocha \"**/*.utest.js\""
 	},
 	"dependencies": {
 		"async": "2.6.2",
@@ -32,6 +33,7 @@
 		"uuid": "3.3.2"
 	},
 	"devDependencies": {
+		"chai": "^4.2.0",
 		"mocha": "6.1.4"
 	},
 	"peerDependencies": {

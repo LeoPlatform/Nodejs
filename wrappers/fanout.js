@@ -7,7 +7,7 @@ const logger = require("leo-logger")("======= [ leo-fanout ] =======");
  * @param {function(BotEvent, LambdaContext, Callback)} handler function to the code handler
  * @param {function(QueueEvent): any} eventPartition function to return the value representing what partition for the event 
  */
-module.exports = (handler, eventPartition, opts = {}) => {
+const fanoutFactory = (handler, eventPartition, opts = {}) => {
 	if (typeof eventPartition !== "function") {
 		opts = eventPartition || {};
 		eventPartition = opts.eventPartition;
@@ -193,38 +193,56 @@ module.exports = (handler, eventPartition, opts = {}) => {
 
 			// Wait for all workers to return and figure out what checkpoint to persist
 			logger.debug(`Waiting on all Fanout workers: count ${workers.length}`);
-			Promise.all(workers).then(responses => {
-				logger.log("Return from all workers, reducing checkpoints");
-				let checkpoints = reduceCheckpoints(responses).map((data) => {
-					logger.log("[data]", data);
-					return Object.keys(data).map((botId) => {
-						logger.log("[botId]", botId);
-						return Object.keys(data[botId].read || {}).map((queue) => {
-							logger.log("[queue]", queue);
-							let params = data[botId].read[queue];
-							logger.log("[params]", params);
-							return (done) => {
-								logger.log("---------------------- Executing checkpoint ---------------", params);
-								leoBotCheckpoint(botId, queue, params, done);
-							};
-						});
-					});
-				});
-				logger.log("[promise all checkpoints]", checkpoints);
-				if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
-					logger.log("---- calling checkpoints ----");
-					async.parallelLimit(checkpoints[0][0], 5, callback);
-				} else {
-					logger.log("---- no events processed ----");
-					callback(null, true);
-				}
-			}).catch((err) => { 
+			Promise.all(workers).then(callCheckpointOnResponses(leoBotCheckpoint, callback)).catch((err) => { 
 				logger.error("[err]", err);
 				return callback(err);
 			});
 		}
 	};
 };
+
+function callCheckpointOnResponses(leoBotCheckpoint, callback) { 
+	return function (responses) {
+		logger.log("Return from all workers, reducing checkpoints");
+		let checkpoints = reduceCheckpoints(responses).map((data) => {
+			logger.log("[data]", data);
+			return Object.keys(data).map((botId) => {
+				logger.log("[botId]", botId);
+				const checkpointTasks = [];
+				Object.keys(data[botId].read || {}).map((queue) => {
+					logger.log("[queue]", queue);
+					let params = data[botId].read[queue];
+					params.type = "read";
+					logger.log("[params]", params);
+					checkpointTasks.push((done) => {
+						logger.log(`---------------------- Executing read checkpoint against ${queue} ---------------`, params);
+						leoBotCheckpoint(botId, queue, params, done);
+					});
+				});
+				Object.keys(data[botId].write || {}).map((queue) => {
+					logger.log("[queue]", queue);
+					let params = data[botId].write[queue];
+					params.type = "write";
+					logger.log("[params]", params);
+					checkpointTasks.push((done) => {
+						logger.log(`---------------------- Executing write checkpoint against ${queue} ---------------`, params);
+						leoBotCheckpoint(botId, queue, params, done);
+					});
+				});
+				return checkpointTasks;
+			});
+		});
+		logger.log("[promise all checkpoints]", checkpoints);
+		if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
+			logger.log("---- calling checkpoints ----");
+			async.parallelLimit(checkpoints[0][0], 5, callback);
+		} else {
+			logger.log("---- no events processed ----");
+			callback(null, true);
+		}
+	};
+}
+
 
 /**
  * @param {*} event The base event to send to the worker
@@ -322,6 +340,7 @@ function invokeSelf(event, iid, count, context) {
  * @returns {[checkpoint]} Consolidated checkpoint
  */
 function reduceCheckpoints(responses) {
+	logger.log("[responses]", JSON.stringify(responses, null, 2));
 	let checkpoints = responses.reduce((agg, curr) => {
 		if (curr && curr.error) {
 			agg.errors.push(curr.error);
@@ -357,7 +376,6 @@ function reduceCheckpoints(responses) {
 		errors: [],
 		checkpoints: {}
 	});
-	logger.log("[responses]", JSON.stringify(responses, null, 2));
 	logger.log("[checkpoints]", JSON.stringify(checkpoints, null, 2));
 	if(checkpoints.errors && checkpoints.errors.length) {
 		throw new Error("errors from sub lambdas");
@@ -408,3 +426,8 @@ function min(...args) {
 	}
 	return current;
 }
+
+fanoutFactory.reduceCheckpoints = reduceCheckpoints;
+fanoutFactory.callCheckpointOnResponses = callCheckpointOnResponses;
+
+module.exports = fanoutFactory;
