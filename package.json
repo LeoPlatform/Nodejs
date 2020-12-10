@@ -18,7 +18,7 @@
 		"extend": "3.0.2",
 		"fast-csv": "2.5.0",
 		"flush-write-stream": "2.0.0",
-		"ini": "1.3.5",
+		"ini": "1.3.6",
 		"leo-aws": "2.0.1",
 		"leo-config": "1.1.0",
 		"leo-logger": "1.0.1",
