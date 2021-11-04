@@ -27,7 +27,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 	let cronData;
 	let checkpoints = {};
 
-	function fixInstanceForLocal(cronData) {
+	function fixInstanceForLocal (cronData) {
 		// Get fanout data from process env if running locally
 		if (process.env.FANOUT_iid) {
 			cronData.iid = parseInt(process.env.FANOUT_iid);
@@ -59,7 +59,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 
 	// Override bot checkpointing to report back to the master
 	if (opts.allowCheckpoint !== true) {
-		leo.bot.checkpoint = function(id, event, params, done) {
+		leo.bot.checkpoint = function (id, event, params, done) {
 			if (opts.allowCheckpoint) {
 				return leoBotCheckpoint(id, event, params, done);
 			}
@@ -87,7 +87,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 	}
 
 	// Override checking for bot lock.  This has already been done in the master
-	leo.bot.checkLock = function(cron, runid, remainingTime, callback) {
+	leo.bot.checkLock = function (cron, runid, remainingTime, callback) {
 		fixInstanceForLocal(cron);
 		logger.log("Fanout Check Lock", cron.iid);
 		if (cron.iid == 0) {
@@ -97,7 +97,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 			callback(null, {});
 		}
 	};
-	leo.bot.reportComplete = function(cron, runid, status, log, opts, callback) {
+	leo.bot.reportComplete = function (cron, runid, status, log, opts, callback) {
 		logger.log("Fanout Report Complete", cron.iid);
 		if (cron.iid == 0) {
 			leoBotReportComplete(cron, runid, status, log, opts, callback);
@@ -147,7 +147,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 			};
 			const handlerResponse = handler(event, context, handlerCallback);
 			if (handlerResponse && typeof handlerResponse.then === 'function') {
-				handlerResponse.then(data => handlerCallback(null, data)).catch(err=> handlerCallback(err));
+				handlerResponse.then(data => handlerCallback(null, data)).catch(err => handlerCallback(err));
 			}
 			return handlerResponse;
 		} else {
@@ -166,7 +166,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 				new Promise(resolve => {
 					setTimeout(() => {
 						logger.log(`Invoking 1/${instances}`);
-						let wasCalled = false; 
+						let wasCalled = false;
 						const handlerCallback = (err, data) => {
 							if (!wasCalled) {
 								wasCalled = true;
@@ -181,7 +181,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 						};
 						const handlerResponse = handler(event, context, handlerCallback);
 						if (handlerResponse && typeof handlerResponse.then === 'function') {
-							handlerResponse.then((data) => handlerCallback(null, data)).catch(err=> handlerCallback(err));
+							handlerResponse.then((data) => handlerCallback(null, data)).catch(err => handlerCallback(err));
 						}
 						return handlerResponse;
 					}, 200);
@@ -193,7 +193,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 
 			// Wait for all workers to return and figure out what checkpoint to persist
 			logger.debug(`Waiting on all Fanout workers: count ${workers.length}`);
-			Promise.all(workers).then(callCheckpointOnResponses(leoBotCheckpoint, callback)).catch((err) => { 
+			Promise.all(workers).then(callCheckpointOnResponses(leoBotCheckpoint, callback)).catch((err) => {
 				logger.error("[err]", err);
 				return callback(err);
 			});
@@ -201,7 +201,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 	};
 };
 
-function callCheckpointOnResponses(leoBotCheckpoint, callback) { 
+function callCheckpointOnResponses (leoBotCheckpoint, callback) {
 	return function (responses) {
 		logger.log("Return from all workers, reducing checkpoints");
 		let checkpoints = reduceCheckpoints(responses).map((data) => {
@@ -233,7 +233,7 @@ function callCheckpointOnResponses(leoBotCheckpoint, callback) {
 			});
 		});
 		logger.log("[promise all checkpoints]", checkpoints);
-		if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
+		if (checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
 			logger.log("---- calling checkpoints ----");
 			async.parallelLimit(checkpoints[0][0], 5, callback);
 		} else {
@@ -251,16 +251,13 @@ function callCheckpointOnResponses(leoBotCheckpoint, callback) {
  * @param {*} context Lambda context object
  * @param {function(BotEvent, LambdaContext, Callback)} handler
  */
-function invokeSelf(event, iid, count, context) {
-	let newEvent = {
-		__cron: {
-			iid,
-			icount: count
-		}
-	};
+function invokeSelf (event, iid, count, context) {
+	let newEvent;
 	try {
-		logger.log(`Invoking ${iid+1}/${count}`);
-		newEvent = Object.assign(JSON.parse(JSON.stringify(event)), newEvent);
+		logger.log(`Invoking ${iid + 1}/${count}`);
+		newEvent = JSON.parse(JSON.stringify(event));
+		newEvent.__cron.iid = iid;
+		newEvent.__cron.icount = count;
 	} catch (err) {
 		return Promise.reject(err);
 	}
@@ -280,7 +277,7 @@ function invokeSelf(event, iid, count, context) {
 					Payload: JSON.stringify(newEvent),
 					Qualifier: process.env.AWS_LAMBDA_FUNCTION_VERSION
 				}, (err, data) => {
-					logger.log(`Done with Lambda instance ${iid+1}/${count}`);
+					logger.log(`Done with Lambda instance ${iid + 1}/${count}`);
 					try {
 						logger.log("[lambda err]", err);
 						logger.log("[lambda data]", data);
@@ -292,7 +289,7 @@ function invokeSelf(event, iid, count, context) {
 						} else if (!err && data.Payload != undefined && data.Payload != 'null') {
 							data = JSON.parse(data.Payload);
 						}
-		
+
 						resolve(data);
 					} catch (err) {
 						reject(err);
@@ -304,7 +301,7 @@ function invokeSelf(event, iid, count, context) {
 			}
 		} else {
 			try {
-			// Fork process with event
+				// Fork process with event
 				let worker = require("child_process").fork(process.argv[1], process.argv.slice(2), {
 					cwd: process.cwd(),
 					env: Object.assign({}, process.env, {
@@ -314,16 +311,16 @@ function invokeSelf(event, iid, count, context) {
 						runner_keep_cmd: true
 					}),
 					execArgv: process.execArgv,
-				//stdio: [s, s, s, 'ipc'],
-				//shell: true
+					//stdio: [s, s, s, 'ipc'],
+					//shell: true
 				});
 				let responseData = {};
 				worker.once("message", (response) => {
-					logger.log(`Got Response with instance ${iid+1}/${count}`);
+					logger.log(`Got Response with instance ${iid + 1}/${count}`);
 					responseData = response;
 				});
 				worker.once("exit", () => {
-					logger.log(`Done with child instance ${iid+1}/${count}`);
+					logger.log(`Done with child instance ${iid + 1}/${count}`);
 					logger.log("[responseData]", responseData);
 					resolve(responseData);
 				});
@@ -339,13 +336,13 @@ function invokeSelf(event, iid, count, context) {
  * @param {[checkpoint]} responses Array of responses from the workers
  * @returns {[checkpoint]} Consolidated checkpoint
  */
-function reduceCheckpoints(responses) {
+function reduceCheckpoints (responses) {
 	logger.log("[responses]", JSON.stringify(responses, null, 2));
 	let checkpoints = responses.reduce((agg, curr) => {
 		if (curr && curr.error) {
 			agg.errors.push(curr.error);
 		}
-		if(curr && curr.checkpoints) {
+		if (curr && curr.checkpoints) {
 			Object.keys(curr.checkpoints).map(botId => {
 				if (!(botId in agg.checkpoints)) {
 					agg.checkpoints[botId] = curr.checkpoints[botId];
@@ -368,7 +365,7 @@ function reduceCheckpoints(responses) {
 						}
 					});
 				}
-				
+
 			});
 		}
 		return agg;
@@ -377,14 +374,14 @@ function reduceCheckpoints(responses) {
 		checkpoints: {}
 	});
 	logger.log("[checkpoints]", JSON.stringify(checkpoints, null, 2));
-	if(checkpoints.errors && checkpoints.errors.length) {
+	if (checkpoints.errors && checkpoints.errors.length) {
 		throw new Error("errors from sub lambdas");
 	} else {
 		delete checkpoints.errors;
 	}
 	let vals = Object.values(checkpoints);
-	
-	if(vals) {
+
+	if (vals) {
 		return Object.values(vals);
 	} else {
 		return [];
@@ -394,7 +391,7 @@ function reduceCheckpoints(responses) {
 /**
  * @param {string|number} str Converts {str} to a hash code value
  */
-function hashCode(str) {
+function hashCode (str) {
 	if (typeof str === "number") {
 		return str;
 	} else if (Array.isArray(str)) {
@@ -415,7 +412,7 @@ function hashCode(str) {
 	return hash;
 }
 
-function min(...args) {
+function min (...args) {
 	var current = args[0];
 	for (var i = 1; i < args.length; ++i) {
 		if (current == undefined) {
