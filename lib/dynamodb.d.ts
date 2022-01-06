@@ -1,0 +1,16 @@
+export interface LeoDynamodb {
+	docClient: AWS.DynamoDB.DocumentClient,
+	get: (table, id, opts, callback) => void,
+	put: (table, id, item, opts, callback) => void,
+	merge: (table, id, obj, opts, callback) => void,
+	update: (table, key, set, opts, callback) => void,
+	updateMulti: (items, opts, callback) => void,
+	scan: (table, filter, callback) => void,
+	saveSetting: (setting_id, value, callback) => void,
+	getSetting: (setting_id, callback) => void,
+	query: (params, configuration, stats) => void,
+	batchGetHashkey: (table, hashkey, ids, opts, callback) => void,
+	batchGetTable: (table, keys, opts, callback) => void,
+	createTableWriteStream: (table, opts) => void,
+	batchTableWrite: (table, records, callback) => void,
+}
