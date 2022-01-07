@@ -23,8 +23,8 @@ export interface RstreamBatchResult<T> {
 	units?: number;
 }
 
-export declare type ThroughEvent = RStreamsEventItem<any> | any;
-export interface RStreamsEventRead extends RStreamsEventItem<any> {
+export declare type ThroughEvent<T> = RStreamsEventItem<T> | any;
+export interface RStreamsEventRead<T> extends RStreamsEventItem<T> {
 	eid: string;
 }
 
@@ -54,8 +54,8 @@ export interface LeoStream {
 		(skipErrors?: boolean): stream.Transform;
 	};
 	through: {
-		(func: (obj: RStreamsEventRead | ThroughEvent, done: (err?: string | null | Error, obj?: ThroughEvent) => void, push: (obj: any) => void) => void, flush?: (done: (err?: string | null | Error) => void, push: (obj: any) => void) => void): stream.Transform;
-		(opts: RStreamsEventRead | ThroughEvent, func: (obj: any, done: (err?: string | null | Error, obj?: ThroughEvent) => void, push: (obj: any) => void) => void, flush?: (done: (err?: string | null | Error) => void, push: (obj: any) => void) => void): stream.Transform;
+		(func: (obj: RStreamsEventRead<any> | ThroughEvent<any>, done: (err?: string | null | Error, obj?: ThroughEvent<any>) => void, push: (obj: any) => void) => void, flush?: (done: (err?: string | null | Error) => void, push: (obj: any) => void) => void): stream.Transform;
+		(opts: RStreamsEventRead<any> | ThroughEvent<any>, func: (obj: any, done: (err?: string | null | Error, obj?: ThroughEvent<any>) => void, push: (obj: any) => void) => void, flush?: (done: (err?: string | null | Error) => void, push: (obj: any) => void) => void): stream.Transform;
 	};
 	/**
  * @function
@@ -64,8 +64,8 @@ export interface LeoStream {
  * @returns {number} - Describe return value here (assumed number type for this example)
  */
 	write: {
-		(func: (obj: RStreamsEventRead | ThroughEvent, done: (err?: string | null | Error, obj?: ThroughEvent) => void) => void, flush?: (done: (err?: string | null | Error) => void, push: (obj: any) => void) => void): stream.Transform;
-		(opts: RStreamsEventRead | ThroughEvent, func: (obj: any, done: (err?: string | null | Error, obj?: ThroughEvent) => void) => void, flush?: (done: (err?: string | null | Error) => void, push: (obj: any) => void) => void): stream.Transform;
+		(func: (obj: RStreamsEventRead<any> | ThroughEvent<any>, done: (err?: string | null | Error, obj?: ThroughEvent<any>) => void) => void, flush?: (done: (err?: string | null | Error) => void, push: (obj: any) => void) => void): stream.Transform;
+		(opts: RStreamsEventRead<any> | ThroughEvent<any>, func: (obj: any, done: (err?: string | null | Error, obj?: ThroughEvent<any>) => void) => void, flush?: (done: (err?: string | null | Error) => void, push: (obj: any) => void) => void): stream.Transform;
 	};
 	log: {
 		(prefix?: string): stream.Transform;
