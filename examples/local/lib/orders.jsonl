@@ -1,0 +1,6 @@
+{"orderId": "1234", "status": "pending", "retailerId": "retailerA"}
+{"orderId": "3456", "status": "completed", "retailerId": "retailerB"}
+{"orderId": "2222", "status": "completed", "retailerId": "retailerB"}
+{"orderId": "3333", "status": "completed", "retailerId": "retailerB"}
+{"orderId": "4444", "status": "completed", "retailerId": "retailerB"}
+{"orderId": "5555", "status": "completed", "retailerId": "retailerB"}

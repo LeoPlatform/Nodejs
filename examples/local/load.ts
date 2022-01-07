@@ -8,6 +8,7 @@ const EVENTS = 10;
 
 let sdk = leo(false);
 
+
 function loadEvents() {
 
     let stream = sdk.load("bentest-types-loader", "bentest-types-loader-queue", { useS3: true });

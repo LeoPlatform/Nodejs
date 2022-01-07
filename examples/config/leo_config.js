@@ -27,6 +27,19 @@ module.exports = {
             Region: 'us-east-1',
         },
     },
+    sandbox: {
+        region: 'us-west-2',
+        leosdk: {
+            Region: "us-west-2",
+            LeoStream: "ClintTestBus-Bus-1AU1ENWIRG4NO-LeoStream-CD0LNNEV8061",
+            LeoCron: "ClintTestBus-Bus-1AU1ENWIRG4NO-LeoCron-WOYLDTIP8JNB",
+            LeoEvent: "ClintTestBus-Bus-1AU1ENWIRG4NO-LeoEvent-1XTUN5FG6W5FH",
+            LeoS3: "clinttestbus-bus-1au1enwirg4no-leos3-feq3u3g89jgu",
+            LeoKinesisStream: "ClintTestBus-Bus-1AU1ENWIRG4NO-LeoKinesisStream-n0KNkKCuP8EJ",
+            LeoFirehoseStream: "ClintTestBus-Bus-1AU1ENWIRG4NO-LeoFirehoseStream-4AGnnPEP5kml",
+            LeoSettings: "ClintTestBus-Bus-1AU1ENWIRG4NO-LeoSettings-G4YOJX6ESM17"
+        }
+    },
     drtest: {
         profile: 'default',
     },

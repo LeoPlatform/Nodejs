@@ -4,12 +4,12 @@ import stream from 'stream';
 import Pumpify from "pumpify";
 import moment from "moment";
 
-interface RStreamsEventItem {
+export interface RStreamsEventItem<T> {
 	id: string;
 	event: string;
 	timestamp: number;
-	event_source_timestamp: string;
-	payload: any;
+	event_source_timestamp: number;
+	payload: T;
 	correlation_id: {
 		source: string;
 		start?: string;
@@ -18,12 +18,17 @@ interface RStreamsEventItem {
 	};
 }
 
-declare type ThroughEvent = RStreamsEventItem | any;
-interface RStreamsEventRead extends RStreamsEventItem {
+export interface RstreamBatchResult<T> {
+	payload: T[];
+	units?: number;
+}
+
+export declare type ThroughEvent = RStreamsEventItem<any> | any;
+export interface RStreamsEventRead extends RStreamsEventItem<any> {
 	eid: string;
 }
 
-interface fromRStreams {
+export interface fromRStreams {
 	subqueue?: string;
 	runTime?: moment.DurationInputArg1;
 	loops?: number;
@@ -33,7 +38,7 @@ interface fromRStreams {
 	debug?: boolean;
 	stopTime?: number;
 }
-interface RStreamStats extends stream.Transform {
+export interface RStreamStats extends stream.Transform {
 	checkpoint: {
 		(callback: (err: any) => void): void;
 	};
@@ -65,6 +70,9 @@ export interface LeoStream {
 	log: {
 		(prefix?: string): stream.Transform;
 	};
+	batch: {
+		(batchSize: number): stream.Transform;
+	}
 	stats: {
 		(botId: string, queue: string, opts?: {
 			records: number;
@@ -82,11 +90,12 @@ export interface LeoStream {
 		time: moment.DurationInputArg1;
 		debug: boolean;
 	}) => stream.Transform;
+	toCheckpoint: (config?: {}) => stream.Transform;
 	enrich: (config: {
 		id: string;
 		inQueue: string;
 		outQueue: string;
-		config: fromRStreams;
+		config?: fromRStreams;
 		transform: () => any;
 
 	}, callback: () => any) => Pumpify;
@@ -98,11 +107,11 @@ export interface LeoStream {
 		each?: () => any;
 		callback: () => any;
 	}) => Pumpify;
-	load: (botId: string, outQueue: string, config?: {
+	load: (botId: string, outQueueDefault?: string, config?: {
 		useS3?: boolean;
 		autoDetectPayload?: boolean;
 	}) => Pumpify;
-	devnull: () => stream.Transform;
+	devnull: (shouldLog?: boolean | string) => stream.Transform;
 	stringify: () => stream.Transform;
 	gzip: () => stream.Transform;
 	counter: (label: string, records?: number) => stream.Transform;
