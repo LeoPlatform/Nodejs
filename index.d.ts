@@ -8,86 +8,60 @@ import AWS from "aws-sdk";
 
 interface LeoSdk {
 	destroy: (callback: (err: any) => void) => void;
+	/**
+	 * Stream for writing events to a queue
+	 * @param {string} botId - The id of the bot
+	 * @param {string} outQueue - The queue into which events will be written 
+	 * @param {Object} config - An object that contains config values that control the flow of events to outQueue
+	 * @return {stream} Stream
+	 */
 	load: (
-		/**
-		* @param {string} botId - The id of the bot
-		*/
 		botId: string,
-		/** 
-		* @param {string} outQueue - The queue into which events will be written
-		*/
 		outQueue: string,
-		/** 
-		* @param { Object } config - An object that contains config values that control the flow of events to outQueue
-		*/
 		config?: {
 			useS3?: boolean;
 			autoDetectPayload?: boolean;
 		}
-		/**
-		* @return stream
-		*/
 	) => Pumpify;
+	/**
+	 * Process events from a queue.
+	 * @param {Object} opts
+	 * @param {string} opts.id - The id of the bot
+	 * @param {string} opts.inQueue - The queue from which events will be read
+	 * @param {Object} opts.config - An object that contains config values that control the flow of events from inQueue
+	 * @param {function} opts.batch - A function to batch data from inQueue (optional)
+	 * @param {function} opts.each - A function to transform data from inQueue or from batch function, and offload from the platform
+	 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
+	 * @return {stream} Stream
+	 */
 	offload: (config: {
-		/** 
-		* @param {string} id - The id of the bot
-		*/
 		id: string;
-		/**
-		* @param {string} inQueue - The queue from which events will be read
-		*/
 		inQueue: string;
-		/**
-		* @param {string} config -  An object that contains config values that control the flow of events from inQueu
-		*/
 		config?: fromRStreams;
-		/**
-		* @param {function} batch - A function to batch data from inQueue (optional)
-		*/
 		batch?: () => any;
-		/**
-		* @param {function} each - A function to transform data from inQueue or from batch function, and offload from the platform
-		*/
 		each?: (payload, event) => any
 	},
-		/**
-		* @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
-		*/
 		callback: () => any
-
-		/**
-		* @return stream
-		*/
 	) => Pumpify;
+	/**
+	 * Enrich events from one queue to another.
+	 * @param {Object} opts
+	 * @param {string} opts.id - The id of the bot
+	 * @param {string} opts.inQueue - The queue from which events will be read
+	 * @param {string} opts.outQueue - The queue into which events will be written 
+	 * @param {Object} opts.config - An object that contains config values that control the flow of events from inQueue and to outQueue
+	 * @param {function} opts.transform - A function to transform data from inQueue to outQueue
+	 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
+	 * @return {stream} Stream
+	 */
 	enrich: (config: {
-		/**
-		* @param {string} id - The id of the bot
-		*/
 		id: string;
-		/**
-		* @param {string} inQueue - The queue from which events will be read
-		*/
 		inQueue: string;
-		/**
-		* @param {string} outQueue - The queue into which events will be written
-		*/
 		outQueue: string;
-		/**
-		* @param {string} config -  An object that contains config values that control the flow of events from inQueu
-		*/
 		config?: fromRStreams;
-		/**
-		* @param {function} each - A function to transform data from inQueue to outQueue
-		*/
 		transform: (payload, event) => any;
 	},
-		/**
-		* @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
-		*/
 		callback: (err) => any
-		/**
-		* @return stream
-		*/
 	) => Pumpify;
 
 	read: (botId: string, inQueue: string, config?: fromRStreams) => stream.Transform;
@@ -103,6 +77,9 @@ interface LeoSdk {
 		time: moment.DurationInputArg1;
 		debug: boolean;
 	}) => stream.Transform;
+	/** 
+	 * @return LeoStream - used to get the leo stream to do more advanced processing of the streams.
+	*/
 	streams: LeoStream
 	bot: LeoCron,
 	aws: {

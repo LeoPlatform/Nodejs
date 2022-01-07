@@ -14,7 +14,7 @@ interface LeoPayload {
 
 
 /* Sample of using the raw leo streams to do something more custom. */
-stream.pipe( 
+stream.pipe(
     stream.fromLeo(botId, "bentest-types-loader-queue"),
     stream.batch(2),
     stream.log("Batched"),
@@ -23,20 +23,6 @@ stream.pipe(
     stream.load(botId),
     (err: any) => { if (err) { console.log("Handle error") } }
 )
-
-// stream.enrich(
-//     {
-//         id: botId, inQueue: "bentest-types-loader-queue", outQueue: "", batch: 2, transform: (payload, event, done) => {
-
-//             //put in processor function
-
-//             done(err, () => {
-
-
-//             }, { queue: "outgoingQueue" })
-//         }
-//     }
-// )
 
 /* Function that randomly writes to two different output locations */
 function processorFunction(events: RstreamBatchResult<RStreamsEventRead<LeoPayload>>, done: any, push: any) {
@@ -56,7 +42,6 @@ function processorFunction(events: RstreamBatchResult<RStreamsEventRead<LeoPaylo
             start: event.eid,
             units: 1 //number of units you collapsed from
         };
-        //Create new LEO event
 
         let newEvent: RStreamsEventItem<LeoPayload> = {
             id: botId,
