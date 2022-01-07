@@ -1,19 +1,18 @@
 process.env.LEO_ENVIRONMENT = "sandbox"
-let config = require('leo-config');
-config.bootstrap(require("../config/leo_config"));
+let config = require('leo-config').bootstrap(require("<PATH TO LEO_CONFIG.JS>"));
 
 import leo from "../../index"
 
 const EVENTS = 10;
 
-let sdk = leo(false);
+let sdk = leo(config.leosdk);
 
 interface LeoPayload {
     working: string
     count: number
 }
 
-function loadEvents() {
+async function loadEvents() {
 
     let stream = sdk.load("bentest-types-loader", "bentest-types-loader-queue", { useS3: true });
 
@@ -24,7 +23,13 @@ function loadEvents() {
             count: i
         }
 
-        stream.write(payload)
+        if (!stream.write(payload)) {
+            //drain stream if there's backpressure
+            await new Promise((res) => {
+                stream.once("drain", res)
+            })
+        }
+
     }
 
     stream.end();

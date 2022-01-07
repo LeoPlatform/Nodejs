@@ -1,17 +1,17 @@
-process.env.LEO_ENVIRONMENT = "test"
-let config = require('leo-config');
-config.bootstrap(require("../config/leo_config"));
+process.env.LEO_ENVIRONMENT = "sandbox"
+let config = require('leo-config').bootstrap(require("<PATH TO LEO_CONFIG.JS>"));
 
 import leo from "../../index"
 
-let sdk = leo(false);
+let sdk = leo(config.leosdk);
 
 /* 
-    Put should be used to write a single event to a queue
+    Put should be used to write a single event to a queue.
+    If you need to write multiple events from a file or some other input source, see (loadWithFileRead.ts) or (load.ts)
 */
 
 function putEvent() {
-    sdk.put("test-ts-types-leo-2", "bentest-2-ts-types-leo-queue", { "Working": "Yes" }, null)
+    sdk.put("test-ts-types-leo-sandbox", "test-ts-types-leo-sandbox-queue", { "Working": "Yes" }, null)
 }
 
 putEvent();

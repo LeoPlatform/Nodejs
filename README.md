@@ -33,6 +33,12 @@ To load data onto the bus on AWS, you need to have a valid leo_config.js file. I
 way to create one is to create a [quickstart project](https://github.com/LeoPlatform/Leo#step-3-create-a-quickstart-project)
 and let the system configure the AWS settings for you.
 
+
+Examples
+=========
+
+For various samples with type definitions, see [examples](examples/README.md)
+
 How to use the Leo SDK
 ===================================
 
@@ -124,6 +130,3 @@ leo.enrich({
     console.log("All done processing events", err);
 });
 ```
-
-# Support
-Want to hire an expert, or need technical support? Reach out to the Leo team: https://leoinsights.com/contact

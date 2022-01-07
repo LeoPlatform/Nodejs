@@ -1,10 +1,9 @@
 process.env.LEO_ENVIRONMENT = "test"
-let config = require('leo-config');
-config.bootstrap(require("../config/leo_config"));
+let config = require('leo-config').bootstrap(require("<PATH TO LEO_CONFIG.JS>"));
 
 import leo from "../../index"
 
-let sdk = leo(false);
+let sdk = leo(config.leosdk);
 
 interface LeoPayload {
     working: string

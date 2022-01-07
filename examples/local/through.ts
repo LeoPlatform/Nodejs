@@ -1,5 +1,5 @@
 process.env.LEO_ENVIRONMENT = "sandbox"
-let config = require('leo-config').bootstrap(require("../config/leo_config"));
+let config = require('leo-config').bootstrap(require("<PATH TO LEO_CONFIG.JS>"));
 import { RStreamsEventItem, RStreamsEventRead } from '../../lib/lib';
 import leo from "../../index";
 
@@ -13,16 +13,13 @@ interface LeoPayload {
 
 
 /* Sample of using the raw leo streams.  You can also use enrich for something like this */
-stream.pipe(
-    stream.fromLeo(botId, "bentest-types-loader-queue"),
-    stream.through(processorFunction),
+stream.pipe( // pipe between streams and forward errors + deal with clean up
+    stream.fromLeo(botId, "test-loader-queue"), // read from the queue test-loader and pass along 
+    stream.through(processorFunction), //apply this processor function to each event or batches of events
     stream.log("Processed"),
-    stream.toLeo(botId),
-    stream.toCheckpoint(),
-    //stream.load(botId, "bentest-types-loader-new-queue"),
+    stream.load(botId), //load them to a new queue that was set in the processor function
     (err: any) => { if (err) { console.log("Handle error") } }
 )
-
 
 function processorFunction(event: RStreamsEventRead<LeoPayload>, done: any) {
     console.log(`Event in ${JSON.stringify(event)}`)
@@ -39,12 +36,13 @@ function processorFunction(event: RStreamsEventRead<LeoPayload>, done: any) {
 
     const newEvent: RStreamsEventItem<LeoPayload> = {
         id: botId,
-        event: "bentest-types-loader-new-queue",
+        event: "types-loader-new-queue", //set to new queue
         payload: newPayload,
         timestamp: Date.now(),
         correlation_id: newCorrelationId,
         event_source_timestamp: Date.now()
     }
 
-    done(null, newEvent);
+    done(null, newEvent); //callback to pipeline.  This is where you would pass up any errors/deal with any asnc tasks.  
+    //In addition you pass back the new event for any further processing as the second paramater of the callback function
 }

@@ -1,6 +1,6 @@
 process.env.LEO_ENVIRONMENT = "test"
 process.env.LEO_LOGGER = "/.*/ei" //TODO document
-let config = require('leo-config').bootstrap(require("../config/leo_config"));
+let config = require('leo-config').bootstrap(require("<PATH TO LEO_CONFIG.JS>"));
 import * as fs from 'fs';
 import leo from "../../index";
 
