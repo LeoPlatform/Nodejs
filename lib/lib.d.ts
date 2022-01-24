@@ -4,6 +4,8 @@ import stream from 'stream';
 import Pumpify from "pumpify";
 import moment from "moment";
 
+//TODO finish documenting this file
+
 export interface RStreamsEventItem<T> {
 	id: string;
 	/** 
@@ -50,7 +52,12 @@ export interface RStreamStats extends stream.Transform {
 	};
 }
 
-export interface LeoStream {
+
+export interface Rstreams {
+	/**
+	 * @param {list} //list of streams to join together between each step and forward errors + deal with clean up
+	 * Type of https://github.com/mafintosh/pump
+	 */
 	pipe: typeof pump;
 	split: typeof split;
 	parse: {
@@ -98,6 +105,7 @@ export interface LeoStream {
 		}): RStreamStats;
 	};
 	fromLeo: (botId: string, inQueue: string, config?: fromRStreams) => stream.Transform;
+	fromS3: (file) => stream.Readable;
 	toLeo: (botId: string, config?: {
 		useS3?: boolean;
 		firehose?: boolean;
@@ -119,14 +127,7 @@ export interface LeoStream {
 	 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
 	 * @return {stream} Stream
 	 */
-	enrich: (config: {
-		id: string;
-		inQueue: string;
-		outQueue: string;
-		config?: fromRStreams;
-		transform: () => any;
-
-	}, callback: () => any) => Pumpify;
+	enrich: (props: EnrichProps, callback) => Pumpify;
 	/**
 	 * Process events from a queue.
 	 * @param {Object} opts
@@ -138,14 +139,7 @@ export interface LeoStream {
 	 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
 	 * @return {stream} Stream
 	 */
-	offload: (config?: {
-		id: string;
-		inQueue: string;
-		config: fromRStreams;
-		batch?: () => any;
-		each?: () => any;
-		callback: () => any;
-	}) => Pumpify;
+	offload: (offloadProps: OffloadProps, callback) => Pumpify;
 	/**
 	 * Stream for writing events to a queue
 	 * @param {string} botId - The id of the bot
@@ -153,6 +147,26 @@ export interface LeoStream {
 	 * @param {Object} config - An object that contains config values that control the flow of events to outQueue
 	 * @return {stream} Stream
 	 */
+
+	/**
+	 * @param {list} fieldList - List of strings to transform
+	 * @param {Object} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
+	 * @param {string} opts.delimeter - The delimiter that will separate columns.
+	 * @param {string} opts.escape - The character to used tp escape quotes inside of a quoted field.
+	 * @param {string} opts.quote - The character to use to quote fields that contain a delimiter.
+	 */
+	toCSV: (fieldList: string[], opts) => stream.Transform
+
+	/**
+	 * @param {list} fieldList - List of strings to transform
+	 * @param {Object} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
+	 * @param {string} opts.ignoreEmpty - Set to true to ignore empty rows.
+	 * @param {string} opts.trim - Set to true to trim all white space from columns.
+	 * @param {string} opts.escape - The character to used tp escape quotes inside of a quoted field.
+	 * @param {string} opts.quote - The character to use to quote fields that contain a delimiter.
+	 * @param {string} opts.delimiter - The delimiter that will separate columns.
+	 */
+	fromCSV: (fieldList: string[], opts) => stream.Transform
 	load: (botId: string, outQueueDefault?: string, config?: {
 		useS3?: boolean;
 		autoDetectPayload?: boolean;
@@ -161,7 +175,7 @@ export interface LeoStream {
 	stringify: () => stream.Transform;
 	gzip: () => stream.Transform;
 	/**
-	 * @param {string} label - The label for the log
+	 * @param {string} label - The label for the log.  This will prefix every record that's loged. The result will be console.log(`${label}${count} ${Date.now()-start} ${o.eid||""}`);
 	 * @param {string} records [records=1000] - How many records processed before you log.
 	 */
 	counter: (label: string, records?: number) => stream.Transform;
@@ -176,4 +190,92 @@ export interface LeoStream {
 		size?: number;
 		time?: moment.DurationInputArg1;
 	}) => stream.Writable;
+}
+
+export interface RstreamsAsync extends Omit<Rstreams, 'pipe' | 'through' | 'write' | 'enrich' | 'offload' | 'load' | 'put'> {
+	/**
+	 * See {@link LeoStream.pipe}
+	 */
+	pipe: {
+		(...streams: pump.Stream[]): Promise<void>
+	},
+	/**
+	 * @param {function} asyncFunc - function that takes the (event and a push).  When finished processing the event, return it to pass it back to the stream or you can return multiple objects to the stream via the push
+	 * @param {function} flush - function to be called when the remaining data has been flushed
+	 */
+	through: {
+		(
+			asyncFunc: {
+				(obj: ThroughEvent<any>, push: {
+					(obj: ThroughEvent<any>): void
+				}): Promise<null | ThroughEvent<any>> | null | void | undefined
+			},
+			flush?: {
+				(push: {
+					(obj: ThroughEvent<any>): void
+				}): Promise<null> | Promise<void> | void | null | undefined
+			}
+		): stream.Transform
+	},
+	write: {
+		(
+			asyncFunc: {
+				(obj: ThroughEvent<any>): Promise<null | ThroughEvent<any>> | null | void
+			},
+			flush?: {
+				(): Promise<null> | Promise<void> | null | void | undefined
+			}
+		): stream.Transform
+	}
+	/**
+	 * See {@link Rstreams.enrich}
+	 */
+	enrich: {
+		(props: EnrichProps): Promise<any>
+	}
+	/**
+	 * See {@link Rstreams.offload}
+	 */
+	offload: {
+		(props: OffloadProps): Promise<any>
+	}
+}
+
+/**
+ * See {@link Rstreams.offload}
+ */
+export interface OffloadProps {
+	id: string //id of the bot
+	inQueue: string //The queue from which events will be read
+	config?: fromRStreams// An object that contains config values that control the flow of events from inQueue
+	batch?: {
+		(obj: any): any //TODO test with batching and veryify params
+	},
+	each?: {
+		//A function to be applied to each piece of data in the queue
+		/**
+		 * @param {string} payload - only the payload that was sent into leo
+		 * @param {string} event - the entire event that was placed in the leo queue, includes everything from RStreamsEventRead type
+		 */
+		(payload: any, event: any): any
+	}
+}
+
+/**
+ * See {@link Rstreams.enrich}
+ */
+export interface EnrichProps {
+	id: string //id of the bot
+	inQueue: string //The queue from which events will be read
+	outQueue: string //The queue to which the events will be written
+	config?: fromRStreams// An object that contains config values that control the flow of events from inQueue
+	useS3?: boolean,
+	transform: {
+		//A function to transform data from inQueue to outQueue
+		/**
+		 * @param {string} payload - only the payload that was sent into leo
+		 * @param {string} event - the entire event that was placed in the leo queue, includes everything from RStreamsEventRead type
+		 */
+		(payload: any, event: any): any
+	}
 }

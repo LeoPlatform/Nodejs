@@ -1,9 +1,16 @@
-process.env.LEO_ENVIRONMENT = "test"
-let config = require('leo-config').bootstrap(require("<PATH TO LEO_CONFIG.JS>"));
-
+const leosdk = {
+    Region: "",
+    LeoStream: "",
+    LeoCron: "",
+    LeoEvent: "",
+    LeoS3: "",
+    LeoKinesisStream: "",
+    LeoFirehoseStream: "",
+    LeoSettings: ""
+}
 import leo from "../../index"
 
-let sdk = leo(config.leosdk);
+let sdk = leo(leosdk);
 
 interface LeoPayload {
     working: string
@@ -11,9 +18,9 @@ interface LeoPayload {
 
 function enricher() {
     sdk.enrich({
-        id: "bentest-ts-types-leo-enricher",
-        inQueue: "bentest-2-ts-types-leo-queue",
-        outQueue: "enriched-bentest-2-ts-types-leo-queue",
+        id: "test-ts-types-leo-enricher",
+        inQueue: "test-2-ts-types-leo-queue",
+        outQueue: "enriched-test-2-ts-types-leo-queue",
         transform: (payload, event) => {
             return transformer(payload, event);
         },

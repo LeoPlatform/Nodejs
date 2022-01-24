@@ -1,11 +1,18 @@
-process.env.LEO_ENVIRONMENT = "sandbox"
-let config = require('leo-config').bootstrap(require("<PATH TO LEO_CONFIG.JS>"));
-
+const leosdk = {
+    Region: "",
+    LeoStream: "",
+    LeoCron: "",
+    LeoEvent: "",
+    LeoS3: "",
+    LeoKinesisStream: "",
+    LeoFirehoseStream: "",
+    LeoSettings: ""
+}
 import leo from "../../index"
 
-const EVENTS = 10;
+let sdk = leo(leosdk);
 
-let sdk = leo(config.leosdk);
+const EVENTS = 10;
 
 interface LeoPayload {
     working: string
@@ -14,7 +21,7 @@ interface LeoPayload {
 
 async function loadEvents() {
 
-    let stream = sdk.load("bentest-types-loader", "bentest-types-loader-queue", { useS3: true });
+    let stream = sdk.load("test-types-loader", "test-types-loader-queue", { useS3: true });
 
     for (let i = 0; i < EVENTS; i++) {
 

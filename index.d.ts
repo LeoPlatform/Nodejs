@@ -1,12 +1,12 @@
 import moment from "moment";
 import Pumpify from "pumpify";
 import stream from "stream";
-import { LeoStream, fromRStreams } from "./lib/lib";
+import { Rstreams, fromRStreams } from "./lib/lib";
 import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
 import AWS from "aws-sdk";
 
-interface LeoSdk {
+interface RstreamsSdk {
 	destroy: (callback: (err: any) => void) => void;
 	/**
 	 * Stream for writing events to a queue
@@ -70,17 +70,17 @@ interface LeoSdk {
 		firehose?: boolean;
 	}) => stream.Transform;
 	put: (
-		bot_id: string, outQueue: string, payload: any, callback: any) => void;
-
+		bot_id: string, outQueue: string, payload: any, callback: any
+	) => void;
 	checkpoint: (config?: {
 		records: number;
 		time: moment.DurationInputArg1;
 		debug: boolean;
 	}) => stream.Transform;
 	/** 
-	 * @return LeoStream - used to get the leo stream to do more advanced processing of the streams.
+	 * @return Rstreams - used to get the leo stream to do more advanced processing of the streams.
 	*/
-	streams: LeoStream
+	streams: Rstreams
 	bot: LeoCron,
 	aws: {
 		dynamodb: LeoDynamodb,
@@ -89,5 +89,5 @@ interface LeoSdk {
 	}
 }
 
-declare function ExportTypeFn(config: any): LeoSdk;
+declare function ExportTypeFn(config: any): RstreamsSdk;
 export = ExportTypeFn;

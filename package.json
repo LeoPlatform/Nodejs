@@ -33,10 +33,11 @@
 		"uuid": "3.3.2"
 	},
 	"devDependencies": {
-		"chai": "^4.2.0",
-		"mocha": "6.1.4",
+		"@types/node": "^17.0.10",
+		"@types/pumpify": "^1.4.1",
 		"aws-sdk": "^2.581.0",
-		"@types/pumpify": "^1.4.1"
+		"chai": "^4.2.0",
+		"mocha": "6.1.4"
 	},
 	"peerDependencies": {
 		"aws-sdk": "^2.581.0"

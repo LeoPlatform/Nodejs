@@ -1,6 +1,5 @@
 process.env.LEO_ENVIRONMENT = "sandbox"
-process.env.LEO_LOGGER = "/.*/ei" //TODO document
-let config = require('leo-config').bootstrap(require("<PATH TO LEO_CONFIG.JS>"));
+let config = require('<PATH TO LEO_CONFIG.JS>')
 import { RstreamBatchResult, RStreamsEventItem, RStreamsEventRead } from '../../lib/lib';
 import leo from "../../index";
 
@@ -15,7 +14,7 @@ interface LeoPayload {
 
 /* Sample of using the raw leo streams to do something more custom. */
 stream.pipe(
-    stream.fromLeo(botId, "bentest-types-loader-queue"),
+    stream.fromLeo(botId, "test-types-loader-queue"),
     stream.batch(2),
     stream.log("Batched"),
     stream.through(processorFunction),

@@ -8,7 +8,7 @@ let sdk = leo(config.leosdk);
 function offloader() {
     sdk.offload({
         id: "test-ts-types-offloader-leo",
-        inQueue: "bentest-types-loader-queue",
+        inQueue: "test-types-loader-queue",
         each: (payload, event) => {
             return offloadHandler(payload, event);
         }
