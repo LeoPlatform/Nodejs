@@ -2,6 +2,7 @@
 import moment from 'moment';
 import stream from 'stream';
 import through2 from 'through2';
+import { ParserOptionsArgs } from 'fast-csv';
 
 declare type ProcessCallback = (err?: any, result?: boolean | object, opts?: ProcessCallbackOptions) => void;
 declare type ProcessFunction = (payload: any, wrapper: any, callback: ProcessCallback) => void;
@@ -28,7 +29,6 @@ export interface CommandWrapOptions {
 export interface Streams {
 	commandWrap: (opts: CommandWrapOptions, func: CommandWrapFunction) => stream.Transform;
 	bufferBackoff: (each, emit, retryOpts, opts, flush) => stream.Transform;
-	fromCSV: (fieldList, opts) => stream.Transform;
 
 	//asEvent: (opts: AsEventOptions) => stream.Transform;
 	log: (prefix?: string) => stream.Transform;
@@ -47,18 +47,11 @@ export interface Streams {
 	parse: (skipErrors?: boolean) => stream.Transform;
 
 	/**
-	 * @param {list} fieldList - List of strings to transform
-	 * @param {Object} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
-	 * @param {string} opts.delimeter - The delimiter that will separate columns.
-	 * @param {string} opts.escape - The character to used tp escape quotes inside of a quoted field.
-	 * @param {string} opts.quote - The character to use to quote fields that contain a delimiter.
+	 * @param {boolean|list} fieldList - List of fields to transform | true builds the header list dynmaically
+	 * @param {ToCsvOptions} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
 	 */
-	toCSV: (fieldList: string[], opts: {
-		delimiter?: string;
-		escape?: string;
-		quote?: string;
-		nullValue?: any;
-	}) => stream.Transform;
+	toCSV: (fieldList: boolean | string[], opts?: ToCsvOptions) => stream.Transform;
+	fromCSV: (fieldList: boolean | string[], opts?: FromCsvOptions) => stream.Transform;
 
 	toS3: (Bucket: string, File: string) => stream.Writable;
 	fromS3: (file: {
@@ -68,6 +61,14 @@ export interface Streams {
 	}) => stream.Writable;
 }
 
+export interface FromCsvOptions extends ParserOptionsArgs { }
+
+export interface ToCsvOptions {
+	delimiter?: string;
+	escape?: string;
+	quote?: string;
+	nullValue?: any;
+}
 
 export interface BatchOptions {
 	count?: Number;

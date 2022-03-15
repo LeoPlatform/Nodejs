@@ -5,7 +5,7 @@ import Pumpify from "pumpify";
 import moment, { Moment } from "moment";
 import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
-import { BatchOptions, ProcessFunction, Streams } from "./streams";
+import { BatchOptions, FromCsvOptions, ProcessFunction, Streams, ToCsvOptions } from "./streams";
 
 import * as eventstream from "event-stream";
 
@@ -292,4 +292,10 @@ export interface StreamUtil {
 		time?: moment.DurationInputArg1;
 	}) => stream.Writable;
 	batch: (opts: BatchOptions | Number) => stream.Transform
+	/**
+	 * @param {boolean|list} fieldList - List of fields to transform | true builds the header list dynmaically
+	 * @param {ToCsvOptions} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
+	 */
+	toCSV: (fieldList: boolean | string[], opts?: ToCsvOptions) => stream.Transform;
+	fromCSV: (fieldList: boolean | string[], opts?: FromCsvOptions) => stream.Transform;
 }
