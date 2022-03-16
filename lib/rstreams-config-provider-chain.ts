@@ -5,9 +5,6 @@ import path from "path";
 import AWS, { CredentialProviderChain } from "aws-sdk";
 var RStreams = require('./rstreams');
 
-export class ConfigurationOptions { }
-
-
 export enum ProvidersInputType {
 	Replace,
 	Prepend,
@@ -15,20 +12,20 @@ export enum ProvidersInputType {
 }
 
 /**
- * Creates a credential provider chain that searches for AWS credentials
- * in a list of credential providers specified by the {providers} property.
+ * Creates a configuration provider chain that searches for RStreams configurations
+ * in a list of configuration providers specified by the {providers} property.
  *
- * By default, the chain will use the {defaultProviders} to resolve credentials.
+ * By default, the chain will use the {defaultProviders} to resolve configurations.
  * These providers will look in the environment using the
- * {AWS.EnvironmentCredentials} class with the 'AWS' and 'AMAZON' prefixes.
+ * {RStreams.EnvironmentConfiguration} class with the 'LEO' and 'RSTREAMS' prefixes.
  *
  * ## Setting Providers
  *
  * Each provider in the {providers} list should be a function that returns
- * a {RStreams.Configuration} object, or a hardcoded credentials object. The function
+ * a {RStreams.Configuration} object, or a hardcoded Configuration object. The function
  * form allows for delayed execution of the credential construction.
  *
- * ## Resolving Credentials from a Chain
+ * ## Resolving Configurations from a Chain
  *
  * Call {resolve} to return the first valid credential object that can be
  * loaded by the provider chain.
@@ -37,25 +34,25 @@ export enum ProvidersInputType {
  * on disk after the set of {defaultProviders}:
  *
  * ```javascript
- * var diskProvider = new AWS.FileSystemCredentials('./creds.json');
- * var chain = new RStreams.ConfigProviderChain();
- * chain.providers.push(diskProvider);
+ * var envProvider = new RStreams.EnvironmentConfiguration('MyEnvVar');
+ * var chain = new RStreams.ConfigProviderChain([envProvider], ProvidersInputType.Append);
  * chain.resolve();
  * ```
  *
- * The above code will return the `diskProvider` object if the
- * file contains credentials and the `defaultProviders` do not contain
- * any credential settings.
+ * The above code will return the `envProvider` object if the
+ * env contains configuration and the `defaultProviders` do not contain
+ * any configuration settings.
  *
  * @!attribute providers
  *   @return [Array<RStreams.Configuration, Function>]
- *     a list of credentials objects or functions that return credentials
+ *     a list of configuration objects or functions that return configuration
  *     objects. If the provider is a function, the function will be
  *     executed lazily when the provider needs to be checked for valid
- *     credentials. By default, this object will be set to the
+ *     configuration. By default, this object will be set to the
  *     {defaultProviders}.
  *   @see defaultProviders
  */
+
 export const ConfigProviderChain = util.inherit(Configuration, {
 
 	/**
@@ -63,6 +60,9 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 	 * specified by {defaultProviders}.
 	 */
 	constructor: function ConfigProviderChain(providers: any[], addToDefaults: ProvidersInputType = ProvidersInputType.Replace) {
+		if (providers && !Array.isArray(providers)) {
+			providers = [providers];
+		}
 		if (providers && addToDefaults == ProvidersInputType.Replace) {
 			this.providers = providers;
 		} else {
@@ -80,36 +80,36 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 	 * @!method  resolvePromise()
 	 *   Returns a 'thenable' promise.
 	 *   Resolves the provider chain by searching for the first set of
-	 *   credentials in {providers}.
+	 *   configuration in {providers}.
 	 *
 	 *   Two callbacks can be provided to the `then` method on the returned promise.
 	 *   The first callback will be called if the promise is fulfilled, and the second
 	 *   callback will be called if the promise is rejected.
-	 *   @callback fulfilledCallback function(credentials)
+	 *   @callback fulfilledCallback function(configuration)
 	 *     Called if the promise is fulfilled and the provider resolves the chain
-	 *     to a credentials object
-	 *     @param credentials [RStreams.Configuration] the credentials object resolved
+	 *     to a configuration object
+	 *     @param configuration [RStreams.Configuration] the configuration object resolved
 	 *       by the provider chain.
 	 *   @callback rejectedCallback function(error)
 	 *     Called if the promise is rejected.
-	 *     @param err [Error] the error object returned if no credentials are found.
+	 *     @param err [Error] the error object returned if no configuration are found.
 	 *   @return [Promise] A promise that represents the state of the `resolve` method call.
 	 *   @example Calling the `resolvePromise` method.
 	 *     var promise = chain.resolvePromise();
-	 *     promise.then(function(credentials) { ... }, function(err) { ... });
+	 *     promise.then(function(configuration) { ... }, function(err) { ... });
 	 */
 
 	/**
 	 * Resolves the provider chain by searching for the first set of
-	 * credentials in {providers}.
+	 * configuration in {providers}.
 	 *
-	 * @callback callback function(err, credentials)
-	 *   Called when the provider resolves the chain to a credentials object
-	 *   or null if no credentials can be found.
+	 * @callback callback function(err, configuration)
+	 *   Called when the provider resolves the chain to a configuration object
+	 *   or null if no configuration can be found.
 	 *
-	 *   @param err [Error] the error object returned if no credentials are
+	 *   @param err [Error] the error object returned if no configuration are
 	 *     found.
-	 *   @param credentials [RStreams.Configuration] the credentials object resolved
+	 *   @param configuration [RStreams.Configuration] the configuration object resolved
 	 *     by the provider chain.
 	 * @return [RStreams.ConfigProviderChain] the provider, for chaining.
 	 */
@@ -175,7 +175,7 @@ export const ConfigProviderChain = util.inherit(Configuration, {
  */
 
 // TODO: I think we need to settle on just a few of these
-// The ENV & File path ones are too bad but multiple AWS Secrets checked could get heavy
+// The ENV & File path ones aren't too bad but multiple AWS Secrets checked could get heavy
 ConfigProviderChain.defaultProviders = [
 	/* Leo Env locations */
 	function () { return new EnvironmentConfiguration('leosdk'); },
@@ -411,7 +411,8 @@ export const LeoConfiguration = util.inherit(Configuration, {
 
 		let config = require("leo-config");
 
-		let values = config.leosdk || config.leo_sdk || config["leo-sdk"];
+		let values = config.leosdk || config.leo_sdk || config["leo-sdk"] ||
+			config.rstreamssdk || config.rstreams_sdk || config["rstreams-sdk"];
 		if (values == null) {
 			callback(util.error(
 				new Error(`Unable to get config from leo-config env ${config.env}`),

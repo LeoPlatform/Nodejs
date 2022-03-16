@@ -124,6 +124,25 @@ const Configuration = util.inherit({
 		}
 	},
 
+	resolve: function resolve(callback) {
+		this.get((err) => {
+			let data;
+			if (!err) {
+				data = {
+					Region: this.Region,
+					LeoStream: this.LeoStream,
+					LeoCron: this.LeoCron,
+					LeoEvent: this.LeoEvent,
+					LeoS3: this.LeoS3,
+					LeoKinesisStream: this.LeoKinesisStream,
+					LeoFirehoseStream: this.LeoFirehoseStream,
+					LeoSettings: this.LeoSettings,
+				}
+			}
+			callback(err, data);
+		})
+	},
+
 	/**
 	 * Gets the existing credentials, refreshing them if they are not yet loaded
 	 * or have expired. Users should call this method before using {refresh},

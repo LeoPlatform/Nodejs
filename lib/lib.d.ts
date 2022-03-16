@@ -5,7 +5,7 @@ import Pumpify from "pumpify";
 import moment, { Moment } from "moment";
 import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
-import { BatchOptions, FromCsvOptions, ProcessFunction, Streams, ToCsvOptions } from "./streams";
+import Streams, { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
 
 import * as eventstream from "event-stream";
 
@@ -162,7 +162,9 @@ export interface StatsStream extends stream.Transform {
 
 export interface StreamUtil {
 
-	eventstream: typeof eventstream
+	eventIdFromTimestamp: (timestamp: moment.MomentInput) => string;
+	eventIdToTimestamp: (eid: string) => number;
+	eventstream: typeof eventstream;
 
 	/**
 	 * @param {list} //list of streams to join together between each step and forward errors + deal with clean up

@@ -1,0 +1,40 @@
+{
+	"check-coverage": false,
+	"per-file": true,
+	"lines": 80,
+	"statements": 80,
+	"functions": 80,
+	"branches": 80,
+	"include": [],
+	"exclude": [
+		"**/*.utest.js",
+		"**/*.d.ts",
+		"connectors/*",
+		"coverage/*",
+		"test/*",
+		"lib/template/*",
+		"**/.eslintrc.js",
+		"lib/apis/*",
+		"api.js",
+		"generateProfile.js",
+		"lib/generateProfile.js",
+		"configure.js",
+		"lib/assert.js",
+		"lib/compile.js",
+		"lib/kms.js",
+		"lib/template.js",
+		"wrappers/test.js"
+	],
+	"reporter": [
+		"html",
+		"text",
+		"clover"
+	],
+	"require": [],
+	"extension": [
+		".ts",
+		".tsx"
+	],
+	"cache": true,
+	"all": false
+}

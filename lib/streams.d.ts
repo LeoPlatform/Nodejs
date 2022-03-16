@@ -26,40 +26,43 @@ export interface CommandWrapOptions {
 }
 
 // export interface AsEventOptions {}
-export interface Streams {
-	commandWrap: (opts: CommandWrapOptions, func: CommandWrapFunction) => stream.Transform;
-	bufferBackoff: (each, emit, retryOpts, opts, flush) => stream.Transform;
+//export default interface Streams {
 
-	//asEvent: (opts: AsEventOptions) => stream.Transform;
-	log: (prefix?: string) => stream.Transform;
-	devnull: (shouldLog?: boolean | string) => stream.Transform;
-	counter: (label: string, records?: number) => stream.Transform;
-	process: (id: string, func: ProcessFunction, outQueue: string) => stream.Transform;
-	batch: (opts: BatchOptions | Number) => stream.Transform
+export function eventIdFromTimestamp(timestamp: moment.MomentInput): string;
+export function eventIdToTimestamp(eid: string): number;
+export function commandWrap(opts: CommandWrapOptions, func: CommandWrapFunction): stream.Transform;
+export function bufferBackoff(each, emit, retryOpts, opts, flush): stream.Transform;
 
-	passthrough: (opts?: stream.TransformOptions) => stream.Transform;
-	through: (transform?: through2.TransformFunction, flush?: through2.FlushCallback) => stream.Transform;
-	writeWrapped: (opts: CommandWrapOptions | any, func: CommandWrapFunction, flush?: through2.FlushCallback) => stream.Writable;
-	//cmd: (watchCommands, singleFunc) => stream.Transform;
-	buffer: (opts, each, emit, flush) => stream.Transform;
-	//cmdFlush: (obj, done) => stream.Transform;
-	stringify: () => stream.Transform;
-	parse: (skipErrors?: boolean) => stream.Transform;
+//asEvent: (opts: AsEventOptions):stream.Transform;
+export function log(prefix?: string): stream.Transform;
+export function devnull(shouldLog?: boolean | string): stream.Transform;
+export function counter(label: string, records?: number): stream.Transform;
+export function process(id: string, func: ProcessFunction, outQueue: string): stream.Transform;
+export function batch(opts: BatchOptions | Number): stream.Transform
 
-	/**
-	 * @param {boolean|list} fieldList - List of fields to transform | true builds the header list dynmaically
-	 * @param {ToCsvOptions} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
-	 */
-	toCSV: (fieldList: boolean | string[], opts?: ToCsvOptions) => stream.Transform;
-	fromCSV: (fieldList: boolean | string[], opts?: FromCsvOptions) => stream.Transform;
+export function passthrough(opts?: stream.TransformOptions): stream.Transform;
+export function through(transform?: through2.TransformFunction, flush?: through2.FlushCallback): stream.Transform;
+export function writeWrapped(opts: CommandWrapOptions | any, func: CommandWrapFunction, flush?: through2.FlushCallback): stream.Writable;
+//cmd(watchCommands, singleFunc):stream.Transform;
+export function buffer(opts, each, emit, flush): stream.Transform;
+//cmdFlush(obj, done):stream.Transform;
+export function stringify(): stream.Transform;
+export function parse(skipErrors?: boolean): stream.Transform;
 
-	toS3: (Bucket: string, File: string) => stream.Writable;
-	fromS3: (file: {
-		bucket: string,
-		key: string;
-		range?: string;
-	}) => stream.Writable;
-}
+/**
+ * @param {boolean|list} fieldList - List of fields to transform | true builds the header list dynmaically
+ * @param {ToCsvOptions} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
+ */
+export function toCSV(fieldList: boolean | string[], opts?: ToCsvOptions): stream.Transform;
+export function fromCSV(fieldList: boolean | string[], opts?: FromCsvOptions): stream.Transform;
+
+export function toS3(Bucket: string, File: string): stream.Writable;
+export function fromS3(file: {
+	bucket: string,
+	key: string;
+	range?: string;
+}): stream.Writable;
+//}
 
 export interface FromCsvOptions extends ParserOptionsArgs { }
 

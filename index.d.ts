@@ -1,4 +1,3 @@
-import moment from "moment";
 import Pumpify from "pumpify";
 import stream from "stream";
 import { Callback, EnrichOptions, OffloadOptions, ReadOptions, StreamUtil, ToCheckpointOptions, WriteOptions } from "./lib/lib";
@@ -83,4 +82,3 @@ export interface RStreamsSdk {
 
 declare function ExportTypeFn(config?: ConfigurationResources): RStreamsSdk;
 export default ExportTypeFn;
-//export { ExportTypeFn, RStreamsSdk };

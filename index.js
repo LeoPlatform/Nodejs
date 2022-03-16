@@ -6,6 +6,7 @@ let LeoConfiguration = require("./lib/configuration.js");
 let aws = require("./lib/leo-aws");
 const fs = require("fs");
 const ini = require('ini');
+const { default: Configuration } = require("./lib/rstreams-configuration");
 const execSync = require("child_process").execSync;
 const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").ConfigProviderChain;
 
@@ -15,15 +16,17 @@ function SDK(id, data) {
 		id = data.id || "default_bot";
 	}
 
-	if (data == null || data === false) {
+	if (data == null || data === false || data instanceof Configuration) {
+		let outOfSync = false;
 		// This only works if only using synchronous providers 
 		// because the callbacks happen synchronously in the same node tick
-		let chain = new ConfigProviderChain();
+		let chain = data || new ConfigProviderChain();
 		chain.resolve((err, config) => {
-			if (!err) {
+			if (!err && !outOfSync) {
 				data = config;
 			}
 		});
+		outOfSync = true;
 	}
 
 	let configuration = new LeoConfiguration(data);
