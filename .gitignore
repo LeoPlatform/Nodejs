@@ -27,4 +27,3 @@ package-lock.json
 .idea
 .idea/
 *.js.map
-*.js
