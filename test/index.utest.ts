@@ -247,10 +247,6 @@ class BusStreamMockBuilder {
 			Items: [],
 			Count: 0,
 			ScannedCount: 0,
-			LastEvaluatedKey: {
-				event: queue,
-				//end: (items[items.length - 1] || {}).end
-			},
 			ConsumedCapacity: {
 				TableName: "mock-LeoStream",
 				CapacityUnits: 1
