@@ -12,6 +12,7 @@
 		"connectors/*",
 		"coverage/*",
 		"test/*",
+		"tests-old/*",
 		"lib/template/*",
 		"**/.eslintrc.js",
 		"lib/apis/*",

@@ -3,7 +3,7 @@ import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
 import AWS, { Kinesis } from "aws-sdk";
-import { gzipSync } from "zlib";
+import { gzipSync, gunzipSync } from "zlib";
 //import { StreamUtil } from "../lib/lib";
 import streams from "../lib/streams";
 chai.use(sinonchai);
@@ -21,7 +21,7 @@ let mockSdkConfig = {
 };
 
 describe('RStreams', function () {
-	describe('sdk.example', function () {
+	describe('sdk.read/write', function () {
 		let sinonSandbox;
 		beforeEach(() => {
 			sinonSandbox = sinon.createSandbox()
@@ -119,7 +119,7 @@ describe('RStreams', function () {
 
 			let events = await new Promise((resolve, reject) => {
 				ls.pipe(
-					sdk.read(botId, queue),
+					sdk.read(botId, queue, { start: ls.eventIdFromTimestamp(1647460979244) }),
 					ls.eventstream.writeArray((err, results) => {
 						err ? reject(err) : resolve(results)
 					})
@@ -147,7 +147,7 @@ describe('RStreams', function () {
 		});
 
 
-		it('Writes To a Queue', async function () {
+		it('Writes To a Queue GZip', async function () {
 			let queue = "mock-out-queue";
 			let botId = "mock-bot-id";
 
@@ -205,6 +205,179 @@ describe('RStreams', function () {
 					}
 				],
 				"StreamName": "mock-LeoKinesisStream"
+			});
+
+		});
+
+		it('Writes To a Queue Firehose', async function () {
+			let queue = "mock-out-queue";
+			let botId = "mock-bot-id";
+
+
+			let kinesisPutRecords = sinonSandbox.stub();
+
+			let firehosePutRecordBatch = sinonSandbox.stub();
+
+			let firehosePutRecordBatchRespone: AWS.Firehose.Types.PutRecordBatchOutput = {
+				FailedPutCount: 0,
+				RequestResponses: [{
+					RecordId: "mock-record-id",
+					ErrorCode: undefined,
+					ErrorMessage: undefined,
+				}]
+			};
+			firehosePutRecordBatch
+				.callsArgWith(1, null, firehosePutRecordBatchRespone);
+
+			//sinonSandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+			sinonSandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+			sinonSandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+
+			let sdk = RStreamsSdk(mockSdkConfig);
+			let ls = sdk.streams;
+
+			//			{"id":"mock-bot-id","payload":{"hello":"world"},"event_source_timestamp":1647463353000,"timestamp":1647463353000,"event":"mock-out-queue","eid":0}
+			//{"id":"mock-bot-id","payload":{"good":"bye"},"event_source_timestamp":1647463353001,"timestamp":1647463353001,"event":"mock-out-queue","eid":1}
+			await new Promise((resolve, reject) => {
+				ls.pipe(
+					ls.eventstream.readArray([{
+						id: botId,
+						payload: { hello: "world" },
+						event_source_timestamp: 1647463353000,
+						timestamp: 1647463353000,
+					}, {
+						id: botId,
+						payload: { good: "bye" },
+						event_source_timestamp: 1647463353001,
+						timestamp: 1647463353001,
+					}]),
+					sdk.load(botId, queue, { firehose: true }),
+					(err) => err ? reject(err) : resolve(undefined)
+				);
+			});
+			expect(firehosePutRecordBatch).is.called;
+			expect(kinesisPutRecords).is.not.called;
+
+			let expectedData = {
+				Records: [
+					{
+						Data: '{"id":"mock-bot-id","payload":{"hello":"world"},"event_source_timestamp":1647463353000,"timestamp":1647463353000,"event":"mock-out-queue","eid":0}\n' +
+							'{"id":"mock-bot-id","payload":{"good":"bye"},"event_source_timestamp":1647463353001,"timestamp":1647463353001,"event":"mock-out-queue","eid":1}\n'
+					}
+				],
+				DeliveryStreamName: 'mock-LeoFirehoseStream'
+			};
+
+			assert.deepEqual(firehosePutRecordBatch.getCall(0).args[0], expectedData);
+
+		});
+
+		it('Writes To a Queue S3', async function () {
+			let queue = "mock-out-queue";
+			let botId = "mock-bot-id";
+
+			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+				Records: [{
+					SequenceNumber: "0",
+					ShardId: "shard-0"
+				}]
+			};
+			let kinesisPutRecords = sinonSandbox.stub();
+			kinesisPutRecords
+				.callsArgWith(1, null, kinesisPutRecordsRespone);
+
+			let firehosePutRecordBatch = sinonSandbox.stub();
+
+			let s3Upload = (obj, callback) => {
+				ls.pipe(obj.Body, ls.devnull(), (e) => callback(e));
+			};
+
+
+			sinonSandbox.stub(AWS, 'S3').returns({ upload: s3Upload });
+			sinonSandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+			sinonSandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+
+			let sdk = RStreamsSdk(mockSdkConfig);
+			let ls = sdk.streams;
+
+			//			{"id":"mock-bot-id","payload":{"hello":"world"},"event_source_timestamp":1647463353000,"timestamp":1647463353000,"event":"mock-out-queue","eid":0}
+			//{"id":"mock-bot-id","payload":{"good":"bye"},"event_source_timestamp":1647463353001,"timestamp":1647463353001,"event":"mock-out-queue","eid":1}
+			await new Promise((resolve, reject) => {
+				ls.pipe(
+					ls.eventstream.readArray([{
+						id: botId,
+						payload: { hello: "world" },
+						event_source_timestamp: 1647463353000,
+						timestamp: 1647463353000,
+					}, {
+						id: botId,
+						payload: { good: "bye" },
+						event_source_timestamp: 1647463353001,
+						timestamp: 1647463353001,
+					}]),
+					sdk.load(botId, queue, { useS3: true }),
+					(err) => err ? reject(err) : resolve(undefined)
+				);
+			});
+			expect(firehosePutRecordBatch).is.not.called;
+			expect(kinesisPutRecords).is.called;
+			kinesisPutRecords.getCall(0).args[0].Records.forEach(r => {
+				// convert buffers to strings
+				r.Data = JSON.parse(gunzipSync(r.Data).toString());
+
+				// Verify s3 field exists.  This has a uuid in it will be random
+				assert.exists(r.Data.s3);
+				assert.equal(r.Data.s3.bucket, "mock-leos3");
+				assert(r.Data.s3.key.match(/^bus\/mock-out-queue\/mock-bot-id\/z.*\.gz$/));
+				delete r.Data.s3;
+
+				// TODO: Why are this not predictable or based on the data passed in
+				assert.exists(r.Data.timestamp);
+				assert.exists(r.Data.event_source_timestamp);
+				delete r.Data.event_source_timestamp;
+				delete r.Data.timestamp;
+
+			});
+			assert.deepEqual(kinesisPutRecords.getCall(0).args[0], {
+
+				"StreamName": "mock-LeoKinesisStream",
+				"Records": [
+					{
+						"Data": {
+							"correlations": [
+								{}
+							],
+							"end": 1,
+							"event": "mock-out-queue",
+							"gzipSize": 147,
+							"offsets": [
+								{
+									"end": 1,
+									"event": "mock-out-queue",
+									"gzipOffset": 0,
+									"gzipSize": 147,
+									"offset": 0,
+									"records": 2,
+									"size": 291,
+									"start": 0
+								}
+							],
+							"records": 2,
+							"size": 291,
+							"start": null,
+							"stats": {
+								"mock-bot-id": {
+									"checkpoint": 1,
+									"end": 1647463353001,
+									"start": 1647463353001,
+									"units": 2,
+								}
+							}
+						},
+						"ExplicitHashKey": "0",
+						"PartitionKey": "0",
+					}
+				]
 			});
 
 		});
