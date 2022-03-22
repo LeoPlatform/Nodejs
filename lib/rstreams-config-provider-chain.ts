@@ -316,7 +316,7 @@ export const EnvironmentConfiguration = util.inherit(Configuration, {
 				let key = keys[i];
 				var prefix = '';
 				if (this.envPrefix) prefix = this.envPrefix + '_';
-				values[key] = process.env[prefix + key];
+				values[key] = process.env[prefix + key] || process.env[prefix + key.toUpperCase()] || process.env[prefix + key.toLowerCase()];
 				if (!values[key] && key !== 'LeoSettings') {
 					callback(util.error(
 						new Error('Variable ' + prefix + key + ' not set.'),

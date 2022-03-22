@@ -300,8 +300,6 @@ describe('RStreams', function () {
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
 
-			//			{"id":"mock-bot-id","payload":{"hello":"world"},"event_source_timestamp":1647463353000,"timestamp":1647463353000,"event":"mock-out-queue","eid":0}
-			//{"id":"mock-bot-id","payload":{"good":"bye"},"event_source_timestamp":1647463353001,"timestamp":1647463353001,"event":"mock-out-queue","eid":1}
 			await new Promise((resolve, reject) => {
 				ls.pipe(
 					ls.eventstream.readArray([{

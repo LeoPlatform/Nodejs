@@ -79,9 +79,9 @@ export declare type ThroughEvent<T> = Event<T> | any;
 export interface WriteOptions {
 	useS3?: boolean;
 	firehose?: boolean;
-	records?: number,
-	size?: number,
-	time?: moment.DurationInputArg1
+	records?: number;
+	size?: number;
+	time?: moment.DurationInputArg1;
 }
 
 export interface ReadOptions {
@@ -93,6 +93,12 @@ export interface ReadOptions {
 	size?: number;
 	debug?: boolean;
 	stopTime?: number;
+	maxOverride?: string;
+	fast_s3_read?: boolean;
+	fast_s3_read_parallel_fetch_max_bytes?: number;
+	stream_query_limit?: number;
+
+
 }
 
 export * from "./streams";

@@ -18,7 +18,7 @@ export interface LeoDynamodb {
 	scan: (table: string, filter, callback) => void,
 	saveSetting: <T>(setting_id: string, value: T, callback: Callback<AWSError>) => void,
 	getSetting: <T>(setting_id: string, callback: DataCallback<AWSError, T>) => void,
-	query: (params, configuration, stats) => void,
+	query: (params, configuration?, stats?) => Promise<any>,
 	batchGetHashkey: (table: string, hashkey, ids, opts, callback) => void,
 	batchGetTable: (table: string, keys, opts, callback) => void,
 	createTableWriteStream: (table: string, opts) => void,

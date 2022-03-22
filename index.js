@@ -9,6 +9,15 @@ const ini = require('ini');
 const { default: Configuration } = require("./lib/rstreams-configuration");
 const execSync = require("child_process").execSync;
 const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").ConfigProviderChain;
+const deasync = require("deasync");
+const uuid = require("uuid");
+
+function chainResolve(chain, cb) {
+	chain.resolve((err, data) => {
+		cb(err, data);
+	});
+
+}
 
 function SDK(id, data) {
 	if (typeof id !== "string" && id != null) {
@@ -17,17 +26,23 @@ function SDK(id, data) {
 	}
 
 	if (data == null || data === false || data instanceof Configuration) {
-		let outOfSync = false;
-		// This only works if only using synchronous providers 
-		// because the callbacks happen synchronously in the same node tick
 		let chain = data || new ConfigProviderChain();
-		chain.resolve((err, config) => {
-			if (!err && !outOfSync) {
-				data = config;
-			}
-		});
-		outOfSync = true;
+
+		try {
+			let syncChainResolve = deasync(chainResolve);
+			data = syncChainResolve(chain);
+		} catch (err) {
+			// Ignore errors because this is just trying to find the defaults
+		}
 	}
+
+	// if (data.assumeRole) {
+	// 	const cred = await new AWS.STS({}).assumeRole({
+	// 		RoleArn: data.assumeRole,
+	// 		RoleSessionName: process.env.AWS_LAMBDA_FUNCTION_NAME || uuid.v4()
+	// 	}).promise();
+	// 	busConfig.credentials = sts.credentialsFrom(cred);
+	// }
 
 	let configuration = new LeoConfiguration(data);
 
