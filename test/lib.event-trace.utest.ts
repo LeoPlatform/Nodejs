@@ -81,8 +81,8 @@ describe('lib/event-trace.ts', function () {
 			);
 
 
-			console.log("Trace Result:");
-			console.log(JSON.stringify(r, null, 2));
+			//console.log("Trace Result:");
+			//console.log(JSON.stringify(r, null, 2));
 			assert.deepEqual(r, {
 				"parents": [
 					{
@@ -434,7 +434,7 @@ describe('lib/event-trace.ts', function () {
 				}
 			);
 
-			console.log(JSON.stringify(r, null, 2));
+			//console.log(JSON.stringify(r, null, 2));
 			assert.deepEqual(r, {
 				"parents": [
 					{

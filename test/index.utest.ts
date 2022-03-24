@@ -7,6 +7,7 @@ import { gzipSync, gunzipSync } from "zlib";
 //import { StreamUtil } from "../lib/lib";
 import streams from "../lib/streams";
 import fs from "fs";
+import zlib from "zlib";
 chai.use(sinonchai);
 //var assert = require('assert');
 
@@ -195,12 +196,12 @@ describe('RStreams', function () {
 			let expectedData = "H4sIAAAAAAAACo3OwQqDMAwG4LuPkXMLLXUOfBmpGqasXZymDil991VhR3HH5A/5vwhjDzV46p6yJZZ5EjDZzZHN+wgDOkf54EOz6yEJwBVf3CwU5g4bHj0ubP0Eta7Ke1kZczNKKQHnyfHgV0mB5TtgwNyKu0SlIl6QHkR73m74r0efevSVR6fiC2oPrJkjAQAA";
 			kinesisPutRecords.getCall(0).args[0].Records.forEach(r => {
 				// convert buffers to strings
-				r.Data = r.Data.toString("base64");
+				r.Data = zlib.gunzipSync(Buffer.from(r.Data.toString("base64"), "base64")).toString();
 			});
 			assert.deepEqual(kinesisPutRecords.getCall(0).args[0], {
 				"Records": [
 					{
-						"Data": expectedData,
+						"Data": zlib.gunzipSync(Buffer.from(expectedData, "base64")).toString(),
 						"ExplicitHashKey": "0",
 						"PartitionKey": "0"
 					}
