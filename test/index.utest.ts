@@ -2,10 +2,11 @@ import RStreamsSdk from "../index";
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
-import AWS, { Kinesis } from "aws-sdk";
+import AWS, { Credentials, Kinesis } from "aws-sdk";
 import { gzipSync, gunzipSync } from "zlib";
 //import { StreamUtil } from "../lib/lib";
 import streams from "../lib/streams";
+import fs from "fs";
 chai.use(sinonchai);
 //var assert = require('assert');
 
@@ -22,12 +23,12 @@ let mockSdkConfig = {
 
 describe('RStreams', function () {
 	describe('sdk.read/write', function () {
-		let sinonSandbox;
+		let sandbox;
 		beforeEach(() => {
-			sinonSandbox = sinon.createSandbox()
+			sandbox = sinon.createSandbox()
 		});
 		afterEach(() => {
-			sinonSandbox.restore();
+			sandbox.restore();
 		});
 
 		it('AWS Mock Test', async function () {
@@ -55,12 +56,12 @@ describe('RStreams', function () {
 				return { promise: async () => response };
 			}
 
-			let listBuckets = sinonSandbox.stub()
+			let listBuckets = sandbox.stub()
 				.onFirstCall().returns(AWSRequest(response1)) // Promise call 1
 				.onSecondCall().returns(AWSRequest(response2)) // Promise call 2
 				.onThirdCall().callsArgWith(0, null, response2); // Callback call 3
 
-			sinonSandbox.stub(AWS, 'S3').returns({ listBuckets }); // Stub the S3 service
+			sandbox.stub(AWS, 'S3').returns({ listBuckets }); // Stub the S3 service
 
 
 			// Create a service and call it 3 times
@@ -92,7 +93,7 @@ describe('RStreams', function () {
 				UnprocessedKeys: {}
 			};
 
-			let batchGet = sinonSandbox.stub()
+			let batchGet = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
@@ -107,12 +108,12 @@ describe('RStreams', function () {
 				].map(a => ({ payload: a })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(queue);
-			let query = sinonSandbox.stub();
+			let query = sandbox.stub();
 			queryResponse.forEach((data, index) => {
 				query.onCall(index).callsArgWith(1, null, data);
 			});
 
-			sinonSandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -157,15 +158,15 @@ describe('RStreams', function () {
 					ShardId: "shard-0"
 				}]
 			};
-			let kinesisPutRecords = sinonSandbox.stub();
+			let kinesisPutRecords = sandbox.stub();
 			kinesisPutRecords
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
-			let firehosePutRecordBatch = sinonSandbox.stub();
+			let firehosePutRecordBatch = sandbox.stub();
 
-			//sinonSandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
-			sinonSandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sinonSandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			//sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -214,9 +215,9 @@ describe('RStreams', function () {
 			let botId = "mock-bot-id";
 
 
-			let kinesisPutRecords = sinonSandbox.stub();
+			let kinesisPutRecords = sandbox.stub();
 
-			let firehosePutRecordBatch = sinonSandbox.stub();
+			let firehosePutRecordBatch = sandbox.stub();
 
 			let firehosePutRecordBatchRespone: AWS.Firehose.Types.PutRecordBatchOutput = {
 				FailedPutCount: 0,
@@ -229,9 +230,9 @@ describe('RStreams', function () {
 			firehosePutRecordBatch
 				.callsArgWith(1, null, firehosePutRecordBatchRespone);
 
-			//sinonSandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
-			sinonSandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sinonSandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			//sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -282,20 +283,20 @@ describe('RStreams', function () {
 					ShardId: "shard-0"
 				}]
 			};
-			let kinesisPutRecords = sinonSandbox.stub();
+			let kinesisPutRecords = sandbox.stub();
 			kinesisPutRecords
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
-			let firehosePutRecordBatch = sinonSandbox.stub();
+			let firehosePutRecordBatch = sandbox.stub();
 
 			let s3Upload = (obj, callback) => {
 				ls.pipe(obj.Body, ls.devnull(), (e) => callback(e));
 			};
 
 
-			sinonSandbox.stub(AWS, 'S3').returns({ upload: s3Upload });
-			sinonSandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sinonSandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			sandbox.stub(AWS, 'S3').returns({ upload: s3Upload });
+			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -378,6 +379,85 @@ describe('RStreams', function () {
 				]
 			});
 
+		});
+	});
+
+	describe("sdk profile load", function () {
+		let sandbox;
+		beforeEach(() => {
+			delete require("leo-config").leoaws;
+			sandbox = sinon.createSandbox()
+		});
+		afterEach(() => {
+			sandbox.restore();
+		});
+
+		it("should read an aws profile w/ STS", async function () {
+
+			require("leo-config").leoaws = {
+				profile: "mock-profile"
+			};
+
+			sandbox.stub(fs, "existsSync").returns(true);
+			sandbox.stub(fs, "readFileSync").onFirstCall().callsFake(() =>
+				"[profile mock-profile]\n" +
+				"source_profile = mock-profile\n" +
+				"mfa_serial = arn:aws:iam::mock-account:mfa/mock-user\n" +
+				"role_arn = arn:aws:iam::mock-account:role/mock-role"
+			).onSecondCall().callsFake(() => JSON.stringify({
+				Credentials: {
+					Expiration: Date.now() + 100000
+				}
+			}));
+
+			let fakeCredentials = {
+				fake: "values-1"
+			};
+			sandbox.stub(AWS, "STS").returns({
+				credentialsFrom: sandbox.stub().callsFake(() => fakeCredentials)
+			})
+			let sdk = RStreamsSdk(mockSdkConfig);
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
+		});
+
+		it("should read an aws profile w/ INI", async function () {
+
+			require("leo-config").leoaws = {
+				profile: "mock-profile"
+			};
+
+			sandbox.stub(fs, "existsSync").returns(true);
+			sandbox.stub(fs, "readFileSync").onFirstCall().callsFake(() =>
+				"[profile mock-profile]\n" +
+				"source_profile = mock-profile"
+			).onSecondCall().callsFake(() => JSON.stringify({
+				Credentials: {
+					Expiration: Date.now() + 100000
+				}
+			}));
+
+			let fakeCredentials = {
+				fake: "values-2"
+			};
+			sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
+			let sdk = RStreamsSdk(mockSdkConfig);
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
+		});
+
+		it("should read an aws profile w/ INI no file", async function () {
+
+			require("leo-config").leoaws = {
+				profile: "mock-profile"
+			};
+
+			sandbox.stub(fs, "existsSync").returns(false);
+
+			let fakeCredentials = {
+				fake: "values-3"
+			};
+			sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
+			let sdk = RStreamsSdk(mockSdkConfig);
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
 		});
 	});
 });

@@ -3,7 +3,7 @@ import stream from "stream";
 import { Callback, EnrichOptions, OffloadOptions, ReadOptions, StreamUtil, ToCheckpointOptions, WriteOptions } from "./lib/lib";
 import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
-import AWS from "aws-sdk";
+import AWS, { Credentials } from "aws-sdk";
 
 export interface ConfigurationResources {
 	Region: string;
@@ -22,6 +22,7 @@ export interface Configuration {
 	resources: ConfigurationResources,
 	region: string,
 	registry: any;
+	credentials?: Credentials
 
 	// TODO: These exist but do we need to expose them
 	//onUpdate: [Function: onUpdate],

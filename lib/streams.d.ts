@@ -2,6 +2,7 @@
 import moment from 'moment';
 import stream from 'stream';
 import through2 from 'through2';
+import pump from "pump";
 import { ParserOptionsArgs } from 'fast-csv';
 
 declare type ProcessCallback = (err?: any, result?: boolean | object, opts?: ProcessCallbackOptions) => void;
@@ -27,8 +28,10 @@ export interface CommandWrapOptions {
 
 // export interface AsEventOptions {}
 //export default interface Streams {
+export function pipe(streams: stream.Transform[], callback?: pump.Callback): stream.Transform;
+export function pipe(...streams: Array<stream.Transform | pump.Callback>): stream.Transform;
 
-export function eventIdFromTimestamp(timestamp: moment.MomentInput): string;
+export function eventIdFromTimestamp(timestamp: moment.MomentInput, granularity?: string): string;
 export function eventIdToTimestamp(eid: string): number;
 export function commandWrap(opts: CommandWrapOptions, func: CommandWrapFunction): stream.Transform;
 export function bufferBackoff(each, emit, retryOpts, opts, flush): stream.Transform;
@@ -37,6 +40,7 @@ export function bufferBackoff(each, emit, retryOpts, opts, flush): stream.Transf
 export function log(prefix?: string): stream.Transform;
 export function devnull(shouldLog?: boolean | string): stream.Transform;
 export function counter(label: string, records?: number): stream.Transform;
+export function counter(records?: number): stream.Transform;
 export function process(id: string, func: ProcessFunction, outQueue: string): stream.Transform;
 export function batch(opts: BatchOptions | Number): stream.Transform
 

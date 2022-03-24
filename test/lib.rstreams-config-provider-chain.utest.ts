@@ -1,5 +1,5 @@
 import util from "util";
-import RStreamsSdk from "../index";
+import RSTREAMS_CONFIG from "../index";
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import { trace as eventTrace } from "../lib/event-trace";
@@ -10,7 +10,7 @@ import AWS from "aws-sdk";
 
 
 
-let envVars = ["rstreams"];
+let envVars = ["RSTREAMS_CONFIG"];
 let keys = [
 	"Region",
 	"LeoStream",
@@ -113,7 +113,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				LeoFirehoseStream: "mock6-LeoFirehoseStream",
 				LeoSettings: "mock6-LeoSettings",
 			};
-			process.env.rstreams = JSON.stringify(mockSdkConfig2);
+			process.env.RSTREAMS_CONFIG = JSON.stringify(mockSdkConfig2);
 			let gotError;
 			let config;
 			try {
@@ -147,7 +147,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				LeoFirehoseStream: "mock9-LeoFirehoseStream",
 				LeoSettings: "mock9-LeoSettings",
 			};
-			process.env.rstreams = JSON.stringify(mockSdkConfig2);
+			process.env.RSTREAMS_CONFIG = JSON.stringify(mockSdkConfig2);
 			let gotError;
 			let config;
 			try {
@@ -178,9 +178,9 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let config1;
 			let config2;
 			let refresh = true;
-			process.env.rstreams = JSON.stringify({ s3: mockSdkConfig.LeoS3, resources: mockSdkConfig });
+			process.env.RSTREAMS_CONFIG = JSON.stringify({ s3: mockSdkConfig.LeoS3, resources: mockSdkConfig });
 			try {
-				let chain = new EnvironmentConfiguration("rstreams");
+				let chain = new EnvironmentConfiguration("RSTREAMS_CONFIG");
 				config1 = await util.promisify(chain.resolve).call(chain);
 				refresh = chain.needsRefresh()
 				config2 = await util.promisify(chain.resolve).call(chain);
@@ -198,37 +198,37 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 		it('throws unparsable env error', async function () {
 
 			let gotError;
-			process.env.rstreams = '{"hello":2]';
+			process.env.RSTREAMS_CONFIG = '{"hello":2]';
 			try {
-				let chain = new EnvironmentConfiguration("rstreams");
+				let chain = new EnvironmentConfiguration("RSTREAMS_CONFIG");
 				await util.promisify(chain.resolve).call(chain);
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
 			}
 			assert(!!gotError, "should have thrown an error");
-			assert.equal(gotError.message, "Unable to parse env variable: rstreams");
+			assert.equal(gotError.message, "Unable to parse env variable: RSTREAMS_CONFIG");
 		});
 
 		it('throws missing field error', async function () {
 
 			let gotError;
-			process.env.rstreams_Region = "mock3-Region";
-			process.env.rstreams_LeoStream = "mock3-LeoStream";
-			process.env.rstreams_LeoCron = "mock3-LeoCron";
-			process.env.rstreams_LeoEvent = "mock3-LeoEvent";
-			process.env.rstreams_LeoKinesisStream = "mock3-LeoKinesisStream";
-			process.env.rstreams_LeoFirehoseStream = "mock3-LeoFirehoseStream";
-			process.env.rstreams_LeoSettings = "mock3-LeoSettings";
+			process.env.RSTREAMS_CONFIG_Region = "mock3-Region";
+			process.env.RSTREAMS_CONFIG_LeoStream = "mock3-LeoStream";
+			process.env.RSTREAMS_CONFIG_LeoCron = "mock3-LeoCron";
+			process.env.RSTREAMS_CONFIG_LeoEvent = "mock3-LeoEvent";
+			process.env.RSTREAMS_CONFIG_LeoKinesisStream = "mock3-LeoKinesisStream";
+			process.env.RSTREAMS_CONFIG_LeoFirehoseStream = "mock3-LeoFirehoseStream";
+			process.env.RSTREAMS_CONFIG_LeoSettings = "mock3-LeoSettings";
 			try {
-				let chain = new EnvironmentConfiguration("rstreams");
+				let chain = new EnvironmentConfiguration("RSTREAMS_CONFIG");
 				await util.promisify(chain.resolve).call(chain);
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
 			}
 			assert(!!gotError, "should have thrown an error");
-			assert.equal(gotError.message, "Variable rstreams_LeoS3 not set.");
+			assert.equal(gotError.message, "Variable RSTREAMS_CONFIG_LeoS3 not set.");
 		});
 
 		it('read env var', async function () {
@@ -244,7 +244,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			};
 			let gotError;
 			let config;
-			process.env.rstreams = JSON.stringify(mockSdkConfig);
+			process.env.RSTREAMS_CONFIG = JSON.stringify(mockSdkConfig);
 			try {
 				let chain = new ConfigProviderChain();
 				config = await chain.resolvePromise();
@@ -350,13 +350,13 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 		it('throws no config in object', async function () {
 			let gotError;
 			try {
-				let chain = new ObjectConfiguration({}, "rstreams");
+				let chain = new ObjectConfiguration({}, "RSTREAMS_CONFIG");
 				await util.promisify(chain.resolve).call(chain);
 			} catch (err) {
 				gotError = err;
 			}
 			assert(!!gotError, "should not have thrown an error");
-			assert.equal(gotError.message, "Unable to get config from rstreams");
+			assert.equal(gotError.message, "Unable to get config from RSTREAMS_CONFIG");
 		});
 
 		it('gets config object', async function () {
@@ -374,7 +374,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 
 			let config;
 			try {
-				let chain = new ObjectConfiguration({ rstreams: mockSdkConfig }, "rstreams");
+				let chain = new ObjectConfiguration({ RSTREAMS_CONFIG: mockSdkConfig }, "RSTREAMS_CONFIG");
 				config = await util.promisify(chain.resolve).call(chain);
 			} catch (err) {
 				gotError = err;

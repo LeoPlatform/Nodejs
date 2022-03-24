@@ -177,25 +177,15 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 // TODO: I think we need to settle on just a few of these
 // The ENV & File path ones aren't too bad but multiple AWS Secrets checked could get heavy
 ConfigProviderChain.defaultProviders = [
+
+	/* Rstreams Env locations */
+	function () { return new EnvironmentConfiguration('RSTREAMS_CONFIG'); },
+
 	/* Leo Env locations */
 	function () { return new EnvironmentConfiguration('leosdk'); },
 	function () { return new EnvironmentConfiguration('leo-sdk'); },
-	function () { return new EnvironmentConfiguration('leo_sdk'); },
-	function () { return new EnvironmentConfiguration('leo'); },
 	function () { return new EnvironmentConfiguration('LEOSDK'); },
 	function () { return new EnvironmentConfiguration('LEO-SDK'); },
-	function () { return new EnvironmentConfiguration('LEO_SDK'); },
-	function () { return new EnvironmentConfiguration('LEO'); },
-
-	/* Rstreams Env locations */
-	function () { return new EnvironmentConfiguration('rstreamssdk'); },
-	function () { return new EnvironmentConfiguration('rstreams-sdk'); },
-	function () { return new EnvironmentConfiguration('rstreams_sdk'); },
-	function () { return new EnvironmentConfiguration('rstreams'); },
-	function () { return new EnvironmentConfiguration('RSTREAMSSDK'); },
-	function () { return new EnvironmentConfiguration('RSTREAMS-SDK'); },
-	function () { return new EnvironmentConfiguration('RSTREAMS_SDK'); },
-	function () { return new EnvironmentConfiguration('RSTREAMS'); },
 
 	/* leo-config */
 	function () { return new LeoConfiguration(); },
@@ -203,22 +193,12 @@ ConfigProviderChain.defaultProviders = [
 	/* process Object locations */
 	function () { return new ObjectConfiguration(process, "leosdk"); },
 	function () { return new ObjectConfiguration(process, "leo-sdk"); },
-	function () { return new ObjectConfiguration(process, "leo_sdk"); },
-	function () { return new ObjectConfiguration(process, "leo"); },
-	function () { return new ObjectConfiguration(process, "rstreamssdk"); },
-	function () { return new ObjectConfiguration(process, "rstreams-sdk"); },
-	function () { return new ObjectConfiguration(process, "rstreams_sdk"); },
-	function () { return new ObjectConfiguration(process, "rstreams"); },
+	function () { return new ObjectConfiguration(process, "rstreams_config"); },
 
 	/* global Object locations */
 	function () { return new ObjectConfiguration(global, "leosdk"); },
 	function () { return new ObjectConfiguration(global, "leo-sdk"); },
-	function () { return new ObjectConfiguration(global, "leo_sdk"); },
-	function () { return new ObjectConfiguration(global, "leo"); },
-	function () { return new ObjectConfiguration(global, "rstreamssdk"); },
-	function () { return new ObjectConfiguration(global, "rstreams-sdk"); },
-	function () { return new ObjectConfiguration(global, "rstreams_sdk"); },
-	function () { return new ObjectConfiguration(global, "rstreams"); },
+	function () { return new ObjectConfiguration(global, "rstreams_config"); },
 
 	/* File tree locations */
 	function () {
