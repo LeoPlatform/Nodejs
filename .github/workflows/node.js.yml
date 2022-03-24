@@ -29,3 +29,7 @@ jobs:
     - run: npm i
     - run: npm run compile --if-present
     - run: npm run coverage-all --if-present
+    - uses: actions/upload-artifact@v3
+      with:
+        name: code-coverage-${{ matrix.node-version }}
+        path: coverage/
