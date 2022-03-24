@@ -315,7 +315,7 @@ export const EnvironmentConfiguration = util.inherit(Configuration, {
 			for (var i = 0; i < keys.length; i++) {
 				let key = keys[i];
 				var prefix = '';
-				if (this.envPrefix) prefix = this.envPrefix + '_';
+				if (this.envPrefix) { prefix = this.envPrefix + '_'; }
 				values[key] = process.env[prefix + key] || process.env[prefix + key.toUpperCase()] || process.env[prefix + key.toLowerCase()];
 				if (!values[key] && key !== 'LeoSettings') {
 					callback(util.error(
@@ -381,7 +381,7 @@ export const FileTreeConfiguration = util.inherit(Configuration, {
 
 		if (values == null) {
 			callback(util.error(
-				new Error(`Unable to parse env variable: ${this.envPrefix}`),
+				new Error(`Unable to find file config`),
 				{ code: 'FileTreeConfigurationProviderFailure', errors: errors }
 			));
 			return;

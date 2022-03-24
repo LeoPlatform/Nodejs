@@ -235,36 +235,36 @@ const Configuration = util.inherit({
 		callback();
 	},
 
-	/**
-	 * @api private
-	 * @param callback
-	 */
-	coalesceRefresh: function coalesceRefresh(callback, sync) {
-		var self = this;
-		if (self.refreshCallbacks.push(callback) === 1) {
-			self.load(function onLoad(err) {
-				util.arrayEach(self.refreshCallbacks, function (callback) {
-					if (sync) {
-						callback(err);
-					} else {
-						// callback could throw, so defer to ensure all callbacks are notified
-						util.defer(function () {
-							callback(err);
-						});
-					}
-				});
-				self.refreshCallbacks.length = 0;
-			});
-		}
-	},
+	// /**
+	//  * @api private
+	//  * @param callback
+	//  */
+	// coalesceRefresh: function coalesceRefresh(callback, sync) {
+	// 	var self = this;
+	// 	if (self.refreshCallbacks.push(callback) === 1) {
+	// 		self.load(function onLoad(err) {
+	// 			util.arrayEach(self.refreshCallbacks, function (callback) {
+	// 				if (sync) {
+	// 					callback(err);
+	// 				} else {
+	// 					// callback could throw, so defer to ensure all callbacks are notified
+	// 					util.defer(function () {
+	// 						callback(err);
+	// 					});
+	// 				}
+	// 			});
+	// 			self.refreshCallbacks.length = 0;
+	// 		});
+	// 	}
+	// },
 
-	/**
-	 * @api private
-	 * @param callback
-	 */
-	load: function load(callback) {
-		callback();
-	}
+	// /**
+	//  * @api private
+	//  * @param callback
+	//  */
+	// load: function load(callback) {
+	// 	callback();
+	// }
 });
 
 

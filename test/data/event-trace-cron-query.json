@@ -1,0 +1,3289 @@
+{
+	"Items": [
+		{
+			"executionType": "lambda",
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"invokeTime": null,
+			"scheduledTrigger": null,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": [
+					{
+						"stuff": "here"
+					}
+				]
+			},
+			"errorCount": 0,
+			"instances": {},
+			"description": null,
+			"id": "create_bot_1",
+			"invocationType": "lambda",
+			"paused": false,
+			"checkpoints": {
+				"write": {
+					"queue:rust_context": {
+						"checkpoint": "This",
+						"ended_timestamp": null,
+						"started_timestamp": null,
+						"records": null,
+						"source_timestamp": null
+					}
+				},
+				"read": {}
+			}
+		},
+		{
+			"invokeTime": 1638919522912,
+			"executionType": "lambda",
+			"lambdaName": "clint-fanout2-bot-2",
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": [
+					{}
+				]
+			},
+			"errorCount": 0,
+			"triggers": [],
+			"instances": {
+				"0": {
+					"completedTime": 1638919523695,
+					"invokeTime": 1638919522912,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							10,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 29481,
+					"requestId": "requestid-local1638919522392",
+					"result": null,
+					"startTime": 1638919522912,
+					"status": "complete",
+					"token": 1638919522391
+				},
+				"1": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/07/23/20/1638919232301-0000000",
+						"started_timestamp": 1638919272769,
+						"ended_timestamp": 1638919272769,
+						"source_timestamp": 1638919272769,
+						"records": 1
+					}
+				},
+				"2": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/07/23/20/1638919232301-0000000",
+						"started_timestamp": 1638919272732,
+						"ended_timestamp": 1638919272732,
+						"source_timestamp": 1638919272732,
+						"records": 2
+					}
+				},
+				"3": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/07/23/20/1638919232301-0000000",
+						"started_timestamp": 1638919272723,
+						"ended_timestamp": 1638919272723,
+						"source_timestamp": 1638919272723,
+						"records": 2
+					}
+				},
+				"4": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/07/23/20/1638919232301-0000000",
+						"started_timestamp": 1638919272801,
+						"ended_timestamp": 1638919272801,
+						"source_timestamp": 1638919272801,
+						"records": 1
+					}
+				}
+			},
+			"message": null,
+			"id": "clint-fanout2-bot-2",
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/07/23/20/1638919232301-0000000",
+						"started_timestamp": 1638919272534,
+						"ended_timestamp": 1638919272534,
+						"source_timestamp": 1638919272534,
+						"records": 2
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"requested_kinesis": {},
+			"lambdaName": null,
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "clint_write_to_s3_v2",
+			"paused": false,
+			"name": "clint_write_to_s3_v2",
+			"checkpoints": {
+				"write": {},
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2022/01/14/18/08/1642183712767-0000000",
+						"started_timestamp": 1642184047780,
+						"ended_timestamp": 1642184047780,
+						"source_timestamp": 1642118899000,
+						"records": 89
+					}
+				}
+			}
+		},
+		{
+			"requested_kinesis": {},
+			"lambdaName": null,
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test3-types-loader",
+			"paused": false,
+			"name": "test3-types-loader",
+			"checkpoints": {
+				"write": {
+					"queue:test-types-loader-queue": {
+						"checkpoint": "z/2022/01/11/16/20/1641918046230-0000009",
+						"started_timestamp": 1641918045050,
+						"ended_timestamp": 1641918046230,
+						"source_timestamp": 1641918045050,
+						"records": 10
+					}
+				},
+				"read": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "bentest-ts-loader-asyncawait",
+			"name": "bentest-ts-loader-asyncawait",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:bentest-asyncawait-types-queue": {
+						"checkpoint": "z/2022/01/11/20/21/1641932469337-0000005",
+						"started_timestamp": 1641932467894,
+						"ended_timestamp": 1641932469337,
+						"source_timestamp": 1641932467894,
+						"records": 6
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "BOTSAVEAPI",
+			"name": "BOTSAVEAPI",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:BotChangeLog": {
+						"checkpoint": "z/2022/01/08/00/31/1641601914260-0000000",
+						"started_timestamp": 1641601914043,
+						"ended_timestamp": 1641601914260,
+						"source_timestamp": 1641601914043,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "TestRstreamsDeepDive-RstreamsDeepDiveOrderWeather",
+			"trigger": 1620144971343,
+			"triggers": [
+				"queue:order-entity-actions"
+			],
+			"message": null,
+			"time": null,
+			"name": "rstreams_deep_dive_order_weather",
+			"invokeTime": 1620144971491,
+			"scheduledTrigger": 1614766607853,
+			"requested_kinesis": {
+				"queue:order-entity-actions": "z/2021/05/04/16/16/1620144969226-0000238"
+			},
+			"lambda": {
+				"settings": [
+					{
+						"destination": "order-weather",
+						"source": "order-entity-actions"
+					}
+				]
+			},
+			"token": 1620144971343,
+			"errorCount": 0,
+			"progress": {
+				"queue_position": "z/2021/03/25/19/14/1616699675680-0000004"
+			},
+			"instances": {
+				"0": {
+					"completedTime": 1620144974360,
+					"invokeTime": 1620144971491,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							3,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 899989,
+					"requestId": "aee5dcf6-0f45-4f27-8b7f-ba4e65290673",
+					"result": null,
+					"startTime": 1620144972420,
+					"status": "complete",
+					"token": 1620144971343
+				}
+			},
+			"description": null,
+			"id": "rstreams_deep_dive_order_weather",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-actions": {
+						"checkpoint": "z/2021/05/04/16/16/1620144969226-0000238",
+						"started_timestamp": 1620144974312,
+						"ended_timestamp": 1620144974312,
+						"source_timestamp": 1615905695000,
+						"records": 3
+					}
+				},
+				"write": {
+					"queue:order-weather": {
+						"checkpoint": "z/2021/05/04/16/16/1620144974251-0000000",
+						"started_timestamp": 1620144974312,
+						"ended_timestamp": 1620144974251,
+						"source_timestamp": 1615905695000,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "dynamic_s3_writer",
+			"name": "dynamic_s3_writer",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/03/01/18/05/1614621931379-0000002",
+						"ended_timestamp": 1622242461270,
+						"started_timestamp": 1622242461270,
+						"source_timestamp": 1614526632000,
+						"records": 5900
+					}
+				},
+				"write": {
+					"queue:dynamic_s3_1": {
+						"checkpoint": "z/2021/05/28/22/54/1622242466306-0000511",
+						"started_timestamp": 1622242461245,
+						"ended_timestamp": 1622242466306,
+						"source_timestamp": 1614621789000,
+						"records": 512
+					},
+					"queue:dynamic_s3_2": {
+						"checkpoint": "z/2021/05/28/22/54/1622242466306-0000512",
+						"started_timestamp": 1622242461245,
+						"ended_timestamp": 1622242466306,
+						"source_timestamp": 1614621849000,
+						"records": 513
+					},
+					"queue:dynamic_s3_3": {
+						"checkpoint": "z/2021/05/28/22/54/1622242466306-0000512",
+						"started_timestamp": 1622242461247,
+						"ended_timestamp": 1622242466306,
+						"source_timestamp": 1614621851000,
+						"records": 513
+					},
+					"queue:dynamic_s3_4": {
+						"checkpoint": "z/2021/05/28/22/54/1622242466306-0000512",
+						"started_timestamp": 1622242461270,
+						"ended_timestamp": 1622242466306,
+						"source_timestamp": 1614621909000,
+						"records": 513
+					},
+					"queue:dynamic_s3_5": {
+						"checkpoint": "z/2021/05/28/22/54/1622242466306-0000511",
+						"started_timestamp": 1622242461243,
+						"ended_timestamp": 1622242466306,
+						"source_timestamp": 1614621731000,
+						"records": 512
+					},
+					"queue:dynamic_s3_single": {
+						"checkpoint": "z/2021/05/28/15/49/1622216977093-0000499",
+						"started_timestamp": 1622216973882,
+						"ended_timestamp": 1622216977093,
+						"source_timestamp": 1613970188000,
+						"records": 500
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "ddb-order-entity-load-order-entity-old-new",
+			"name": "ddb-order-entity-load-order-entity-old-new",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/03/25/19/14/1616699675054-0000004",
+						"started_timestamp": 1613952132002,
+						"ended_timestamp": 1616699675054,
+						"source_timestamp": 1613952131000,
+						"records": 5
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "write_test_bot_from_other_bus",
+			"name": "write_test_bot_from_other_bus",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:write_test_from_other_bus": {
+						"checkpoint": "z/2021/05/14/21/47/1621028854104-0000012",
+						"started_timestamp": 1621028869681,
+						"ended_timestamp": 1621028854104,
+						"source_timestamp": 1579236076000,
+						"records": 389
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test-ts-loader-test-pass-fail",
+			"name": "test-ts-loader-test-pass-fail",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:bentest-asyncawait-types-queue": {
+						"checkpoint": "z/2022/01/12/17/42/1642009358613-0000026",
+						"started_timestamp": 1642009357352,
+						"ended_timestamp": 1642009358613,
+						"source_timestamp": 1642009357352,
+						"records": 27
+					},
+					"queue:test-ts-asyncawait-queue": {
+						"checkpoint": "z/2022/01/11/23/10/1641942630569-0000026",
+						"started_timestamp": 1641942629347,
+						"ended_timestamp": 1641942630569,
+						"source_timestamp": 1641942629347,
+						"records": 27
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test-ts-stream-writer-through",
+			"name": "test-ts-stream-writer-through",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:bentest-types-loader-queue": {
+						"checkpoint": "z/2022/01/07/15/43/1641570234500-0000009",
+						"started_timestamp": 1641570244486,
+						"ended_timestamp": 1641570244486,
+						"source_timestamp": 1641570244486,
+						"records": 10
+					},
+					"queue:undefined": {
+						"checkpoint": "z/2022/01/07/15/32/1641569571949-0000009",
+						"started_timestamp": 1641569599067,
+						"ended_timestamp": 1641569599067,
+						"source_timestamp": 1641569599067,
+						"records": 10
+					}
+				},
+				"write": {
+					"queue:bentest-types-loader-new-queue": {
+						"checkpoint": "z/2022/01/07/15/44/1641570244798-0000009",
+						"started_timestamp": 1641570244486,
+						"ended_timestamp": 1641570244798,
+						"source_timestamp": 1641570244486,
+						"records": 10
+					}
+				}
+			}
+		},
+		{
+			"requested_kinesis": {},
+			"lambdaName": null,
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "typed-sdk-loader",
+			"paused": false,
+			"name": "typed-sdk-loader",
+			"checkpoints": {
+				"write": {
+					"queue:typed-sdk-load": {
+						"checkpoint": "z/2022/03/14/22/56/1647298583103-0000009",
+						"started_timestamp": 1647298582802,
+						"ended_timestamp": 1647298583103,
+						"source_timestamp": 1647298582802,
+						"records": 10
+					}
+				},
+				"read": {}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "leo_cron_monitor",
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": [
+					{}
+				]
+			},
+			"triggers": [],
+			"instances": {},
+			"owner": "leo",
+			"id": "leo_cron_monitor",
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:monitor": {
+						"checkpoint": "z/2022/03/23/22/54/1648076043716-0000000",
+						"started_timestamp": 1648076043695,
+						"ended_timestamp": 1648076043716,
+						"source_timestamp": 1648076043695,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "auto_switching_writer",
+			"name": "auto_switching_writer",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:auto_switching_data": {
+						"checkpoint": "z/2021/06/02/15/27/1622647674552-0000049",
+						"started_timestamp": 1622647731351,
+						"ended_timestamp": 1622647674552,
+						"source_timestamp": 1622647731351,
+						"records": 100
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "SimpleSdkBot",
+			"name": "SimpleSdkBot",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:michael-fortnite-games": {
+						"checkpoint": "z/2022/03/08/19/35/1646768147460-0002484",
+						"records": 11
+					},
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2022/03/09/01/00/1646787631115-0000006",
+						"records": 11
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "TestRstreamsDeepDive-RstreamsDeepDiveReplicatorVarOrderEntity",
+			"trigger": 1648076040527,
+			"triggers": [],
+			"message": null,
+			"time": "0/30 * * * * * ",
+			"name": "order-entity-old-new-replicator",
+			"invokeTime": 1648076040913,
+			"scheduledTrigger": 1640175185566,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": [
+					{
+						"queue": "order-entity-old-new"
+					}
+				]
+			},
+			"token": 1648076040527,
+			"errorCount": 0,
+			"progress": {},
+			"instances": {
+				"0": {
+					"completedTime": 1648076041290,
+					"invokeTime": 1648076040913,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							3,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 900000,
+					"requestId": "74224fd7-0504-4382-8d84-cf82b20d9093",
+					"result": null,
+					"startTime": 1648076040984,
+					"status": "complete",
+					"token": 1648076040527
+				},
+				"1": {
+					"some_thing": "This is the value"
+				}
+			},
+			"description": null,
+			"id": "order-entity-old-new-replicator",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:source_bus_order-entity-old-new": {
+						"checkpoint": "z/2022/03/23/22/38/1648075098372-0000000",
+						"started_timestamp": 1648075098614,
+						"ended_timestamp": 1648075098614,
+						"source_timestamp": 1648075098000,
+						"records": 1
+					}
+				},
+				"write": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2022/03/23/22/38/1648075111715-0000000",
+						"started_timestamp": 1648075098614,
+						"ended_timestamp": 1648075111715,
+						"source_timestamp": 1648075098000,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "bot_with_new_queue",
+			"invokeTime": null,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {},
+			"description": null,
+			"id": "bot_with_new_queue",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:": {
+						"checkpoint": "z/2021/08/05/17/00/123456789",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"records": 1,
+						"source_timestamp": null
+					},
+					"queue:random_queue_1": {
+						"checkpoint": "z/2021/08/05/17/00/123456789",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"records": 1,
+						"source_timestamp": null
+					}
+				},
+				"write": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/08/05/21/17/1628198264753-0000189",
+						"ended_timestamp": 1628198264753,
+						"started_timestamp": 1628198265918,
+						"records": 190,
+						"source_timestamp": 1628198221000
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "write_system_tester",
+			"invokeTime": 1621880941578,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1621880942092,
+					"invokeTime": 1621880941578,
+					"log": null,
+					"maxDuration": 29994,
+					"requestId": "requestid-local1621880941572",
+					"result": null,
+					"startTime": 1621880941578,
+					"status": "complete",
+					"token": 1621880941572
+				}
+			},
+			"description": null,
+			"id": "write_system_tester",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:bot.write_system_tester.extra": {
+						"checkpoint": "z/2021/05/24/18/29/1621880943292-0000000",
+						"started_timestamp": 1621880941830,
+						"ended_timestamp": 1621880943292,
+						"source_timestamp": 1621880941830,
+						"records": 1
+					},
+					"queue:my_output_queue": {
+						"checkpoint": "z/2021/05/24/18/29/1621880943292-0000001",
+						"started_timestamp": 1621880941830,
+						"ended_timestamp": 1621880943292,
+						"source_timestamp": 1621880941830,
+						"records": 2
+					},
+					"queue:system.my_system": {
+						"checkpoint": "z/2021/05/24/18/29/1621880943292-0000000",
+						"started_timestamp": 1621880941830,
+						"ended_timestamp": 1621880943292,
+						"source_timestamp": 1621880941830,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "my_test_bot_1",
+			"invokeTime": 1619741018348,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"startTime": 1619741018348,
+					"maxDuration": 0,
+					"invokeTime": 1619741018348,
+					"token": 1234
+				}
+			},
+			"description": null,
+			"id": "my_test_bot_1",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "ClintTestBus-Bus-1AU1ENWI-LeoFirehoseStreamProcess-FU0VDF7U3M2M",
+			"trigger": 1641602566179,
+			"triggers": [
+				"commands.s3_bus_load"
+			],
+			"message": null,
+			"name": "Leo_firehose_processor",
+			"invokeTime": 1641602566340,
+			"scheduledTrigger": null,
+			"requested_kinesis": {
+				"queue:commands.s3_bus_load": "z/2022/01/08/00/42/1641602564325-0000000"
+			},
+			"lambda": {
+				"settings": [
+					{}
+				]
+			},
+			"token": 1641602566179,
+			"errorCount": 0,
+			"progress": {
+				"queue_position": "z/2022/01/08/00/30/1641601826408-0000000"
+			},
+			"instances": {
+				"0": {
+					"completedTime": 1641602570119,
+					"invokeTime": 1641602566340,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							3,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 299997,
+					"requestId": "93ee9328-fa68-46ad-b707-d2459d525e08",
+					"result": null,
+					"startTime": 1641602567213,
+					"status": "complete",
+					"token": 1641602566179
+				}
+			},
+			"owner": "leo",
+			"description": "Leo_firehose_processor",
+			"id": "ClintTestBus-Bus-1AU1ENWI-LeoFirehoseStreamProcess-FU0VDF7U3M2M",
+			"checkpoints": {
+				"read": {
+					"queue:commands.s3_bus_load": {
+						"checkpoint": "z/2022/01/08/00/42/1641602564325-0000000",
+						"started_timestamp": 1641602565508,
+						"ended_timestamp": 1641602565508,
+						"records": 1
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "my_bot_delivery",
+			"name": "my_bot_delivery",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:crime_data_compressed": {
+						"checkpoint": "z/2021/02/25/15/47/1614268035144-0000301",
+						"started_timestamp": 1614268042123,
+						"ended_timestamp": 1614268035144,
+						"source_timestamp": 1614268042123,
+						"records": 50000
+					},
+					"queue:crime_data_firehose": {
+						"checkpoint": "z/2021/04/28/21/42/1619646134758-0012517",
+						"started_timestamp": 1619646090448,
+						"ended_timestamp": 1619646134758,
+						"source_timestamp": 1619646090448,
+						"records": 96000
+					},
+					"queue:crime_data_s3": {
+						"checkpoint": "z/2021/02/25/15/49/1614268152753-0016763",
+						"started_timestamp": 1614268151195,
+						"ended_timestamp": 1614268152753,
+						"source_timestamp": 1614268151195,
+						"records": 167783
+					}
+				}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "TestRstreamsDeepDive-RstreamsDeepDiveOrderWeatherEsLoader",
+			"trigger": 1620144976406,
+			"triggers": [
+				"queue:order-weather"
+			],
+			"message": null,
+			"time": null,
+			"name": "rstreams_deep_dive_order_weather_es_loader",
+			"invokeTime": 1620144978142,
+			"scheduledTrigger": 1615827675099,
+			"requested_kinesis": {
+				"queue:order-weather": "z/2021/05/04/16/16/1620144974251-0000273"
+			},
+			"lambda": {
+				"settings": [
+					{
+						"source": "order-weather"
+					}
+				]
+			},
+			"token": 1620144976406,
+			"errorCount": 0,
+			"progress": {
+				"queue_position": "z/2021/05/04/16/16/1620144974251-0000273"
+			},
+			"instances": {
+				"0": {
+					"completedTime": 1620144978275,
+					"invokeTime": 1620144978142,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							3,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 899999,
+					"requestId": "4d8b91a7-2de7-45b2-80b6-0e3ca644b61e",
+					"result": null,
+					"startTime": 1620144978231,
+					"status": "complete",
+					"token": 1620144976406
+				}
+			},
+			"description": null,
+			"id": "rstreams_deep_dive_order_weather_es_loader",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-weather": {
+						"checkpoint": "z/2021/05/04/16/16/1620144974251-0000273",
+						"started_timestamp": 1620144977899,
+						"ended_timestamp": 1620144977899,
+						"source_timestamp": 1615904159000,
+						"records": 2
+					}
+				},
+				"write": {
+					"queue:system.es-order": {
+						"checkpoint": "z/2021/05/04/16/16/1620144977123-0000000",
+						"started_timestamp": 1620144977899,
+						"ended_timestamp": 1620144977123,
+						"source_timestamp": 1615904159000,
+						"records": 2
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "my_test_bot_4",
+			"invokeTime": null,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1619741231801,
+					"invokeTime": null,
+					"log": null,
+					"maxDuration": null,
+					"requestId": "local test",
+					"result": null,
+					"startTime": null,
+					"status": "complete",
+					"token": 1234
+				}
+			},
+			"description": null,
+			"id": "my_test_bot_4",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "bentest-types-loader",
+			"name": "bentest-types-loader",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:bentest-types-loader-queue": {
+						"checkpoint": "z/2022/01/10/21/11/1641849104878-0000009",
+						"started_timestamp": 1641849103607,
+						"ended_timestamp": 1641849104878,
+						"source_timestamp": 1641849103607,
+						"records": 10
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "write_test_bot_different_types",
+			"name": "write_test_bot_different_types",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:multi_type_queue": {
+						"checkpoint": "z/2021/05/04/22/03/1620165815379-0000009",
+						"started_timestamp": 1620165814775,
+						"ended_timestamp": 1620165815379,
+						"source_timestamp": 1620165814775,
+						"records": 10
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "write_test_bot_node",
+			"name": "write_test_bot_node",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:write_test_queue2": {
+						"checkpoint": "z/2021/05/13/21/28/1620941297165-0000499",
+						"started_timestamp": 1620941295505,
+						"ended_timestamp": 1620941297165,
+						"source_timestamp": 1620941295505,
+						"records": 500
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "kinesis_fail_test_bot",
+			"name": "kinesis_fail_test_bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:kinesis_fail_queue": {
+						"checkpoint": "z/2022/02/23/21/53/1645653232216-0000099",
+						"started_timestamp": 1645653231953,
+						"ended_timestamp": 1645653232216,
+						"source_timestamp": 1645653231953,
+						"records": 100
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "just-testing",
+			"name": "just-testing",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:ian-testing": {
+						"checkpoint": "z/2021/02/09/20/15/1612901746883-0000000",
+						"started_timestamp": 1612901745038,
+						"ended_timestamp": 1612901746883,
+						"source_timestamp": 1612901745038,
+						"records": 1
+					},
+					"queue:testing": {
+						"checkpoint": "z/2021/02/09/20/03/1612900985646-0000000",
+						"started_timestamp": 1612900983669,
+						"ended_timestamp": 1612900985646,
+						"source_timestamp": 1612900983669,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test-multi-writer-bot-id",
+			"name": "test-multi-writer-bot-id",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:bentest-types-loader-queue": {
+						"checkpoint": "z/2022/01/07/15/35/1641569748938-0000009",
+						"started_timestamp": 1641570104570,
+						"ended_timestamp": 1641570104570,
+						"source_timestamp": 1641570104570,
+						"records": 20
+					},
+					"queue:ts-new-order-queue-test": {
+						"checkpoint": "z/2022/01/13/21/50/1642110658750-0000005",
+						"started_timestamp": 1642111403785,
+						"ended_timestamp": 1642111403785,
+						"source_timestamp": 1642111403785,
+						"records": 6
+					},
+					"queue:undefined": {
+						"checkpoint": "z/2022/01/07/15/35/1641569748938-0000009",
+						"started_timestamp": 1641569885973,
+						"ended_timestamp": 1641569885973,
+						"source_timestamp": 1641569885973,
+						"records": 20
+					}
+				},
+				"write": {
+					"queue:ts-types-multi-out-queue-1": {
+						"checkpoint": "z/2022/01/07/15/41/1641570105189-0000009",
+						"started_timestamp": 1641570104570,
+						"ended_timestamp": 1641570105189,
+						"source_timestamp": 1641570104570,
+						"records": 10
+					},
+					"queue:ts-types-multi-out-queue-2": {
+						"checkpoint": "z/2022/01/13/22/03/1642111404139-0000005",
+						"started_timestamp": 1642111403785,
+						"ended_timestamp": 1642111404139,
+						"source_timestamp": 1642111403785,
+						"records": 6
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "michael-bot",
+			"name": "michael-bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:michael-fortnite-games": {
+						"checkpoint": "z/2022/03/08/19/39/1646768348307-0000399",
+						"started_timestamp": 1646768348016,
+						"ended_timestamp": 1646768348307,
+						"source_timestamp": 1646768348016,
+						"records": 400
+					}
+				}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "TestRstreamsDeepDive-RstreamsDeepDiveEntityActionsVar2",
+			"requested_kinesis": {
+				"queue:account-entity-old-new": "z/2022/03/23/22/54/1648076041481-0000000"
+			},
+			"lambda": {
+				"settings": [
+					{
+						"destination": "account-entity-actions",
+						"source": "account-entity-old-new"
+					}
+				]
+			},
+			"trigger": 1648076043734,
+			"triggers": [
+				"queue:account-entity-old-new"
+			],
+			"instances": {},
+			"id": "account-entity-actions",
+			"paused": true,
+			"checkpoints": {
+				"write": {
+					"queue:account-entity-actions": {}
+				},
+				"read": {
+					"queue:account-entity-old-new": {}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": 1621524185748,
+			"triggers": null,
+			"time": null,
+			"name": "offload_bot_test_bad",
+			"invokeTime": 1639007485612,
+			"scheduledTrigger": null,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1639007486672,
+					"invokeTime": 1639007485612,
+					"log": null,
+					"maxDuration": 29963,
+					"requestId": "requestid-local1639007485575",
+					"result": null,
+					"startTime": 1639007485612,
+					"status": "complete",
+					"token": 1639007485576
+				}
+			},
+			"description": null,
+			"id": "offload_bot_test_bad",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:enrich_write_error_test": {
+						"checkpoint": "z/2021/05/19/20/50/1621457450202-0000096",
+						"ended_timestamp": 1621524198903,
+						"started_timestamp": 1621524198903,
+						"records": 68020,
+						"source_timestamp": 1613955430000
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "fanout_bot_id",
+			"invokeTime": 1624287880966,
+			"scheduledTrigger": 1624032910899,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"startTime": 1624287880965,
+					"requestId": "requestid-local1624287880955",
+					"invokeTime": 1624287880965,
+					"maxDuration": 29990,
+					"token": 1624287880950
+				}
+			},
+			"description": null,
+			"id": "fanout_bot_id",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test",
+			"name": "test",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:BotChangeLog": {
+						"checkpoint": "z/2021/06/21/22/09/1624313366279 ",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"source_timestamp": null,
+						"records": 1
+					},
+					"queue:dynamic_s3_1": {
+						"checkpoint": "z/2021/05/28/15/54/1622217242660-0000250 ",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"source_timestamp": null,
+						"records": 1
+					},
+					"queue:dynamic_s3_single": {
+						"checkpoint": "z/2021/05/28/15/45/1622216728325-0000500 ",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"source_timestamp": null,
+						"records": 1
+					},
+					"queue:load-test-data": {
+						"checkpoint": "z/2021/06/15/23/27/1623799668431-0000010 ",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"source_timestamp": null,
+						"records": 1
+					},
+					"queue:multi_queue_s3": {
+						"checkpoint": "z/2021/05/04/22/27/1620167245751-0000010 ",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"source_timestamp": null,
+						"records": 1
+					},
+					"queue:test_large_write_queue": {
+						"checkpoint": "z/2022/03/07/18/45/1646678721729-0000000 ",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"source_timestamp": null,
+						"records": 1
+					},
+					"queue:write_test_queue2": {
+						"checkpoint": "z/2021/05/21/21/11/1621631470421-0000096 ",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"source_timestamp": null,
+						"records": 1
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test-ts-asyncawait-pass-bot",
+			"name": "test-ts-asyncawait-pass-bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:test-ts-asyncawait-queue": {
+						"checkpoint": "z/2022/01/11/23/10/1641942630569-0000026",
+						"started_timestamp": 1641943016595,
+						"ended_timestamp": 1641943016595,
+						"source_timestamp": 1641942629342,
+						"records": 7
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "massLoad",
+			"name": "massLoad",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:commands.s3_bus_load": {
+						"checkpoint": "z/2022/01/08/00/42/1641602564325-0000000",
+						"started_timestamp": 1641602565508,
+						"ended_timestamp": 1641602564325,
+						"source_timestamp": 1641602565508,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "SimpleSdkBotReader",
+			"name": "SimpleSdkBotReader",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2022/03/09/03/24/1646796271752-0000010",
+						"records": 11
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"message": null,
+			"time": null,
+			"name": "clint-fanout2-bot",
+			"invokeTime": 1638921908399,
+			"scheduledTrigger": 1638921122270,
+			"requested_kinesis": {},
+			"lambda": {},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1638921910470,
+					"invokeTime": 1638921908399,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							10,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 29476,
+					"requestId": "requestid-local1638921907874",
+					"result": null,
+					"startTime": 1638921908399,
+					"status": "complete",
+					"token": 1638921907873
+				},
+				"1": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/08/00/01/1638921660856-0000000",
+						"started_timestamp": 1638921910429,
+						"ended_timestamp": 1638921910429,
+						"source_timestamp": 1638921910429,
+						"records": 3
+					}
+				},
+				"2": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/08/00/01/1638921660856-0000000",
+						"started_timestamp": 1638921910536,
+						"ended_timestamp": 1638921910536,
+						"source_timestamp": 1638921910536,
+						"records": 4
+					}
+				},
+				"3": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/08/00/01/1638921660856-0000000",
+						"started_timestamp": 1638921910524,
+						"ended_timestamp": 1638921910524,
+						"source_timestamp": 1638921910524,
+						"records": 1
+					}
+				},
+				"4": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/08/00/01/1638921660856-0000000",
+						"started_timestamp": 1638921910419,
+						"ended_timestamp": 1638921910419,
+						"source_timestamp": 1638921910419,
+						"records": 1
+					}
+				}
+			},
+			"description": null,
+			"id": "clint-fanout2-bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/12/08/00/01/1638921660856-0000000",
+						"started_timestamp": 1638921910286,
+						"ended_timestamp": 1638921910286,
+						"source_timestamp": 1638921910286,
+						"records": 3
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "my_test_bot_2",
+			"invokeTime": null,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"result": null,
+					"log": null,
+					"requestId": null,
+					"invokeTime": null,
+					"completedTime": null,
+					"startTime": null,
+					"maxDuration": null,
+					"status": null,
+					"token": 1234
+				}
+			},
+			"description": null,
+			"id": "my_test_bot_2",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "TestRstreamsDeepDive-RstreamsDeepDiveOrderWeatherDwLoader",
+			"trigger": 1620144976480,
+			"triggers": [
+				"queue:order-weather"
+			],
+			"message": null,
+			"time": null,
+			"name": "rstreams_deep_dive_order_weather_dw_loader",
+			"invokeTime": 1620144977380,
+			"scheduledTrigger": 1615827676332,
+			"requested_kinesis": {
+				"queue:order-weather": "z/2021/05/04/16/16/1620144974251-0000273"
+			},
+			"lambda": {
+				"settings": [
+					{
+						"destination": "dim",
+						"source": "order-weather"
+					}
+				]
+			},
+			"token": 1620144976480,
+			"errorCount": 0,
+			"progress": {
+				"queue_position": "z/2021/05/04/16/16/1620144974251-0000273"
+			},
+			"instances": {
+				"0": {
+					"completedTime": 1620144977506,
+					"invokeTime": 1620144977380,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							3,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 899999,
+					"requestId": "fe51bb8d-43d4-46f5-855a-7a6c5ce46817",
+					"result": null,
+					"startTime": 1620144977462,
+					"status": "complete",
+					"token": 1620144976480
+				}
+			},
+			"description": null,
+			"id": "rstreams_deep_dive_order_weather_dw_loader",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-weather": {
+						"checkpoint": "z/2021/05/04/16/16/1620144974251-0000273",
+						"started_timestamp": 1620144976617,
+						"ended_timestamp": 1620144976617,
+						"source_timestamp": 1620144976617,
+						"records": 2
+					}
+				},
+				"write": {
+					"queue:dim": {
+						"checkpoint": "z/2021/05/04/16/16/1620144976362-0000001",
+						"started_timestamp": 1620144976617,
+						"ended_timestamp": 1620144976362,
+						"source_timestamp": 1620144976617,
+						"records": 2
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "load-test-data-reader",
+			"invokeTime": 1623863292232,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"startTime": 1623863292232,
+					"invokeTime": 1623863292232,
+					"requestId": "requestid-local1623863292227",
+					"maxDuration": 29995,
+					"token": 1623863292227
+				}
+			},
+			"description": null,
+			"id": "load-test-data-reader",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"requested_kinesis": {},
+			"lambdaName": null,
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test-types-loader-t123",
+			"paused": false,
+			"name": "test-types-loader-t123",
+			"checkpoints": {
+				"write": {
+					"queue:test-types-loader-queue-t123": {
+						"checkpoint": "z/2022/01/24/19/37/1643053049634-0000009",
+						"started_timestamp": 1643053048238,
+						"ended_timestamp": 1643053049634,
+						"source_timestamp": 1643053048238,
+						"records": 10
+					}
+				},
+				"read": {}
+			}
+		},
+		{
+			"requested_kinesis": {},
+			"lambdaName": null,
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test-ts-types-leo-sandbox",
+			"paused": false,
+			"name": "test-ts-types-leo-sandbox",
+			"checkpoints": {
+				"write": {
+					"queue:test-ts-types-leo-sandbox-queue": {
+						"checkpoint": "z/2022/01/07/15/52/1641570746938-0000000",
+						"started_timestamp": 1641570746564,
+						"ended_timestamp": 1641570746938,
+						"source_timestamp": 1641570746564,
+						"records": 1
+					}
+				},
+				"read": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "clint-speed-writer",
+			"name": "clint-speed-writer",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:write-speed": {
+						"checkpoint": "z/2022/02/16/23/43/1645055028634-0049657",
+						"started_timestamp": 1645055026399,
+						"ended_timestamp": 1645055028634,
+						"source_timestamp": 1645055026399,
+						"records": 440732
+					},
+					"queue:write-speed-2": {
+						"checkpoint": "z/2022/02/17/00/08/1645056507908-0081371",
+						"started_timestamp": 1645056507658,
+						"ended_timestamp": 1645056507908,
+						"source_timestamp": 1645056507658,
+						"records": 813720
+					}
+				}
+			}
+		},
+		{
+			"requested_kinesis": {},
+			"lambdaName": null,
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "clint_write_to_s3",
+			"paused": false,
+			"name": "clint_write_to_s3",
+			"checkpoints": {
+				"undefined": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2022/01/14/17/38/1642181911382-0000000",
+						"started_timestamp": 1642183470471,
+						"ended_timestamp": 1642183470471,
+						"source_timestamp": 1642118899000,
+						"records": 88
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "clint_no_sdk_bot",
+			"name": "clint_no_sdk_bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:clint_no_sdk_queue": {
+						"checkpoint": "z/2022/01/08/00/42/1641602570093-0009999",
+						"started_timestamp": 1641602569977,
+						"ended_timestamp": 1641602570093,
+						"source_timestamp": 1641602569977,
+						"records": 10000
+					}
+				}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "ClintTestBus-Botmon-1Q0JLHUF6FQTA-StatsProcessor-ZXSZEG4NIVBO",
+			"trigger": 1648076044347,
+			"triggers": [
+				"queue:monitor"
+			],
+			"message": null,
+			"ignoreMonitor": true,
+			"invokeTime": 1648076044667,
+			"scheduledTrigger": 1648075734550,
+			"requested_kinesis": {
+				"queue:monitor": "z/2022/03/23/22/54/1648076043716-0000000"
+			},
+			"lambda": {
+				"settings": [
+					{
+						"batch": {
+							"size": {
+								"count": 1000,
+								"time": {
+									"seconds": 3
+								}
+							}
+						},
+						"source": "queue:monitor"
+					}
+				]
+			},
+			"token": 1648076044347,
+			"errorCount": 0,
+			"progress": {
+				"queue_position": "z/2022/03/23/22/54/1648076043716-0000000"
+			},
+			"instances": {
+				"0": {
+					"completedTime": 1648076044812,
+					"invokeTime": 1648076044667,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							3,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 300000,
+					"requestId": "4f21cf78-af30-4241-bf69-d5bd972421da",
+					"result": null,
+					"startTime": 1648076044760,
+					"status": "complete",
+					"token": 1648076044347
+				}
+			},
+			"owner": "leo",
+			"id": "stats_processor",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:monitor": {
+						"checkpoint": "z/2022/03/23/22/54/1648076043716-0000000",
+						"started_timestamp": 1648076044365,
+						"ended_timestamp": 1648076044365,
+						"source_timestamp": 1648076043695,
+						"records": 4
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": 1621882647687,
+			"triggers": null,
+			"time": null,
+			"name": "offload_batch_bot_test",
+			"invokeTime": 1621882787443,
+			"scheduledTrigger": null,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1621882805073,
+					"invokeTime": 1621882787443,
+					"log": null,
+					"maxDuration": 29993,
+					"requestId": "requestid-local1621882787436",
+					"result": null,
+					"startTime": 1621882787443,
+					"status": "complete",
+					"token": 1621882787436
+				}
+			},
+			"description": null,
+			"id": "offload_batch_bot_test",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:enrich_write_test": {
+						"checkpoint": "z/2021/05/19/20/56/1621457785650-0000173",
+						"ended_timestamp": 1621882805020,
+						"started_timestamp": 1621882805020,
+						"records": 77938,
+						"source_timestamp": 1613981230000
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": 1622058449008,
+			"triggers": null,
+			"time": null,
+			"name": "offload_order_dlq",
+			"invokeTime": 1622569096627,
+			"scheduledTrigger": 1622572366824,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 150,
+			"instances": {
+				"0": {
+					"completedTime": 1622569099054,
+					"invokeTime": 1622569096627,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							255,
+							13,
+							199,
+							193,
+							9,
+							128,
+							48,
+							16,
+							5,
+							209,
+							86,
+							62,
+							1,
+							143,
+							178,
+							179,
+							63,
+							137,
+							130,
+							96,
+							55,
+							241,
+							96,
+							11,
+							86,
+							239,
+							206,
+							225,
+							193,
+							180,
+							231,
+							93,
+							218,
+							148,
+							160,
+							91,
+							93,
+							117,
+							151,
+							190,
+							48,
+							206,
+							96,
+							6,
+							35,
+							242,
+							136,
+							60,
+							75,
+							147,
+							99,
+							98,
+							15,
+							216,
+							169,
+							76,
+							111,
+							63,
+							147,
+							247,
+							242,
+							45,
+							61,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 29991,
+					"requestId": "requestid-local1622569096618",
+					"result": null,
+					"startTime": 1622569096627,
+					"status": "error",
+					"token": 1622569096618
+				}
+			},
+			"description": null,
+			"id": "offload_order_dlq",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/05/04/16/17/1620145022400-0000202",
+						"started_timestamp": 1622568396665,
+						"ended_timestamp": 1622568396665,
+						"source_timestamp": 1615911681000,
+						"records": 100
+					}
+				},
+				"write": {
+					"queue:my_dlq": {
+						"checkpoint": "z/2021/05/27/00/44/1622076282079-0000000",
+						"started_timestamp": 1622076279929,
+						"ended_timestamp": 1622076282079,
+						"source_timestamp": 1615911679000,
+						"records": 1
+					},
+					"queue:offload_order_dlq.dlq": {
+						"checkpoint": "z/2021/06/01/17/25/1622568321390-0000000",
+						"started_timestamp": 1622568378875,
+						"ended_timestamp": 1622568321390,
+						"source_timestamp": 1615911681000,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "my_test_bot_3",
+			"invokeTime": 1619741211429,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1619741212261,
+					"invokeTime": 1619741211429,
+					"log": null,
+					"maxDuration": 0,
+					"requestId": "local test",
+					"result": null,
+					"startTime": 1619741211429,
+					"status": "complete",
+					"token": 1234
+				}
+			},
+			"description": null,
+			"id": "my_test_bot_3",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "write_to_system_bot",
+			"invokeTime": 1623165277366,
+			"scheduledTrigger": 1621878103167,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1623165277964,
+					"invokeTime": 1623165277365,
+					"log": null,
+					"maxDuration": 29987,
+					"requestId": "requestid-local1623165277351",
+					"result": null,
+					"startTime": 1623165277365,
+					"status": "complete",
+					"token": 1623165277352
+				}
+			},
+			"description": null,
+			"id": "write_to_system_bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:bot.write_to_system_bot": {
+						"checkpoint": "z/2021/05/24/18/13/1621879987547-0000000",
+						"started_timestamp": 1621879986389,
+						"ended_timestamp": 1621879987547,
+						"source_timestamp": 1621879986389,
+						"records": 1
+					},
+					"queue:my_output_queue": {
+						"checkpoint": "z/2021/05/24/18/13/1621879987547-0000001",
+						"started_timestamp": 1621879986505,
+						"ended_timestamp": 1621879987547,
+						"source_timestamp": 1621879986505,
+						"records": 2
+					},
+					"queue:system.dynamodb.my_ddb_system": {
+						"checkpoint": "z/2021/05/24/17/31/1621877509502-0000000",
+						"started_timestamp": 1621877508075,
+						"ended_timestamp": 1621877509502,
+						"source_timestamp": 1621877508075,
+						"records": 1
+					},
+					"queue:system.my_ddb_system": {
+						"checkpoint": "z/2021/05/24/17/41/1621878097787-0000002",
+						"started_timestamp": 1621878096346,
+						"ended_timestamp": 1621878097787,
+						"source_timestamp": 1621878096346,
+						"records": 3
+					},
+					"queue:system.my_system": {
+						"checkpoint": "z/2021/06/08/15/13/1623165221968-0000003",
+						"started_timestamp": 1623165277680,
+						"ended_timestamp": 1623165221968,
+						"source_timestamp": 1623165277680,
+						"records": 4
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "write_test_bot",
+			"name": "write_test_bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/02/23/21/28/1614115711133-0000001",
+						"started_timestamp": 1631632311429,
+						"ended_timestamp": 1631632311429,
+						"records": 10,
+						"source_timestamp": 1614115691000
+					},
+					"queue:order-entity-old-new_cp_test": {
+						"checkpoint": "z/2021/02/23/21/29/1614115771312-0000000",
+						"started_timestamp": 1631632311430,
+						"ended_timestamp": 1631632311430,
+						"source_timestamp": 1614115748000,
+						"records": 10
+					}
+				},
+				"write": {
+					"queue:parse_error_with_wrapper_queue": {
+						"checkpoint": "z/2021/05/04/20/39/1620160796136-0000188",
+						"ended_timestamp": 1620160796136,
+						"started_timestamp": 1620160796081,
+						"records": 189,
+						"source_timestamp": 1620160796081
+					},
+					"queue:write_test_queue": {
+						"checkpoint": "z/2021/05/04/16/00/1620144027885-0000013",
+						"ended_timestamp": 1620144027885,
+						"started_timestamp": 1620144030150,
+						"records": 4488,
+						"source_timestamp": 1614311411000
+					},
+					"queue:write_test_queue2": {
+						"checkpoint": "z/2021/09/14/15/11/1631632310699-0000011",
+						"started_timestamp": 1631632311430,
+						"ended_timestamp": 1631632310699,
+						"source_timestamp": 1614115748000,
+						"records": 297
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "leo_load_bot",
+			"name": "leo_load_bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/02/23/00/42/1614040936662-0000013",
+						"started_timestamp": 1623165632615,
+						"ended_timestamp": 1623165632615,
+						"source_timestamp": 1613953570000,
+						"records": 500
+					}
+				},
+				"write": {
+					"queue:enrich_write_test": {
+						"checkpoint": "z/2021/06/08/15/19/1623165576502-0000000",
+						"started_timestamp": 1623165632615,
+						"ended_timestamp": 1623165576502,
+						"source_timestamp": 1613970188000,
+						"records": 247
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "write_test_bot_different_queues",
+			"name": "write_test_bot_different_queues",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:multi_queue_1": {
+						"checkpoint": "z/2021/05/04/22/29/1620167349054-0000002",
+						"started_timestamp": 1620167348469,
+						"ended_timestamp": 1620167349054,
+						"source_timestamp": 1620167348469,
+						"records": 3
+					},
+					"queue:multi_queue_2": {
+						"checkpoint": "z/2021/05/04/22/29/1620167349054-0000002",
+						"started_timestamp": 1620167348469,
+						"ended_timestamp": 1620167349054,
+						"source_timestamp": 1620167348469,
+						"records": 3
+					},
+					"queue:multi_queue_unknown": {
+						"checkpoint": "z/2021/05/04/22/29/1620167349054-0000003",
+						"started_timestamp": 1620167348469,
+						"ended_timestamp": 1620167349054,
+						"source_timestamp": 1620167348469,
+						"records": 4
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": 1621464435108,
+			"triggers": null,
+			"time": null,
+			"name": "offload_bot_test",
+			"invokeTime": 1621465985388,
+			"scheduledTrigger": 1621464812179,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"startTime": 1621465985388,
+					"maxDuration": 29993,
+					"requestId": "requestid-local1621465985381",
+					"invokeTime": 1621465985388,
+					"token": 1621465985381
+				}
+			},
+			"description": null,
+			"id": "offload_bot_test",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:enrich_write_test": {
+						"checkpoint": "z/2021/05/04/23/36/1620171397212-0000049",
+						"started_timestamp": null,
+						"ended_timestamp": null,
+						"source_timestamp": null,
+						"records": null
+					}
+				},
+				"write": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "large-event-writer",
+			"name": "large-event-writer",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:bot.large-event-writer.error": {
+						"checkpoint": "z/2021/11/30/22/25/1638311158132-0000000",
+						"started_timestamp": 1638311157855,
+						"ended_timestamp": 1638311158132,
+						"source_timestamp": 1638311157855,
+						"records": 1
+					},
+					"queue:large-event-queue": {
+						"checkpoint": "z/2021/12/01/18/19/1638382794765-0000000",
+						"started_timestamp": 1638382729663,
+						"ended_timestamp": 1638382794765,
+						"source_timestamp": 1638382729663,
+						"records": 10
+					}
+				}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"invokeTime": null,
+			"scheduledTrigger": null,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": [
+					{
+						"stuff": "here 2"
+					}
+				]
+			},
+			"errorCount": 0,
+			"instances": {},
+			"description": null,
+			"invocationType": "lambda",
+			"id": "create_bot_2",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "my_test_bot_5",
+			"invokeTime": 1619813195431,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1619813195686,
+					"invokeTime": 1619813195431,
+					"log": null,
+					"maxDuration": 0,
+					"requestId": "local test",
+					"result": null,
+					"startTime": 1619813195431,
+					"status": "complete",
+					"token": 1234
+				}
+			},
+			"description": null,
+			"id": "my_test_bot_5",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "typed-sdk-enrich",
+			"name": "typed-sdk-enrich",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2022/01/01/02/37/1641004651290-0000000",
+						"started_timestamp": 1647297798689,
+						"ended_timestamp": 1647297798689,
+						"source_timestamp": 1641004643000,
+						"records": 10
+					}
+				},
+				"write": {
+					"queue:typed-sdk-enrich-out": {
+						"checkpoint": "z/2022/03/14/22/43/1647297798934-0000009",
+						"started_timestamp": 1647297798689,
+						"ended_timestamp": 1647297798934,
+						"source_timestamp": 1641004643000,
+						"records": 10
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "test_bot_id",
+			"invokeTime": 1621441896198,
+			"scheduledTrigger": 1621441908356,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 3,
+			"instances": {
+				"0": {
+					"completedTime": 1621441896497,
+					"invokeTime": 1621441896198,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							255,
+							83,
+							74,
+							202,
+							47,
+							81,
+							200,
+							3,
+							226,
+							180,
+							252,
+							210,
+							188,
+							20,
+							37,
+							0,
+							3,
+							116,
+							181,
+							182,
+							15,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 29998,
+					"requestId": "requestid-local1621441896195",
+					"result": null,
+					"startTime": 1621441896198,
+					"status": "error",
+					"token": 1621441896196
+				}
+			},
+			"description": null,
+			"id": "test_bot_id",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "my_bot_that_writes",
+			"name": "my_bot_that_writes",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:crime_data_s3": {
+						"checkpoint": "z/2021/05/14/16/42/1621010557645-0000009",
+						"started_timestamp": 1621010573901,
+						"ended_timestamp": 1621010557645,
+						"source_timestamp": 1621010573901,
+						"records": 10
+					},
+					"queue:my_random_number": {
+						"checkpoint": "z/2021/04/28/21/24/1619645074201-0000009",
+						"started_timestamp": 1619645073500,
+						"ended_timestamp": 1619645074201,
+						"source_timestamp": 1619645073500,
+						"records": 10
+					},
+					"queue:my_random_number_dave": {
+						"checkpoint": "z/2021/05/14/16/39/1621010360976-0000009",
+						"started_timestamp": 1621010377187,
+						"ended_timestamp": 1621010360976,
+						"source_timestamp": 1621010377187,
+						"records": 10
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "Leo_core_s3_load_trigger",
+			"name": "Leo_core_s3_load_trigger",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:commands.s3_bus_load": {
+						"checkpoint": "z/2022/01/07/23/16/1641597366994-0000000",
+						"started_timestamp": 1641597366958,
+						"ended_timestamp": 1641597366994,
+						"source_timestamp": 1641597366958,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": 1623084780631,
+			"triggers": null,
+			"time": null,
+			"name": "enrich_bot_test",
+			"invokeTime": 1623084855577,
+			"scheduledTrigger": null,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1623084891918,
+					"invokeTime": 1623084855577,
+					"log": null,
+					"maxDuration": 29950,
+					"requestId": "requestid-local1623084855527",
+					"result": null,
+					"startTime": 1623084855577,
+					"status": "complete",
+					"token": 1623084855528
+				}
+			},
+			"description": null,
+			"id": "enrich_bot_test",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:write_test_queue2": {
+						"checkpoint": "z/2021/05/24/18/32/1621881175187-0000278",
+						"started_timestamp": 1623084891666,
+						"ended_timestamp": 1623084891666,
+						"source_timestamp": 1614056952000,
+						"records": 1724
+					}
+				},
+				"write": {
+					"queue:enrich_write_test": {
+						"checkpoint": "z/2021/06/07/16/53/1623084834728-0000173",
+						"started_timestamp": 1623084891666,
+						"ended_timestamp": 1623084834728,
+						"source_timestamp": 1614115748000,
+						"records": 1724
+					}
+				}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "TestRstreamsDeepDive-RstreamsDeepDiveEntityActionsVar1",
+			"trigger": 1648075113140,
+			"triggers": [
+				"queue:order-entity-old-new"
+			],
+			"message": null,
+			"time": null,
+			"name": "order-entity-actions",
+			"invokeTime": 1620145003448,
+			"scheduledTrigger": 1615591116668,
+			"requested_kinesis": {
+				"queue:order-entity-old-new": "z/2022/03/23/22/38/1648075111715-0000000"
+			},
+			"lambda": {
+				"settings": [
+					{
+						"destination": "order-entity-actions",
+						"source": "order-entity-old-new"
+					}
+				]
+			},
+			"token": 1620145002403,
+			"errorCount": 0,
+			"progress": {
+				"queue_position": "z/2021/05/04/16/16/1620145000216-0000290"
+			},
+			"instances": {
+				"0": {
+					"completedTime": 1620145003557,
+					"invokeTime": 1620145003448,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							3,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 899999,
+					"requestId": "27e6c9a9-fa67-43dc-9629-388a76f07e23",
+					"result": null,
+					"startTime": 1620145003522,
+					"status": "complete",
+					"token": 1620145002403
+				}
+			},
+			"description": null,
+			"id": "order-entity-actions",
+			"paused": true,
+			"checkpoints": {
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2021/05/04/16/16/1620145000216-0000290",
+						"started_timestamp": 1620145003291,
+						"ended_timestamp": 1620145003291,
+						"source_timestamp": 1615911674000,
+						"records": 251
+					}
+				},
+				"write": {
+					"queue:order-entity-actions": {
+						"checkpoint": "z/2021/05/04/16/16/1620144969226-0000004",
+						"started_timestamp": 1620144969871,
+						"ended_timestamp": 1620144969226,
+						"source_timestamp": 1615905695000,
+						"records": 5
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "typed-sdk-put-loader",
+			"name": "typed-sdk-put-loader",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:typed-sdk-put": {
+						"checkpoint": "z/2022/03/15/19/32/1647372762773-0000000",
+						"started_timestamp": 1647372762510,
+						"ended_timestamp": 1647372762773,
+						"source_timestamp": 1647372762509,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"requested_kinesis": {},
+			"lambdaName": null,
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "ts-order-loader-test",
+			"paused": false,
+			"name": "ts-order-loader-test",
+			"checkpoints": {
+				"write": {
+					"queue:ts-new-order-queue-test": {
+						"checkpoint": "z/2022/01/13/21/50/1642110658750-0000005",
+						"started_timestamp": 1642110658377,
+						"ended_timestamp": 1642110658750,
+						"source_timestamp": 1642110658377,
+						"records": 6
+					}
+				},
+				"read": {}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "TestRstreamsDeepDive-RstreamsDeepDiveReplicatorVarAccountEntity",
+			"trigger": 1648076040527,
+			"triggers": [],
+			"message": null,
+			"time": "0/30 * * * * * ",
+			"invokeTime": 1648075874312,
+			"scheduledTrigger": 1628294739380,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": [
+					{
+						"queue": "account-entity-old-new"
+					}
+				]
+			},
+			"token": 1648075860437,
+			"errorCount": 0,
+			"progress": {},
+			"instances": {
+				"0": {
+					"invokeTime": 1648075874312,
+					"maxDuration": 899999,
+					"requestId": "0b29ffdc-5955-4a05-aaff-14eaa47285c9",
+					"startTime": 1648075874408,
+					"status": "complete",
+					"token": 1648075860437
+				}
+			},
+			"id": "account-entity-old-new-replicator",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:account-entity-old-new": {
+						"checkpoint": "z/2021/02/22/07/06/00/"
+					},
+					"queue:source_bus_account-entity-old-new": {
+						"checkpoint": "z/2022/03/19/11/24/1647689077569-0000000",
+						"started_timestamp": 1647689077409,
+						"ended_timestamp": 1647689077409,
+						"source_timestamp": 1647689077000,
+						"records": 1
+					}
+				},
+				"write": {
+					"queue:account-entity-old-new": {
+						"checkpoint": "z/2022/03/23/22/54/1648076041481-0000000",
+						"started_timestamp": 1647689079158,
+						"ended_timestamp": 1648076041481,
+						"source_timestamp": 1647689078000,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "tst-scorecards-test-scorecard-reader",
+			"name": "tst-scorecards-test-scorecard-reader",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:tst-scorecards": {
+						"checkpoint": "z/2021/04/29/21/02/1619730145823-0000009",
+						"started_timestamp": 1619730144823,
+						"ended_timestamp": 1619730145823,
+						"source_timestamp": 1619730144823,
+						"records": 10
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "cli-writer",
+			"name": "cli-writer",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:cli-write": {
+						"checkpoint": "z/2022/02/23/23/30/1645659055571-0000000",
+						"started_timestamp": 1645659055685,
+						"ended_timestamp": 1645659055571,
+						"source_timestamp": 1645659055685,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "bentest-ts-put",
+			"name": "bentest-ts-put",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:bentest-asyncawait-types-queue": {
+						"checkpoint": "z/2022/01/11/15/32/1641915121307-0000000",
+						"started_timestamp": 1641915120275,
+						"ended_timestamp": 1641915121307,
+						"source_timestamp": 1641915120275,
+						"records": 1
+					}
+				}
+			}
+		},
+		{
+			"requested_kinesis": {},
+			"lambdaName": null,
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "typed-sdk-offload",
+			"paused": false,
+			"name": "typed-sdk-offload",
+			"checkpoints": {
+				"write": {},
+				"read": {
+					"queue:order-entity-old-new": {
+						"checkpoint": "z/2022/01/01/02/37/1641004651290-0000000",
+						"started_timestamp": 1647297922646,
+						"ended_timestamp": 1647297922646,
+						"source_timestamp": 1640997447000,
+						"records": 10
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": "Leo_core_custom_lambda_bot",
+			"trigger": 1631632312486,
+			"health": {
+				"write_lag": null,
+				"source_lag": null,
+				"error_limit": null,
+				"consecutive_errors": null
+			},
+			"triggers": [
+				"queue:write_test_queue2"
+			],
+			"templateId": "Leo_core_custom_lambda_bot",
+			"time": null,
+			"name": "one_to_many_bot_test",
+			"invokeTime": 1631632126412,
+			"scheduledTrigger": null,
+			"requested_kinesis": {
+				"queue:write_test_queue2": "z/2021/09/14/15/11/1631632310699-0000303"
+			},
+			"lambda": {
+				"settings": [
+					{}
+				]
+			},
+			"token": 1631632126166,
+			"errorCount": 0,
+			"progress": {
+				"queue_position": "z/2021/05/24/18/32/1621881175187-0000278"
+			},
+			"instances": {
+				"0": {
+					"invokeTime": 1631632126412,
+					"token": 1631632126166,
+					"status": "complete"
+				}
+			},
+			"description": null,
+			"id": "one_to_many_bot_test",
+			"invocationType": "Lambda",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:write_test_queue2": {
+						"checkpoint": "z/2021/05/24/18/32/1621881175187-0000278",
+						"ended_timestamp": 1624313655986,
+						"started_timestamp": 1624313655986,
+						"source_timestamp": 1614077409000,
+						"records": 1092
+					}
+				},
+				"write": {
+					"queue:one_to_many_write_test": {
+						"checkpoint": "z/2021/06/21/22/11/1624313506746-0012181",
+						"started_timestamp": 1624313655986,
+						"ended_timestamp": 1624313506746,
+						"source_timestamp": 1614115748000,
+						"records": 86892
+					}
+				}
+			},
+			"tags": null
+		},
+		{
+			"lambdaName": null,
+			"trigger": 1621639776374,
+			"triggers": null,
+			"time": null,
+			"name": "enrich_batch_bot_test",
+			"invokeTime": 1621639788469,
+			"scheduledTrigger": null,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1621639790677,
+					"invokeTime": 1621639788469,
+					"log": null,
+					"maxDuration": 29995,
+					"requestId": "requestid-local1621639788463",
+					"result": null,
+					"startTime": 1621639788469,
+					"status": "complete",
+					"token": 1621639788464
+				}
+			},
+			"description": null,
+			"id": "enrich_batch_bot_test",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:write_test_queue2": {
+						"checkpoint": "z/2021/05/21/21/11/1621631470421-0000095",
+						"ended_timestamp": 1621639790567,
+						"started_timestamp": 1621639790567,
+						"records": 1409,
+						"source_timestamp": 1614276972000
+					}
+				},
+				"write": {
+					"queue:enrich_batch_write_test": {
+						"checkpoint": "z/2021/05/21/23/29/1621639789465-0000014",
+						"started_timestamp": 1621639790567,
+						"ended_timestamp": 1621639789465,
+						"source_timestamp": 1614311111000,
+						"records": 15
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"trigger": null,
+			"triggers": null,
+			"time": null,
+			"name": "enrich_bot_test_bad",
+			"invokeTime": 1621457448479,
+			"scheduledTrigger": null,
+			"lambda": {
+				"settings": []
+			},
+			"errorCount": 0,
+			"instances": {
+				"0": {
+					"completedTime": 1621457450067,
+					"invokeTime": 1621457448479,
+					"log": null,
+					"maxDuration": 29993,
+					"requestId": "requestid-local1621457448472",
+					"result": null,
+					"startTime": 1621457448479,
+					"status": "complete",
+					"token": 1621457448472
+				}
+			},
+			"description": null,
+			"id": "enrich_bot_test_bad",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:write_test_queue2": {
+						"checkpoint": "z/2021/05/05/15/17/1620227843216-0000094",
+						"ended_timestamp": 1621457449776,
+						"started_timestamp": 1621457449776,
+						"source_timestamp": 1613955430000,
+						"records": 95
+					}
+				},
+				"write": {
+					"queue:enrich_write_error_test": {
+						"checkpoint": "z/2021/05/19/20/50/1621457450202-0000094",
+						"started_timestamp": 1621457449776,
+						"ended_timestamp": 1621457450202,
+						"source_timestamp": 1613955430000,
+						"records": 95
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "test_large_write_bot",
+			"name": "test_large_write_bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:test_large_write_bot.error": {
+						"checkpoint": "z/2021/05/07/22/39/1620427195902-0000000",
+						"started_timestamp": 1620427194854,
+						"ended_timestamp": 1620427195902,
+						"source_timestamp": 1620427194854,
+						"records": 1
+					},
+					"queue:test_large_write_queue": {
+						"checkpoint": "z/2022/03/07/23/37/1646696274500-0000000",
+						"started_timestamp": 1646696253580,
+						"ended_timestamp": 1646696274500,
+						"source_timestamp": 1646696253580,
+						"records": 3
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "load-test-bot",
+			"name": "load-test-bot",
+			"paused": false,
+			"checkpoints": {
+				"read": {},
+				"write": {
+					"queue:load-test-data": {
+						"checkpoint": "z/2021/06/16/16/33/1623861208593-0116767",
+						"started_timestamp": 1623861339289,
+						"ended_timestamp": 1623861208593,
+						"source_timestamp": 1623861336304,
+						"records": 116768
+					}
+				}
+			}
+		},
+		{
+			"lambdaName": null,
+			"requested_kinesis": {},
+			"lambda": {},
+			"instances": {},
+			"time": null,
+			"description": null,
+			"id": "bentest-ts-async-enricher",
+			"name": "bentest-ts-async-enricher",
+			"paused": false,
+			"checkpoints": {
+				"read": {
+					"queue:bentest-asyncawait-types-queue": {
+						"checkpoint": "z/2022/01/11/20/21/1641932469337-0000005",
+						"started_timestamp": 1641933258946,
+						"ended_timestamp": 1641933258946,
+						"source_timestamp": 1641932467894,
+						"records": 7
+					}
+				},
+				"write": {
+					"queue:bentest-asyncawait-types-queue-enriched": {
+						"checkpoint": "z/2022/01/11/20/34/1641933259393-0000006",
+						"started_timestamp": 1641933258946,
+						"ended_timestamp": 1641933259393,
+						"source_timestamp": 1641932467894,
+						"records": 7
+					}
+				}
+			}
+		},
+		{
+			"executionType": "lambda",
+			"lambdaName": "ClintTestBus-Botmon-1Q0JLHUF6FQTA-LeoHealthCheck-SPU14JIB02QO",
+			"trigger": 1648076010501,
+			"triggers": [],
+			"message": null,
+			"time": "30 */1 * * * *",
+			"invokeTime": 1648076011135,
+			"requested_kinesis": {},
+			"lambda": {
+				"settings": [
+					{}
+				]
+			},
+			"token": 1648076010501,
+			"errorCount": 0,
+			"progress": {},
+			"instances": {
+				"0": {
+					"completedTime": 1648076011626,
+					"invokeTime": 1648076011135,
+					"log": {
+						"type": "Buffer",
+						"data": [
+							31,
+							139,
+							8,
+							0,
+							0,
+							0,
+							0,
+							0,
+							0,
+							3,
+							83,
+							82,
+							2,
+							0,
+							59,
+							21,
+							11,
+							51,
+							2,
+							0,
+							0,
+							0
+						]
+					},
+					"maxDuration": 9999,
+					"requestId": "5ce24d3f-147d-4296-ab63-8000949f227c",
+					"result": null,
+					"startTime": 1648076011276,
+					"status": "complete",
+					"token": 1648076010501
+				}
+			},
+			"owner": "leo",
+			"id": "Leo_health_check",
+			"paused": false,
+			"checkpoints": {
+				"write": {},
+				"read": {}
+			}
+		}
+	],
+	"Count": 79,
+	"ScannedCount": 79,
+	"ConsumedCapacity": {
+		"TableName": "ClintTestBus-Bus-1AU1ENWIRG4NO-LeoCron-WOYLDTIP8JNB",
+		"CapacityUnits": 5.5
+	},
+	"_stats": {
+		"mb": 1,
+		"count": 79
+	}
+}
