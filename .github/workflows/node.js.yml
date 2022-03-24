@@ -27,6 +27,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm i
+    - run: npm i aws-sdk@^2.581.0
     - run: npm run compile --if-present
     - run: npm run coverage-all --if-present
     - uses: actions/upload-artifact@v3
