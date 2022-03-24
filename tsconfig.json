@@ -7,7 +7,7 @@
 		"target": "es2019",
 		"moduleResolution": "node",
 		"sourceMap": true,
-		"allowJs": true,
+		"allowJs": false,
 		"baseUrl": ".",
 		"paths": {
 			"*": [
@@ -20,7 +20,8 @@
 		"**/*.ts"
 	],
 	"exclude": [
-		"node_modules"
+		"node_modules",
+		"**/*.js"
 	],
 	"watch": true
 }
