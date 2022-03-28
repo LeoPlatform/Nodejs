@@ -3,7 +3,7 @@ import Configuration from "./rstreams-configuration";
 import fs from "fs";
 import path from "path";
 import AWS, { CredentialProviderChain } from "aws-sdk";
-var RStreams = require('./rstreams');
+let RStreams = require('./rstreams');
 
 export enum ProvidersInputType {
 	Replace,
@@ -34,8 +34,8 @@ export enum ProvidersInputType {
  * on disk after the set of {defaultProviders}:
  *
  * ```javascript
- * var envProvider = new RStreams.EnvironmentConfiguration('MyEnvVar');
- * var chain = new RStreams.ConfigProviderChain([envProvider], ProvidersInputType.Append);
+ * let envProvider = new RStreams.EnvironmentConfiguration('MyEnvVar');
+ * let chain = new RStreams.ConfigProviderChain([envProvider], ProvidersInputType.Append);
  * chain.resolve();
  * ```
  *
@@ -95,7 +95,7 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 	 *     @param err [Error] the error object returned if no configuration are found.
 	 *   @return [Promise] A promise that represents the state of the `resolve` method call.
 	 *   @example Calling the `resolvePromise` method.
-	 *     var promise = chain.resolvePromise();
+	 *     let promise = chain.resolvePromise();
 	 *     promise.then(function(configuration) { ... }, function(err) { ... });
 	 */
 
@@ -114,15 +114,15 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 	 * @return [RStreams.ConfigProviderChain] the provider, for chaining.
 	 */
 	resolve: function resolve(callback) {
-		var self = this;
+		let self = this;
 		if (self.providers.length === 0) {
 			callback(new Error('No providers'));
 			return self;
 		}
 
 		if (self.resolveCallbacks.push(callback) === 1) {
-			var index = 0;
-			var providers = self.providers.slice(0);
+			let index = 0;
+			let providers = self.providers.slice(0);
 
 			function resolveNext(err?, creds?) {
 				if ((!err && creds) || index === providers.length) {
@@ -133,7 +133,7 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 					return;
 				}
 
-				var provider = providers[index++];
+				let provider = providers[index++];
 				if (typeof provider === 'function') {
 					creds = provider.call();
 				} else {
@@ -163,19 +163,46 @@ export const ConfigProviderChain = util.inherit(Configuration, {
  *
  * ```javascript
  * RStreams.ConfigProviderChain.defaultProviders = [
- *   function () { return new AWS.EnvironmentCredentials('AWS'); },
- *   function () { return new AWS.EnvironmentCredentials('AMAZON'); },
- *   function () { return new AWS.SharedIniFileCredentials(); },
- *   function () { return new AWS.ECSCredentials(); },
- *   function () { return new AWS.ProcessCredentials(); },
- *   function () { return new AWS.TokenFileWebIdentityCredentials(); },
- *   function () { return new AWS.EC2MetadataCredentials() }
+ *	function () { return new EnvironmentConfiguration('RSTREAMS_CONFIG'); },
+ *	function () { return new EnvironmentConfiguration('leosdk'); },
+ *	function () { return new EnvironmentConfiguration('leo-sdk'); },
+ *	function () { return new EnvironmentConfiguration('LEOSDK'); },
+ *	function () { return new EnvironmentConfiguration('LEO-SDK'); },
+ *	function () { return new LeoConfiguration(); },
+ *	function () { return new ObjectConfiguration(process, "leosdk"); },
+ *	function () { return new ObjectConfiguration(process, "leo-sdk"); },
+ *	function () { return new ObjectConfiguration(process, "rstreams_config"); },
+ *	function () { return new ObjectConfiguration(global, "leosdk"); },
+ *	function () { return new ObjectConfiguration(global, "leo-sdk"); },
+ *	function () { return new ObjectConfiguration(global, "rstreams_config"); },
+ *	function () {
+ *		return new FileTreeConfiguration(process.cwd(), [
+ *			"leo.config.json",
+ *			"leo.config.js",
+ *			"rstreams.config.json",
+ *			"rstreams.config.js",
+ *			"leoconfig.json",
+ *			"leoconfig.js",
+ *			"rstreamsconfig.json",
+ *			"rstreamsconfig.js",
+ *
+ *			"config/leo.config.json",
+ *			"config/leo.config.js",
+ *			"config/rstreams.config.json",
+ *			"config/rstreams.config.js",
+ *			"config/leoconfig.json",
+ *			"config/leoconfig.js",
+ *			"config/rstreamsconfig.json",
+ *			"config/rstreamsconfig.js",
+ *		]);
+ *	},
+ *	function () { return new AWSSecretsConfiguration('LEO_CONFIG_SECRET'); },
+ *	function () { return new AWSSecretsConfiguration('RSTREAMS_CONFIG_SECRET'); },
+ *
  * ]
  * ```
  */
 
-// TODO: I think we need to settle on just a few of these
-// The ENV & File path ones aren't too bad but multiple AWS Secrets checked could get heavy
 ConfigProviderChain.defaultProviders = [
 
 	/* Rstreams Env locations */
@@ -292,9 +319,9 @@ export const EnvironmentConfiguration = util.inherit(Configuration, {
 			];
 			values = {};
 
-			for (var i = 0; i < keys.length; i++) {
+			for (let i = 0; i < keys.length; i++) {
 				let key = keys[i];
-				var prefix = '';
+				let prefix = '';
 				if (this.envPrefix) { prefix = this.envPrefix + '_'; }
 				values[key] = process.env[prefix + key] || process.env[prefix + key.toUpperCase()] || process.env[prefix + key.toLowerCase()];
 				if (!values[key] && key !== 'LeoSettings') {
@@ -336,7 +363,7 @@ export const FileTreeConfiguration = util.inherit(Configuration, {
 		let currentDir = this.startingDirectory
 
 		let lastDir;
-		var dirs = [];
+		let dirs = [];
 		do {
 			dirs.push(currentDir);
 			lastDir = currentDir;

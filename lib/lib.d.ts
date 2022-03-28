@@ -1,78 +1,16 @@
 import pump from "pump";
-import split from "split";
-import stream from 'stream';
+import splitLib from "split";
+import stream, { Stream } from 'stream';
 import Pumpify from "pumpify";
 import moment, { Moment } from "moment";
 import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
 import Streams, { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-
-import * as eventstream from "event-stream";
-
+export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream } from "./types";
+import * as es from "event-stream";
+import zlib from "zlib";
 export declare type Callback = (err?: any, data?: any) => void;
-
-// export interface Configuration {
-// 	// TODO: Fill this out
-// }
-
-// export interface RStreams {
-// 	configuration: Configuration;
-// 	destroy: (callback: (err: any) => void) => void;
-
-// 	/**
-// 	 * Stream for writing events to a queue
-// 	 * @param {string} id - The id of the bot
-// 	 * @param {string} outQueue - The queue into which events will be written 
-// 	 * @param {Object} config - An object that contains config values that control the flow of events to outQueue
-// 	 * @return {stream} Stream
-// 	 */
-// 	load: (botId: string, outQueue: string, config?: WriteOptions) => Pumpify;
-
-
-// 	/**
-// 	 * Process events from a queue.
-// 	 * @param {OffloadOptions} opts
-// 	 * @return {stream} Stream
-// 	 */
-// 	offload: (config: OffloadOptions) => Pumpify;
-// 	/**
-// 	 * Enrich events from one queue to another.
-// 	 * @param {EnrichOptions} opts
-// 	 * @return {stream} Stream
-// 	 */
-// 	enrich: (config: EnrichOptions) => Pumpify;
-
-// 	read: (botId: string, inQueue: string, config?: ReadOptions) => stream.Transform;
-// 	write: (botId: string, config?: WriteOptions) => stream.Transform;
-// 	put: (bot_id: string, outQueue: string, payload: any, callback: Callback) => void;
-
-// 	checkpoint: (config?: ToCheckpointOptions) => stream.Transform;
-
-// 	streams: Streams
-// 	bot: LeoCron,
-// 	aws: {
-// 		dynamodb: LeoDynamodb,
-// 		s3: AWS.S3,
-// 		cloudformation: AWS.CloudFormation
-// 	}
-// }
-
-export interface Event<T> {
-	id: string;
-	event: string;
-	timestamp: number;
-	event_source_timestamp: string;
-	payload: T;
-	correlation_id: {
-		source: string;
-		start?: string;
-		end?: string;
-		units: number;
-	};
-}
-export interface ReadEvent<T> extends Event<T> {
-	eid: string;
-}
 
 export declare type ThroughEvent<T> = Event<T> | any;
 
@@ -97,11 +35,8 @@ export interface ReadOptions {
 	fast_s3_read?: boolean;
 	fast_s3_read_parallel_fetch_max_bytes?: number;
 	stream_query_limit?: number;
-
-
 }
 
-export * from "./streams";
 
 export interface BufferOptions {
 	time?: moment.DurationInputArg1;
@@ -129,14 +64,14 @@ export interface ToCheckpointOptions {
  * @field {function} transform - A function to transform data from inQueue to outQueue
  * @field {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
  */
-export interface EnrichOptions {
+export interface EnrichOptions<T, U> {
 	id: string;
 	inQueue: string;
 	outQueue: string;
 	start?: string;
 	batch?: BatchOptions;
 	config: ReadOptions;
-	transform: ProcessFunction;//(payload: any, event: any, callback: ProcessFunction) => any;
+	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
 }
 
 /**
@@ -148,12 +83,12 @@ export interface EnrichOptions {
  * @field {function} transform - A function to transform data from inQueue to outQueue
  * @field {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
  */
-export interface OffloadOptions extends ReadOptions {
+export interface OffloadOptions<T, U> extends ReadOptions {
 	id: string;
 	inQueue: string;
 	//config: ReadOptions;
 	batch?: BatchOptions;
-	transform: ProcessFunction;//(payload: any, event: any, callback: ProcessFunction) => any;
+	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
 	//callback: () => any;
 }
 
@@ -166,21 +101,22 @@ export interface StatsStream extends stream.Transform {
 	};
 }
 
-export interface StreamUtil {
+export declare namespace StreamUtil {
 
-	eventIdFromTimestamp: (timestamp: moment.MomentInput) => string;
-	eventIdToTimestamp: (eid: string) => number;
-	eventstream: typeof eventstream;
+	const eventIdFromTimestamp: typeof Streams.eventIdFromTimestamp;
+	const eventIdToTimestamp: typeof Streams.eventIdToTimestamp;
+	const eventstream: typeof es;
 
 	/**
 	 * @param {list} //list of streams to join together between each step and forward errors + deal with clean up
 	 * Type of https://github.com/mafintosh/pump
 	 */
-	pipe: typeof pump;
-	split: typeof split;
-	parse: {
-		(skipErrors?: boolean): stream.Transform;
-	};
+	const pipe: typeof Streams.pipe;
+	const pipeAsync: typeof Streams.pipeAsync;
+
+	const split: typeof splitLib;
+	function parse<T>(skipErrors?: boolean): TransformStream<any, T>;
+
 	/** 
 	* @param {function} func - function that takes the (event, callback, push, and flush).  When finished processing the event, call the callback and pass it back to the stream via second paramater of the callback or the push.
 	* @param {function} done - callback function
@@ -191,68 +127,29 @@ export interface StreamUtil {
 	* @param {function} flush - function to be called when the remaining data has been flushed
 	* @returns {stream}
 	*/
-	through: {
-		(
-			func: (
-				obj: ReadEvent<any> | ThroughEvent<any>,
-				done: (err?: string | null | Error, obj?: ThroughEvent<any>) => void,
-				push: (obj: any) => void) => void,
-			flush?: (
-				done: (err?: string | null | Error) => void,
-				push: (obj: any) => void) => void
-		): stream.Transform;
-		(
-			opts: ReadEvent<any> | ThroughEvent<any>,
-			func: (
-				obj: any,
-				done: (err?: string | null | Error, obj?: ThroughEvent<any>) => void,
-				push: (obj: any) => void) => void,
-			flush?: (
-				done: (err?: string | null | Error) => void,
-				push: (obj: any) => void) => void
-		): stream.Transform;
-	};
+	const through: typeof Streams.through;
+	const throughAsync: typeof Streams.throughAsync;
 
-	write: {
-		(
-			func: (
-				obj: ReadEvent<any> | ThroughEvent<any>,
-				done: (err?: string | null | Error, obj?: ThroughEvent<any>) => void) => void,
-			flush?: (
-				done: (err?: string | null | Error) => void,
-				push: (obj: any) => void) => void): stream.Transform;
-		(
-			opts: ReadEvent<any> | ThroughEvent<any>,
-			func: (
-				obj: any,
-				done: (err?: string | null | Error, obj?: ThroughEvent<any>) => void
-			) => void,
-			flush?: (
-				done: (err?: string | null | Error) => void,
-				push: (obj: any) => void) => void
-		): stream.Transform;
-	};
+	const write: typeof Streams.writeWrapped;
+
 	/**
 	 * Used to add logging in the stream.  Helpful for debugging in between streaming operations.
 	 * @param {string} prefix - prefix to include with each log
 	 */
-	log: {
-		(prefix?: string): stream.Transform;
-	};
-	stats: {
-		(botId: string, queue: string, opts?: {
-			records: number;
-			time: moment.DurationInputArg1;
-			//debug: boolean;
-		}): StatsStream;
-	};
-	fromLeo: (botId: string, inQueue: string, config?: ReadOptions) => stream.Transform;
-	toLeo: (botId: string, config?: WriteOptions) => stream.Transform;
-	checkpoint: (config?: {
+	const log: typeof Streams.log;
+	function stats(botId: string, queue: string, opts?: {
 		records: number;
 		time: moment.DurationInputArg1;
 		//debug: boolean;
-	}) => stream.Transform;
+	}): StatsStream;
+
+	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableStream<ReadEvent<T>>;
+	function toLeo<T>(botId: string, config?: WriteOptions): TransformStream<Event<T>, unknown>;
+	function checkpoint(config?: {
+		records: number;
+		time: moment.DurationInputArg1;
+		//debug: boolean;
+	}): stream.Writable;
 
 
 	/**
@@ -260,13 +157,13 @@ export interface StreamUtil {
 	 * @param {EnrichOptions} opts
 	 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
 	 */
-	enrich: (opts: EnrichOptions, callback: Callback) => void;
+	function enrich<T, U>(opts: EnrichOptions<T, U>, callback: Callback): void;
 	/**
 	 * Process events from one queue to another.
 	 * @param {EnrichOptions} opts
 	 * @return {stream} Stream
 	 */
-	offload: (config: OffloadOptions, callback: Callback) => void;
+	function offload<T, U>(config: OffloadOptions<T, U>, callback: Callback): void;
 	/**
 	 * Stream for writing events to a queue
 	 * @param {string} botId - The id of the bot
@@ -274,36 +171,44 @@ export interface StreamUtil {
 	 * @param {WriteOptions} config - An object that contains config values that control the flow of events to outQueue
 	 * @return {stream} Stream
 	 */
-	load: (botId: string, outQueue: string, config?: WriteOptions) => stream.Writable;
-	devnull: (shouldLog?: boolean | string) => stream.Transform;
-	stringify: () => stream.Transform;
-	gzip: () => stream.Transform;
+	function load<T>(botId: string, outQueue: string, config?: WriteOptions): WritableStream<Event<T> | T>;
+	const devnull: typeof Streams.devnull;
+	const stringify: typeof Streams.stringify;
+	const gzip: typeof zlib.createGzip;
+	const gunzip: typeof zlib.createGunzip;
 	/**
 	 * @param {string} label - The label for the log.  This will prefix every record that's loged. The result will be console.log(`${label}${count} ${Date.now()-start} ${o.eid||""}`);
 	 * @param {string} records [records=1000] - How many records processed before you log.
 	 */
-	counter: (label: string, records?: number) => stream.Transform;
-	gunzip: () => stream.Transform;
-	passThrough: (opts?: stream.TransformOptions) => stream.Transform;
-	pipeline: (...streams: stream.Stream[]) => Pumpify;
-	toS3: (Bucket: string, File: string) => stream.Writable;
-	fromS3: (file: {
+	const counter: typeof Streams.counter;
+
+
+	function passThrough(opts?: stream.TransformOptions): stream.Transform;
+
+
+	const pipeline: typeof Streams.pipeline;
+
+	function toS3(Bucket: string, File: string): stream.Writable;
+	function fromS3(file: {
 		bucket: string,
 		key: string;
 		range?: string;
-	}) => stream.Writable;
-	toDynamoDB: (table: string, opts: {
+	}): stream.Readable;
+
+	function toDynamoDB(table: string, opts: {
 		hash: string;
 		range: string;
 		records?: number;
 		size?: number;
 		time?: moment.DurationInputArg1;
-	}) => stream.Writable;
-	batch: (opts: BatchOptions | Number) => stream.Transform
+	}): stream.Writable;
+
+	const batch: typeof Streams.batch;
+
 	/**
 	 * @param {boolean|list} fieldList - List of fields to transform | true builds the header list dynmaically
 	 * @param {ToCsvOptions} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
 	 */
-	toCSV: (fieldList: boolean | string[], opts?: ToCsvOptions) => stream.Transform;
-	fromCSV: (fieldList: boolean | string[], opts?: FromCsvOptions) => stream.Transform;
+	const toCSV: typeof Streams.toCSV;
+	const fromCSV: typeof Streams.fromCSV;
 }

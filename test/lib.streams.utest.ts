@@ -686,4 +686,226 @@ describe("Streams", function () {
 			]);
 		});
 	});
+
+	describe("through", function () {
+		beforeEach(() => {
+		});
+		afterEach(() => {
+		});
+		interface SampleData {
+			some: string;
+		}
+		it("async no waiting", async function () {
+			let results = await new Promise((resolve, reject) => {
+				streams.pipe(
+					util.eventstream.readArray([{
+						some: "data1"
+					}, {
+						some: "data2"
+					}, {
+						some: "data3"
+					}, {
+						some: "data4"
+					}, {
+						some: "data5"
+					}, {
+						some: "data6"
+					}]),
+					streams.throughAsync<SampleData, string>((data) => {
+						return data.some;
+					}),
+					util.eventstream.writeArray((err, results) => {
+						err ? reject(err) : resolve(results);
+					}),
+				);
+			});
+
+			assert.deepEqual(results, [
+				"data1",
+				"data2",
+				"data3",
+				"data4",
+				"data5",
+				"data6"
+			]);
+		});
+		it("async with waiting", async function () {
+			let results = await new Promise((resolve, reject) => {
+				let count = 0;
+				streams.pipe(
+					util.eventstream.readArray([{
+						some: "data1"
+					}, {
+						some: "data2"
+					}, {
+						some: "data3"
+					}, {
+						some: "data4"
+					}, {
+						some: "data5"
+					}, {
+						some: "data6"
+					}]),
+					streams.throughAsync<SampleData, string>(async (data) => {
+						count++;
+						sleep((10 - count) * 10);
+						return data.some;
+					}),
+					util.eventstream.writeArray((err, results) => {
+						err ? reject(err) : resolve(results);
+					}),
+				);
+			});
+
+			assert.deepEqual(results, [
+				"data1",
+				"data2",
+				"data3",
+				"data4",
+				"data5",
+				"data6"
+			]);
+		});
+		it("async with error", async function () {
+			let results;
+			let error;
+			try {
+				results = await new Promise((resolve, reject) => {
+					let count = 0;
+					streams.pipe(
+						util.eventstream.readArray([{
+							some: "data1"
+						}]),
+						streams.throughAsync<SampleData, string>(async (data) => {
+							count++;
+							throw new Error(`Some error message: ${count}`);
+						}),
+						util.eventstream.writeArray((err, results) => {
+							err ? reject(err) : resolve(results);
+						}),
+					);
+				});
+
+			} catch (err) {
+				error = err;
+			}
+			assert.isNotNull(error);
+			assert.isUndefined(results);
+			assert.equal(error.message, "destroyed before end");
+		});
+		it("nonasync with error", async function () {
+			let results;
+			let error;
+			try {
+				results = await new Promise((resolve, reject) => {
+					let count = 0;
+					streams.pipe(
+						util.eventstream.readArray([{
+							some: "data1"
+						}]),
+						streams.through<SampleData, string>(async (data, cb) => {
+							count++;
+							cb(new Error(`Some error message: ${count}`));
+						}),
+						util.eventstream.writeArray((err, results) => {
+							err ? reject(err) : resolve(results);
+						}),
+					);
+				});
+
+			} catch (err) {
+				error = err;
+			}
+			assert.isNotNull(error);
+			assert.isUndefined(results);
+			assert.equal(error.message, "destroyed before end");
+		});
+	});
+
+	describe("pipe", function () {
+		beforeEach(() => {
+		});
+		afterEach(() => {
+		});
+		interface SampleData {
+			some: string;
+		}
+		it("async no waiting", async function () {
+			let results = [];
+			let d = await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]),
+				streams.throughAsync<SampleData, string>((data) => {
+					return data.some;
+				}),
+				streams.through((data, done) => {
+					results.push(data);
+					done();
+				}),
+				streams.devnull()
+			);
+			console.log("Check:", d);
+			assert.deepEqual(results, [
+				"data1",
+				"data2",
+				"data3",
+				"data4",
+				"data5",
+				"data6"
+			]);
+		});
+		it("async with waiting", async function () {
+			let results = [];
+			let count = 0;
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]),
+				streams.throughAsync<SampleData, string>(async (data) => {
+					count++;
+					sleep((10 - count) * 10);
+					return data.some;
+				}),
+				streams.through((data, done) => {
+					results.push(data);
+					done();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(results, [
+				"data1",
+				"data2",
+				"data3",
+				"data4",
+				"data5",
+				"data6"
+			]);
+		});
+	});
 });
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => { setTimeout(() => resolve(), ms); });
+}
+
