@@ -4,6 +4,7 @@ import { Callback, EnrichOptions, OffloadOptions, ReadOptions, StreamUtil, ToChe
 import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
 import AWS, { Credentials } from "aws-sdk";
+import { Event } from "./lib/types";
 
 export interface ConfigurationResources {
 	Region: string;
@@ -49,30 +50,33 @@ export interface RStreamsSdk {
 	 * @param {WriteOptions} config - An object that contains config values that control the flow of events to outQueue
 	 * @return {stream} Stream
 	 */
-	load: (botId: string, outQueue: string, config?: WriteOptions) => Pumpify;
+	load: typeof StreamUtil.load;
 
 	/**
 	 * Process events from a queue.
 	 * @param {OffloadOptions} opts
 	 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
 	 */
-	offload: (config: OffloadOptions, callback: Callback) => void;
+	offload: typeof StreamUtil.offload;
+
 	/**
 	 * Enrich events from one queue to another.
 	 * @param {EnrichOptions} opts
 	 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
 	 */
-	enrich: (opts: EnrichOptions, callback: Callback) => void;
+	enrich: typeof StreamUtil.enrich;
 
-	read: (botId: string, inQueue: string, config?: ReadOptions) => stream.Transform;
-	write: (botId: string, config?: WriteOptions) => stream.Transform;
-	put: (bot_id: string, outQueue: string, payload: any, callback: Callback) => void;
+	read: typeof StreamUtil.fromLeo;
+
+	write: typeof StreamUtil.toLeo;
+
+	put: <T>(bot_id: string, outQueue: string, payload: Event<T> | T, callback: Callback) => void;
 	//checkpoint: (config?: ToCheckpointOptions) => stream.Transform;
 
 	/** 
 	 * @return Rstreams - used to get the leo stream to do more advanced processing of the streams.
 	*/
-	streams: StreamUtil,
+	streams: typeof StreamUtil,
 	bot: LeoCron,
 	aws: {
 		dynamodb: LeoDynamodb,

@@ -2,6 +2,7 @@ import async from "async";
 import { RStreamsSdk } from "../index";
 import moment from "moment";
 import util from "./reference";
+import { ReadEvent } from "./types";
 
 const logger = require('leo-logger')('event-trace');
 
@@ -10,6 +11,14 @@ export interface EventTraceOptions {
 	queue: string;
 	eid: string;
 	children?: string[];
+}
+
+export interface TraceReadEvent extends ReadEvent<any> {
+	kinesis_number: any;
+	lag: number;
+	label: any;
+	type: string;
+	server_id: string;
 }
 
 export async function trace(sdk: RStreamsSdk, statsTableName: string, options: EventTraceOptions) {
@@ -29,7 +38,8 @@ export async function trace(sdk: RStreamsSdk, statsTableName: string, options: E
 					start: prevId(id),
 					limit: 1,
 				}),
-				ls.write(function (event, done) {
+				ls.write(function (readEvent, done) {
+					let event = readEvent as TraceReadEvent;
 					let correlation = {
 						start: event.eid || event.kinesis_number,
 						timestamp: moment(event.timestamp),
@@ -152,7 +162,8 @@ export async function trace(sdk: RStreamsSdk, statsTableName: string, options: E
 							start: prevId(current.id),
 							limit: 1,
 						}),
-						ls.write(function (event, done) {
+						ls.write(function (readEvent, done) {
+							let event = readEvent as TraceReadEvent;
 							gotEvent = true;
 							let botId = util.refId(event.id, "bot");
 							if (seen[botId]) {
@@ -338,7 +349,8 @@ function searchCorrelationId(sdk: RStreamsSdk, statsTableName: string, queue_id,
 					maxOverride: timestamp.clone().add(1, "m").format("[z/]YYYY/MM/DD/HH/mm/ss"),
 					fast_s3_read: true
 				}),
-				ls.write(function (e, done) {
+				ls.write(function (readEvent, done) {
+					let e = readEvent as TraceReadEvent;
 					if (!shouldContinue) {
 						logger.debug("Should stop")
 						return done();
