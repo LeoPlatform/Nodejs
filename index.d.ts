@@ -67,11 +67,24 @@ export interface RStreamsSdk {
 	 */
 	enrich: typeof StreamUtil.enrich;
 
+	/**
+	 * Enrich events from one queue to another.
+	 * @param {EnrichOptions} opts
+	 */
+	enrichEvents: <T, U>(opts: EnrichOptions<T, U>) => Promise<void>;
+
+	/**
+	 * Process events from one queue to another.
+	 * @param {EnrichOptions} opts
+	 */
+	offloadEvents: <T, U>(config: OffloadOptions<T, U>) => void;
+
 	read: typeof StreamUtil.fromLeo;
 
 	write: typeof StreamUtil.toLeo;
 
 	put: <T>(bot_id: string, outQueue: string, payload: Event<T> | T, callback: Callback) => void;
+	putEvent: <T>(bot_id: string, outQueue: string, payload: Event<T> | T) => Promise<void>;
 	//checkpoint: (config?: ToCheckpointOptions) => stream.Transform;
 
 	/** 

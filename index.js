@@ -7,6 +7,7 @@ let aws = require("./lib/leo-aws");
 const fs = require("fs");
 const ini = require('ini');
 const { default: Configuration } = require("./lib/rstreams-configuration");
+const { promisify } = require("util");
 const execSync = require("child_process").execSync;
 const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").ConfigProviderChain;
 
@@ -143,6 +144,17 @@ function SDK(id, data) {
 		 * @return {stream} Stream
 		 */
 		offload: leoStream.offload,
+		/**
+		 * Process events from a queue.
+		 * @param {Object} opts
+		 * @param {string} opts.id - The id of the bot
+		 * @param {string} opts.inQueue - The queue from which events will be read
+		 * @param {Object} opts.config - An object that contains config values that control the flow of events from inQueue
+		 * @param {function} opts.batch - A function to batch data from inQueue (optional)
+		 * @param {function} opts.each - A function to transform data from inQueue or from batch function, and offload from the platform
+		 * @return {Promise<void>}
+		 */
+		offloadEvents: promisify(leoStream.offload).bind(leoStream),
 
 		/**
 		 * Enrich events from one queue to another.
@@ -156,6 +168,17 @@ function SDK(id, data) {
 		 * @return {stream} Stream
 		 */
 		enrich: leoStream.enrich,
+		/**
+		 * Enrich events from one queue to another.
+		 * @param {Object} opts
+		 * @param {string} opts.id - The id of the bot
+		 * @param {string} opts.inQueue - The queue from which events will be read
+		 * @param {string} opts.outQueue - The queue into which events will be written 
+		 * @param {Object} opts.config - An object that contains config values that control the flow of events from inQueue and to outQueue
+		 * @param {function} opts.transform - A function to transform data from inQueue to outQueue
+		 * @return {Promise<void>}
+		 */
+		enrichEvents: promisify(leoStream.enrich).bind(leoStream),
 
 		read: leoStream.fromLeo,
 		write: leoStream.toLeo,
@@ -167,6 +190,9 @@ function SDK(id, data) {
 			});
 			stream.write(payload);
 			stream.end(callback);
+		},
+		putEvent: function(bot_id, queue, payload) {
+			return promisify(this.put).call(this)(bot_id, queue, payload);
 		},
 		checkpoint: leoStream.toCheckpoint,
 		streams: leoStream,
@@ -181,4 +207,5 @@ function SDK(id, data) {
 		}
 	});
 }
+
 module.exports = new SDK(false);
