@@ -12,8 +12,8 @@ const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").Conf
 
 let deasync;
 try {
-	//deasync = require("deasync");
-	deasync = require("./lib/deasync");
+	deasync = require("deasync");
+	// deasync = require("./lib/deasync");
 } catch (err) {
 	console.warn("RStreams unable to load deasync module. Asynchronous Config Providers (AWSSecretsConfiguration) will not be available. Try installing deasync or include it in your exported bundle.  If using webpack add deasync to externals and copy the lib to node_modules.");
 	deasync = function(fn) {
