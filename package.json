@@ -13,7 +13,8 @@
 		"coverage-all": "cross-env NODE_ENV=utest node ./node_modules/nyc/bin/nyc.js --all node ./node_modules/mocha/bin/mocha --timeout 5000 \"./{,!(node_modules)/**/}*.utest.js\"",
 		"coverage": "cross-env NODE_ENV=utest node ./node_modules/nyc/bin/nyc.js node ./node_modules/mocha/bin/mocha --timeout 5000 \"./{,!(node_modules)/**/}*.utest.js\"",
 		"compile": "tsc",
-		"watch": "tsc -w"
+		"watch": "tsc -w",
+		"publish-beta": "npm publish --tag beta"
 	},
 	"dependencies": {
 		"async": "2.6.2",

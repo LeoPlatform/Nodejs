@@ -14,6 +14,11 @@ export interface WritableStream<T> extends stream.Writable {
     _write(chunk: T, encoding: BufferEncoding, callback?: ErrorCallback): void;
     write(chunk: T, callback?: (error: Error | null | undefined) => void): boolean;
     write(chunk: T, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): boolean;
+
+
+    end(cb?: () => void): this;
+    end(chunk: T, cb?: () => void): this;
+    end(chunk: T, encoding: BufferEncoding, cb?: () => void): this;
 }
 export declare type DuplexStream<T, U> = TransformStream<T, U>;
 export interface TransformStream<T, U> extends stream.Duplex {
@@ -94,3 +99,39 @@ export interface CorrelationId {
 //     (params: any, done: any): any;
 //     stream: TransformStream<any, any>;
 // }
+
+export type BotInvocationEvent2<T extends any = {}> = T & {
+    botId: string,
+    __cron: Cron,
+}
+
+export interface BotInvocationEvent {
+    botId: string,
+    __cron: Cron,
+}
+
+export interface Cron {
+    id: string;
+    iid?: string;
+    name: string;
+    ts: number;
+    force?: boolean;
+    ignore_lock?: boolean;
+    //  time: i64;
+    checkpoints?: Checkpoints;
+    // pub botName: string;
+    //pub instances: string
+}
+
+export interface Checkpoints {
+    read: { [key: string]: Checkpoint };
+    write: { [key: string]: Checkpoint };
+}
+
+export interface Checkpoint {
+    checkpoint?: string,
+    ended_timestamp?: number,
+    records?: number,
+    source_timestamp?: number,
+    started_timestamp?: number,
+}

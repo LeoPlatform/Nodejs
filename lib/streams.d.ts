@@ -4,7 +4,7 @@ import stream from 'stream';
 import through2 from 'through2';
 import pump from "pump";
 import { ParserOptionsArgs } from 'fast-csv';
-import { DataCallback, Event, FlushCallback, ReadEvent, TransformFunction, ReadableStream, WritableStream, TransformStream } from "./types";
+import { ErrorCallback, DataCallback, Event, FlushCallback, ReadEvent, TransformFunction, ReadableStream, WritableStream, TransformStream } from "./types";
 
 declare type ProcessCallback<T> = (err?: any, result?: boolean | T, opts?: ProcessCallbackOptions) => void;
 declare type ProcessFunction<T, U> = (payload: T, wrapper: ReadEvent<T>, callback: ProcessCallback<U>) => void;
@@ -33,12 +33,12 @@ export interface CommandWrapOptions {
 //export function pipe(...streams: Array<stream.Transform | pump.Callback>): stream.Transform;
 
 
-export function pipe<T1>(read: ReadableStream<T1>, write: WritableStream<T1>, errorCallback?: ErrorCallback): WritableStream<T1>;
-export function pipe<T1, T2>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, write: WritableStream<T2>, errorCallback?: ErrorCallback): WritableStream<T2>;
-export function pipe<T1, T2, T3>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3>, errorCallback?: ErrorCallback): WritableStream<T3>;
-export function pipe<T1, T2, T3, T4>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4>, errorCallback?: ErrorCallback): WritableStream<T4>;
-export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5>, errorCallback?: ErrorCallback): WritableStream<T5>;
-export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6>, errorCallback?: ErrorCallback): WritableStream<T6>;
+export function pipe<T1>(read: ReadableStream<T1>, write: WritableStream<T1> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T1> | stream.Writable;
+export function pipe<T1, T2>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, write: WritableStream<T2> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T2> | stream.Writable;
+export function pipe<T1, T2, T3>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T3> | stream.Writable;
+export function pipe<T1, T2, T3, T4>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T4> | stream.Writable;
+export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T5> | stream.Writable;
+export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T6> | stream.Writable;
 
 
 export function pipeAsync<T1>(read: ReadableStream<T1>, write: WritableStream<T1>): Promise<void>;

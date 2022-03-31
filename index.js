@@ -9,15 +9,42 @@ const ini = require('ini');
 const { default: Configuration } = require("./lib/rstreams-configuration");
 const execSync = require("child_process").execSync;
 const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").ConfigProviderChain;
-const deasync = require("deasync");
-const uuid = require("uuid");
+
+let deasync;
+try {
+	//deasync = require("deasync");
+	deasync = require("./lib/deasync");
+} catch (err) {
+	console.warn("RStreams unable to load deasync module. Asynchronous Config Providers (AWSSecretsConfiguration) will not be available. Try installing deasync or include it in your exported bundle.  If using webpack add deasync to externals and copy the lib to node_modules.");
+	deasync = function(fn) {
+		return (...args) => {
+			let error;
+			let data;
+			args.push((err, d) => {
+				error = err;
+				data = d;
+			})
+			fn(...args);
+			if (error != null) {
+				throw error;
+			} else if (data == null) {
+				throw new Error("No config found.");
+			}
+			return data
+		}
+
+	}
+}
+
+//const uuid = require("uuid");
 
 function chainResolve(chain, cb) {
 	chain.resolve((err, data) => {
 		cb(err, data);
 	});
-
 }
+const chainResolveSync = deasync(chainResolve)
+
 
 function SDK(id, data) {
 	if (typeof id !== "string" && id != null) {
@@ -27,11 +54,11 @@ function SDK(id, data) {
 
 	if (data == null || data === false || data instanceof Configuration) {
 		let chain = data || new ConfigProviderChain();
-
+		let dataOrig = data;
 		try {
-			let syncChainResolve = deasync(chainResolve);
-			data = syncChainResolve(chain);
+			data = chainResolveSync(chain);
 		} catch (err) {
+			data = dataOrig;
 			// Ignore errors because this is just trying to find the defaults
 		}
 	}

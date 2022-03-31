@@ -5,6 +5,7 @@ import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
 import AWS, { Credentials } from "aws-sdk";
 import { Event } from "./lib/types";
+import ConfigurationProvider from "./lib/rstreams-configuration";
 
 export interface ConfigurationResources {
 	Region: string;
@@ -85,5 +86,5 @@ export interface RStreamsSdk {
 	}
 }
 
-declare function ExportTypeFn(config?: ConfigurationResources): RStreamsSdk;
+declare function ExportTypeFn(config?: ConfigurationResources | typeof ConfigurationProvider): RStreamsSdk;
 export default ExportTypeFn;
