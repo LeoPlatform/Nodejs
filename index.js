@@ -6,13 +6,71 @@ let LeoConfiguration = require("./lib/configuration.js");
 let aws = require("./lib/leo-aws");
 const fs = require("fs");
 const ini = require('ini');
+const { default: Configuration } = require("./lib/rstreams-configuration");
+const { promisify } = require("util");
 const execSync = require("child_process").execSync;
+const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").ConfigProviderChain;
+
+let deasync;
+try {
+	deasync = require("deasync");
+	// deasync = require("./lib/deasync");
+} catch (err) {
+	console.warn("RStreams unable to load deasync module. Asynchronous Config Providers (AWSSecretsConfiguration) will not be available. Try installing deasync or include it in your exported bundle.  If using webpack add deasync to externals and copy the lib to node_modules.");
+	deasync = function(fn) {
+		return (...args) => {
+			let error;
+			let data;
+			args.push((err, d) => {
+				error = err;
+				data = d;
+			})
+			fn(...args);
+			if (error != null) {
+				throw error;
+			} else if (data == null) {
+				throw new Error("No config found.");
+			}
+			return data
+		}
+
+	}
+}
+
+//const uuid = require("uuid");
+
+function chainResolve(chain, cb) {
+	chain.resolve((err, data) => {
+		cb(err, data);
+	});
+}
+const chainResolveSync = deasync(chainResolve)
+
 
 function SDK(id, data) {
-	if (typeof id !== "string") {
+	if (typeof id !== "string" && id != null) {
 		data = id;
 		id = data.id || "default_bot";
 	}
+
+	if (data == null || data === false || data instanceof Configuration) {
+		let chain = data || new ConfigProviderChain();
+		let dataOrig = data;
+		try {
+			data = chainResolveSync(chain);
+		} catch (err) {
+			data = dataOrig;
+			// Ignore errors because this is just trying to find the defaults
+		}
+	}
+
+	// if (data.assumeRole) {
+	// 	const cred = await new AWS.STS({}).assumeRole({
+	// 		RoleArn: data.assumeRole,
+	// 		RoleSessionName: process.env.AWS_LAMBDA_FUNCTION_NAME || uuid.v4()
+	// 	}).promise();
+	// 	busConfig.credentials = sts.credentialsFrom(cred);
+	// }
 
 	let configuration = new LeoConfiguration(data);
 
@@ -86,6 +144,17 @@ function SDK(id, data) {
 		 * @return {stream} Stream
 		 */
 		offload: leoStream.offload,
+		/**
+		 * Process events from a queue.
+		 * @param {Object} opts
+		 * @param {string} opts.id - The id of the bot
+		 * @param {string} opts.inQueue - The queue from which events will be read
+		 * @param {Object} opts.config - An object that contains config values that control the flow of events from inQueue
+		 * @param {function} opts.batch - A function to batch data from inQueue (optional)
+		 * @param {function} opts.each - A function to transform data from inQueue or from batch function, and offload from the platform
+		 * @return {Promise<void>}
+		 */
+		offloadEvents: promisify(leoStream.offload).bind(leoStream),
 
 		/**
 		 * Enrich events from one queue to another.
@@ -99,6 +168,17 @@ function SDK(id, data) {
 		 * @return {stream} Stream
 		 */
 		enrich: leoStream.enrich,
+		/**
+		 * Enrich events from one queue to another.
+		 * @param {Object} opts
+		 * @param {string} opts.id - The id of the bot
+		 * @param {string} opts.inQueue - The queue from which events will be read
+		 * @param {string} opts.outQueue - The queue into which events will be written 
+		 * @param {Object} opts.config - An object that contains config values that control the flow of events from inQueue and to outQueue
+		 * @param {function} opts.transform - A function to transform data from inQueue to outQueue
+		 * @return {Promise<void>}
+		 */
+		enrichEvents: promisify(leoStream.enrich).bind(leoStream),
 
 		read: leoStream.fromLeo,
 		write: leoStream.toLeo,
@@ -110,6 +190,9 @@ function SDK(id, data) {
 			});
 			stream.write(payload);
 			stream.end(callback);
+		},
+		putEvent: function(bot_id, queue, payload) {
+			return promisify(this.put).call(this)(bot_id, queue, payload);
 		},
 		checkpoint: leoStream.toCheckpoint,
 		streams: leoStream,
@@ -124,4 +207,5 @@ function SDK(id, data) {
 		}
 	});
 }
+
 module.exports = new SDK(false);

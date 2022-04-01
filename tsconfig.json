@@ -1,0 +1,27 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"module": "commonjs",
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "es2019",
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"allowJs": false,
+		"baseUrl": ".",
+		"paths": {
+			"*": [
+				"node_modules/*",
+				"types/*"
+			]
+		}
+	},
+	"include": [
+		"**/*.ts"
+	],
+	"exclude": [
+		"node_modules",
+		"**/*.js"
+	],
+	"watch": true
+}
