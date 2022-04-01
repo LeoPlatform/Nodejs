@@ -30,7 +30,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: echo ${{github.ref}}
-      - run echo beta release
+      - run: echo beta release
       #- run: npm publish --tag beta
         #env:
           #NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

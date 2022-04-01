@@ -30,7 +30,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: echo ${{github.ref}}
-      - run echo prod release
+      - run: echo prod release
       #- run: npm publish
         #env:
           #NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
