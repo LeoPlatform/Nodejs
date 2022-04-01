@@ -143,6 +143,7 @@ export declare namespace StreamUtil {
 		//debug: boolean;
 	}): StatsStream;
 
+	function toCheckpoint(config?: ToCheckpointOptions): TransformStream<unknown, unknown>;
 	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableStream<ReadEvent<T>>;
 	function toLeo<T>(botId: string, config?: WriteOptions): TransformStream<Event<T>, unknown>;
 	function checkpoint(config?: {

@@ -6,6 +6,7 @@ import { LeoDynamodb } from "./lib/dynamodb";
 import AWS, { Credentials } from "aws-sdk";
 import { Event } from "./lib/types";
 import ConfigurationProvider from "./lib/rstreams-configuration";
+export * from "./lib/types";
 
 export interface ConfigurationResources {
 	Region: string;
@@ -85,7 +86,7 @@ export interface RStreamsSdk {
 
 	put: <T>(bot_id: string, outQueue: string, payload: Event<T> | T, callback: Callback) => void;
 	putEvent: <T>(bot_id: string, outQueue: string, payload: Event<T> | T) => Promise<void>;
-	//checkpoint: (config?: ToCheckpointOptions) => stream.Transform;
+	checkpoint: typeof StreamUtil.toCheckpoint;
 
 	/** 
 	 * @return Rstreams - used to get the leo stream to do more advanced processing of the streams.

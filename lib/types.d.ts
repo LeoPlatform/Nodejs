@@ -1,3 +1,4 @@
+export * from "./lib";
 /// <reference types="node" />
 import stream from 'stream';
 // export interface LeoStreamOptions extends stream.TransformOptions {
@@ -35,34 +36,30 @@ export declare type TransformFunction<T = any, E = Error> = (this: stream.Transf
 export declare type RStreamsTransformFunction<T, U, E = Error> = (this: TransformStream<T, U>, obj: T, callback: DataCallback<U, E>) => void;
 export declare type FlushCallback<T = any, E = Error> = (this: stream.Transform, flushCallback: DataCallback<T, E>) => any;
 
-
 export interface Event<T> {
     id: string;
     event: string;
     timestamp: number;
     event_source_timestamp: number;
     payload?: T;
-    correlation_id?: {
-        source: string;
-        start?: string;
-        end?: string;
-        units: number;
-    };
+    correlation_id?: CorrelationId;
 }
+
+export interface WriteEvent<T> extends Event<T> {
+}
+
 export interface ReadEvent<T> extends Event<T> {
     eid: string;
 }
-// export interface Event<T> {
-//     id?: string;
-//     timestamp?: number;
-//     event?: string;
-//     eid?: string;
-//     units?: number;
-//     event_source_timestamp: number;
-//     correlation_id: CorrelationId;
-//     payload?: T;
-// }
+
 export interface CorrelationId {
+    source: string;
+    start: string;
+    end?: string;
+    units?: number;
+}
+
+interface InternalCorrelationId {
     source: string;
     start: string | number;
     end?: string | number;
