@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 12.x
+          node-version: 12
       - run: npm ci
       - run: npm run coverage-all
 
@@ -26,11 +26,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 12.x
+          node-version: 12
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: echo ${{github.ref}}
       - run echo beta release
       #- run: npm publish --tag beta
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        #env:
+          #NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
