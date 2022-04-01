@@ -30,9 +30,9 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: echo ${{github.ref}}
-      - branches [ master ]
+      - if: {{ github.ref == 'ref/head/master' }}
         run: echo master release
-      - branches [ beta ]
+      - if: {{ github.ref == 'ref/head/beta' }}
         run echo beta release
       #- run: npm publish
         env:
