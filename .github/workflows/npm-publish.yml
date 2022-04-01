@@ -6,7 +6,7 @@ name: NPM Publish Release Package
 on:
   release:
     types: [ created ]
-    branches: [ master]
+    branches: [ master ]
 
 jobs:
   build:

@@ -6,7 +6,7 @@ name: NPM Publish Beta Package
 on:
   release:
     types: [ created ]
-    branches: [ beta]
+    branches: [ beta ]
 
 jobs:
   build:
