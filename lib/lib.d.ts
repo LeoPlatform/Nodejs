@@ -70,7 +70,7 @@ export interface EnrichOptions<T, U> {
 	outQueue: string;
 	start?: string;
 	batch?: BatchOptions;
-	config: ReadOptions;
+	config?: ReadOptions;
 	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
 }
 
@@ -83,21 +83,30 @@ export interface EnrichOptions<T, U> {
  * @field {function} transform - A function to transform data from inQueue to outQueue
  * @field {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
  */
-export interface OffloadOptions<T, U> extends ReadOptions {
+export interface OffloadOptions<T> extends ReadOptions {
 	id: string;
 	inQueue: string;
 	//config: ReadOptions;
-	batch?: BatchOptions;
-	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
+	batch?: BatchOptions | Number;
+	transform: ProcessFunction<T, boolean>;//(payload: any, event: any, callback: ProcessFunction) => any;
 	//callback: () => any;
+}
+
+export interface CheckpointData {
+	eid: string;
+	units?: number;
+	source_timestamp?: number,
+	started_timestamp?: number,
+	ended_timestamp?: number;
+	start_eid?: string;
 }
 
 export interface StatsStream extends stream.Transform {
 	checkpoint: {
-		(callback: (err: any) => void): void;
+		(callback: (err: CheckpointData) => void): void;
 	};
 	get: {
-		(): any;
+		(): CheckpointData;
 	};
 }
 
@@ -164,7 +173,7 @@ export declare namespace StreamUtil {
 	 * @param {EnrichOptions} opts
 	 * @return {stream} Stream
 	 */
-	function offload<T, U>(config: OffloadOptions<T, U>, callback: Callback): void;
+	function offload<T>(config: OffloadOptions<T>, callback: Callback): void;
 	/**
 	 * Stream for writing events to a queue
 	 * @param {string} botId - The id of the bot

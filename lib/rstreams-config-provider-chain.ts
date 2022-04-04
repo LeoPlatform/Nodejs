@@ -1,4 +1,4 @@
-import util from "aws-sdk/lib/util";
+import util from "./aws-util";
 import Configuration from "./rstreams-configuration";
 import fs from "fs";
 import path from "path";

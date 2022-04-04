@@ -1,4 +1,4 @@
-import util from "aws-sdk/lib/util";
+import util from "./aws-util";
 
 /**
  * Represents your RSTREAMS configuration

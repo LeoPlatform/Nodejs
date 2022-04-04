@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "6.0.1",
+	"version": "6.0.2",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -55,7 +55,7 @@
 		"typescript": "^4.6.2"
 	},
 	"peerDependencies": {
-		"aws-sdk": "^2.581.0"
+		"aws-sdk": "^2.1107.0"
 	},
 	"author": "LEO Enterprises <dev@leoplatform.io> (http://leoplatform.io)",
 	"repository": "LeoPlatform/Nodejs",

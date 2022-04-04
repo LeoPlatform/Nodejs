@@ -1,4 +1,5 @@
 export * from "./lib";
+export * from "./streams";
 /// <reference types="node" />
 import stream from 'stream';
 // export interface LeoStreamOptions extends stream.TransformOptions {
