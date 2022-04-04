@@ -78,7 +78,7 @@ export interface RStreamsSdk {
 	 * Process events from one queue to another.
 	 * @param {EnrichOptions} opts
 	 */
-	offloadEvents: <T, U>(config: OffloadOptions<T, U>) => void;
+	offloadEvents: <T>(config: OffloadOptions<T>) => void;
 
 	read: typeof StreamUtil.fromLeo;
 
