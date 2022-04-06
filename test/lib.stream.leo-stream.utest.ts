@@ -29,7 +29,6 @@ describe("leo-stream", function () {
 	});
 
 	it("stats - get", async function () {
-		this.timeout(400 * 6);
 		let stats = ls.stats("bot-id", "mock-queue");
 		await ls.pipeAsync(
 			ls.eventstream.readArray([
@@ -40,7 +39,7 @@ describe("leo-stream", function () {
 				{ payload: {}, eid: "4", event_source_timestamp: 14 }
 			]),
 			ls.through((data, done) => {
-				setTimeout(() => done(null, data), 400);
+				setTimeout(() => done(null, data), 1);
 			}),
 			stats,
 			ls.devnull()

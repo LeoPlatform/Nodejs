@@ -97,23 +97,37 @@ const Configuration = util.inherit({
 		}
 	},
 
-	resolve: function resolve(callback) {
-		this.get((err) => {
-			let data;
-			if (!err) {
-				data = {
-					Region: this.Region,
-					LeoStream: this.LeoStream,
-					LeoCron: this.LeoCron,
-					LeoEvent: this.LeoEvent,
-					LeoS3: this.LeoS3,
-					LeoKinesisStream: this.LeoKinesisStream,
-					LeoFirehoseStream: this.LeoFirehoseStream,
-					LeoSettings: this.LeoSettings,
-				}
-			}
-			callback(err, data);
-		})
+	// resolve: function resolve(callback) {
+	// 	this.get((err) => {
+	// 		let data;
+	// 		if (!err) {
+	// 			data = {
+	// 				Region: this.Region,
+	// 				LeoStream: this.LeoStream,
+	// 				LeoCron: this.LeoCron,
+	// 				LeoEvent: this.LeoEvent,
+	// 				LeoS3: this.LeoS3,
+	// 				LeoKinesisStream: this.LeoKinesisStream,
+	// 				LeoFirehoseStream: this.LeoFirehoseStream,
+	// 				LeoSettings: this.LeoSettings,
+	// 			}
+	// 		}
+	// 		callback(err, data);
+	// 	})
+	// },
+
+	resolveSync: function resolveSync() {
+		this.getSync();
+		return {
+			Region: this.Region,
+			LeoStream: this.LeoStream,
+			LeoCron: this.LeoCron,
+			LeoEvent: this.LeoEvent,
+			LeoS3: this.LeoS3,
+			LeoKinesisStream: this.LeoKinesisStream,
+			LeoFirehoseStream: this.LeoFirehoseStream,
+			LeoSettings: this.LeoSettings,
+		};
 	},
 
 	/**
@@ -128,15 +142,22 @@ const Configuration = util.inherit({
 	 *   been loaded into the object.
 	 *   @param err [Error] if an error occurred, this value will be filled
 	 */
-	get: function get(callback) {
-		var self = this;
+	// get: function get(callback) {
+	// 	var self = this;
+	// 	if (this.needsRefresh()) {
+	// 		this.refresh(function (err) {
+	// 			if (!err) self.expired = false; // reset expired flag
+	// 			if (callback) callback(err);
+	// 		});
+	// 	} else if (callback) {
+	// 		callback();
+	// 	}
+	// },
+
+	getSync: function getSync() {
 		if (this.needsRefresh()) {
-			this.refresh(function (err) {
-				if (!err) self.expired = false; // reset expired flag
-				if (callback) callback(err);
-			});
-		} else if (callback) {
-			callback();
+			this.refreshSync();
+			this.expired = false;
 		}
 	},
 
@@ -199,10 +220,13 @@ const Configuration = util.inherit({
 	 *   any error information.
 	 * @see get
 	 */
-	refresh: function refresh(callback) {
+	// refresh: function refresh(callback) {
+	// 	this.expired = false;
+	// 	callback();
+	// },
+	refreshSync: function () {
 		this.expired = false;
-		callback();
-	},
+	}
 
 	// /**
 	//  * @api private

@@ -3,6 +3,9 @@ import Configuration from "./rstreams-configuration";
 import fs from "fs";
 import path from "path";
 import AWS, { CredentialProviderChain } from "aws-sdk";
+import { spawnSync } from "child_process";
+import { createRequire } from "module";
+import awsSdkSync from "./aws-sdk-sync";
 let RStreams = require('./rstreams');
 
 export enum ProvidersInputType {
@@ -114,46 +117,96 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 	 * @return [RStreams.ConfigProviderChain] the provider, for chaining.
 	 */
 	resolve: function resolve(callback) {
+
+		let error;
+		let value;
+		try {
+			value = this.resolveSync();
+		} catch (err) {
+			error = err;
+		}
+		callback(error, error ? undefined : value);
+		return this;
+
+		// let self = this;
+		// if (self.providers.length === 0) {
+		// 	callback(new Error('No providers'));
+		// 	return self;
+		// }
+
+		// if (self.resolveCallbacks.push(callback) === 1) {
+		// 	let index = 0;
+		// 	let providers = self.providers.slice(0);
+
+		// 	function resolveNext(err?, creds?) {
+		// 		if ((!err && creds) || index === providers.length) {
+		// 			util.arrayEach(self.resolveCallbacks, function (callback) {
+		// 				callback(err, creds);
+		// 			});
+		// 			self.resolveCallbacks.length = 0;
+		// 			return;
+		// 		}
+
+		// 		let provider = providers[index++];
+		// 		if (typeof provider === 'function') {
+		// 			creds = provider.call();
+		// 		} else {
+		// 			creds = provider;
+		// 		}
+
+		// 		if (creds.get) {
+		// 			creds.get(function (getErr) {
+		// 				resolveNext(getErr, getErr ? null : creds);
+		// 			});
+		// 		} else {
+		// 			resolveNext(null, creds);
+		// 		}
+		// 	}
+
+		// 	resolveNext();
+		// }
+
+		// return self;
+	},
+	resolveSync: function () {
 		let self = this;
 		if (self.providers.length === 0) {
-			callback(new Error('No providers'));
-			return self;
+			throw new Error('No providers');
 		}
 
-		if (self.resolveCallbacks.push(callback) === 1) {
-			let index = 0;
-			let providers = self.providers.slice(0);
+		let providers = self.providers.slice(0);
 
-			function resolveNext(err?, creds?) {
-				if ((!err && creds) || index === providers.length) {
-					util.arrayEach(self.resolveCallbacks, function (callback) {
-						callback(err, creds);
-					});
-					self.resolveCallbacks.length = 0;
-					return;
-				}
-
-				let provider = providers[index++];
-				if (typeof provider === 'function') {
-					creds = provider.call();
-				} else {
-					creds = provider;
-				}
-
-				if (creds.get) {
-					creds.get(function (getErr) {
-						resolveNext(getErr, getErr ? null : creds);
-					});
-				} else {
-					resolveNext(null, creds);
-				}
+		let value: any;
+		let error;
+		for (let provider of providers) {
+			if (typeof provider === 'function') {
+				value = (provider as any).call();
+			} else {
+				value = provider;
 			}
 
-			resolveNext();
+			try {
+				if (value.getSync) {
+					value.getSync();
+					return value;
+				}
+				else {
+					return value;
+				}
+			} catch (err) {
+				error = err;
+			}
 		}
 
-		return self;
+		if (error != null) {
+			throw error;
+		} else if (value == null) {
+			throw new Error("Config not found");
+		}
+
+		return value;
 	}
+
 });
 
 /**
@@ -283,15 +336,13 @@ export const EnvironmentConfiguration = util.inherit(Configuration, {
 		//this.get(function () { });
 	},
 
-	refresh: function refresh(callback) {
-		if (!callback) callback = util.fn.callback;
+	refreshSync: function () {
 
 		if (!process || !process.env) {
-			callback(util.error(
+			throw util.error(
 				new Error(`Unable to parse environment variable: ${this.envPrefix}.`),
 				{ code: 'EnvironmentConfigurationProviderFailure' }
-			));
-			return;
+			);
 		}
 
 		let values = null;
@@ -299,11 +350,10 @@ export const EnvironmentConfiguration = util.inherit(Configuration, {
 			try {
 				values = JSON.parse(process.env[this.envPrefix]);
 			} catch (err) {
-				callback(util.error(
+				throw util.error(
 					new Error(`Unable to parse env variable: ${this.envPrefix}`),
 					{ code: 'EnvironmentConfigurationProviderFailure' }
-				));
-				return;
+				);
 			}
 		} else {
 
@@ -325,19 +375,81 @@ export const EnvironmentConfiguration = util.inherit(Configuration, {
 				if (this.envPrefix) { prefix = this.envPrefix + '_'; }
 				values[key] = process.env[prefix + key] || process.env[prefix + key.toUpperCase()] || process.env[prefix + key.toLowerCase()];
 				if (!values[key] && key !== 'LeoSettings') {
-					callback(util.error(
+					throw util.error(
 						new Error('Variable ' + prefix + key + ' not set.'),
 						{ code: 'EnvironmentConfigurationProviderFailure' }
-					));
-					return;
+					);
 				}
 			}
 		}
 
 		this.expired = false;
 		Configuration.call(this, values);
-		callback();
-	}
+		return this;
+	},
+
+	// refresh: function refresh(callback) {
+	// 	if (!callback) callback = util.fn.callback;
+	// 	let error;
+	// 	try {
+	// 		this.refreshSync();
+	// 	} catch (err) {
+	// 		error = err;
+	// 	}
+	// 	return callback(error);
+
+	// 	if (!process || !process.env) {
+	// 		callback(util.error(
+	// 			new Error(`Unable to parse environment variable: ${this.envPrefix}.`),
+	// 			{ code: 'EnvironmentConfigurationProviderFailure' }
+	// 		));
+	// 		return;
+	// 	}
+
+	// 	let values = null;
+	// 	if (process.env[this.envPrefix] != null) {
+	// 		try {
+	// 			values = JSON.parse(process.env[this.envPrefix]);
+	// 		} catch (err) {
+	// 			callback(util.error(
+	// 				new Error(`Unable to parse env variable: ${this.envPrefix}`),
+	// 				{ code: 'EnvironmentConfigurationProviderFailure' }
+	// 			));
+	// 			return;
+	// 		}
+	// 	} else {
+
+	// 		let keys = [
+	// 			"Region",
+	// 			"LeoStream",
+	// 			"LeoCron",
+	// 			"LeoEvent",
+	// 			"LeoS3",
+	// 			"LeoKinesisStream",
+	// 			"LeoFirehoseStream",
+	// 			"LeoSettings"
+	// 		];
+	// 		values = {};
+
+	// 		for (let i = 0; i < keys.length; i++) {
+	// 			let key = keys[i];
+	// 			let prefix = '';
+	// 			if (this.envPrefix) { prefix = this.envPrefix + '_'; }
+	// 			values[key] = process.env[prefix + key] || process.env[prefix + key.toUpperCase()] || process.env[prefix + key.toLowerCase()];
+	// 			if (!values[key] && key !== 'LeoSettings') {
+	// 				callback(util.error(
+	// 					new Error('Variable ' + prefix + key + ' not set.'),
+	// 					{ code: 'EnvironmentConfigurationProviderFailure' }
+	// 				));
+	// 				return;
+	// 			}
+	// 		}
+	// 	}
+
+	// 	this.expired = false;
+	// 	Configuration.call(this, values);
+	// 	callback();
+	// }
 });
 
 
@@ -355,8 +467,7 @@ export const FileTreeConfiguration = util.inherit(Configuration, {
 		//this.get(function () { });
 	},
 
-	refresh: function refresh(callback) {
-		if (!callback) callback = util.fn.callback;
+	refreshSync: function () {
 
 		let values = null;
 
@@ -387,18 +498,69 @@ export const FileTreeConfiguration = util.inherit(Configuration, {
 		}
 
 		if (values == null) {
-			callback(util.error(
+			throw util.error(
 				new Error(`Unable to find file config`),
 				{ code: 'FileTreeConfigurationProviderFailure', errors: errors }
-			));
-			return;
+			);
 		}
 
 
 		this.expired = false;
 		Configuration.call(this, values);
-		callback();
-	}
+		return this;
+	},
+
+	// refresh: function refresh(callback) {
+	// 	if (!callback) callback = util.fn.callback;
+	// 	let error;
+	// 	try {
+	// 		this.refreshSync();
+	// 	} catch (err) {
+	// 		error = err;
+	// 	}
+	// 	return callback(error);
+
+	// 	let values = null;
+
+	// 	let currentDir = this.startingDirectory
+
+	// 	let lastDir;
+	// 	let dirs = [];
+	// 	do {
+	// 		dirs.push(currentDir);
+	// 		lastDir = currentDir;
+	// 		currentDir = path.resolve(currentDir, "../");
+	// 	} while (currentDir != lastDir);
+
+	// 	let errors = [];
+	// 	outer:
+	// 	for (let dir of dirs) {
+	// 		for (let filename of this.filenames) {
+	// 			let file = path.resolve(dir, filename);
+	// 			if (fs.existsSync(file)) {
+	// 				try {
+	// 					values = require(file);
+	// 					break outer;
+	// 				} catch (err) {
+	// 					errors.push(err);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
+	// 	if (values == null) {
+	// 		callback(util.error(
+	// 			new Error(`Unable to find file config`),
+	// 			{ code: 'FileTreeConfigurationProviderFailure', errors: errors }
+	// 		));
+	// 		return;
+	// 	}
+
+
+	// 	this.expired = false;
+	// 	Configuration.call(this, values);
+	// 	callback();
+	// }
 });
 
 
@@ -413,25 +575,49 @@ export const LeoConfiguration = util.inherit(Configuration, {
 		//this.get(function () { });
 	},
 
-	refresh: function refresh(callback) {
-		if (!callback) callback = util.fn.callback;
-
+	refreshSync: function () {
 		let config = require("leo-config");
 
 		let values = config.leosdk || config.leo_sdk || config["leo-sdk"] ||
 			config.rstreamssdk || config.rstreams_sdk || config["rstreams-sdk"];
 		if (values == null) {
-			callback(util.error(
+			throw util.error(
 				new Error(`Unable to get config from leo-config env ${config.env}`),
 				{ code: 'LeoConfigurationProviderFailure' }
-			));
-			return;
+			);
 		}
 
 		this.expired = false;
 		Configuration.call(this, values);
-		callback();
-	}
+		return this;
+	},
+
+	// refresh: function refresh(callback) {
+	// 	if (!callback) callback = util.fn.callback;
+	// 	let error;
+	// 	try {
+	// 		this.refreshSync();
+	// 	} catch (err) {
+	// 		error = err;
+	// 	}
+	// 	return callback(error);
+
+	// 	let config = require("leo-config");
+
+	// 	let values = config.leosdk || config.leo_sdk || config["leo-sdk"] ||
+	// 		config.rstreamssdk || config.rstreams_sdk || config["rstreams-sdk"];
+	// 	if (values == null) {
+	// 		callback(util.error(
+	// 			new Error(`Unable to get config from leo-config env ${config.env}`),
+	// 			{ code: 'LeoConfigurationProviderFailure' }
+	// 		));
+	// 		return;
+	// 	}
+
+	// 	this.expired = false;
+	// 	Configuration.call(this, values);
+	// 	callback();
+	// }
 });
 
 export const ObjectConfiguration = util.inherit(Configuration, {
@@ -447,30 +633,58 @@ export const ObjectConfiguration = util.inherit(Configuration, {
 		//this.get(function () { });
 	},
 
-	refresh: function refresh(callback) {
-		if (!callback) callback = util.fn.callback;
-
+	refreshSync: function refresh() {
 		if (this.root == null || this.field == null || this.field == "") {
-			callback(util.error(
+			throw util.error(
 				new Error(`Root and Field must be specified.`),
 				{ code: 'ObjectConfigurationProviderFailure' }
-			));
-			return;
+			);
 		}
 
 		let values = this.root[this.field] ? this.root[this.field] : null;
 		if (values == null) {
-			callback(util.error(
+			throw util.error(
 				new Error(`Unable to get config from ${this.field}`),
 				{ code: 'ObjectConfigurationProviderFailure' }
-			));
-			return;
+			);
 		}
 
 		this.expired = false;
 		Configuration.call(this, values);
-		callback();
-	}
+		return this;
+	},
+
+	// refresh: function refresh(callback) {
+	// 	if (!callback) callback = util.fn.callback;
+	// 	let error;
+	// 	try {
+	// 		this.refreshSync();
+	// 	} catch (err) {
+	// 		error = err;
+	// 	}
+	// 	return callback(error);
+
+	// 	if (this.root == null || this.field == null || this.field == "") {
+	// 		callback(util.error(
+	// 			new Error(`Root and Field must be specified.`),
+	// 			{ code: 'ObjectConfigurationProviderFailure' }
+	// 		));
+	// 		return;
+	// 	}
+
+	// 	let values = this.root[this.field] ? this.root[this.field] : null;
+	// 	if (values == null) {
+	// 		callback(util.error(
+	// 			new Error(`Unable to get config from ${this.field}`),
+	// 			{ code: 'ObjectConfigurationProviderFailure' }
+	// 		));
+	// 		return;
+	// 	}
+
+	// 	this.expired = false;
+	// 	Configuration.call(this, values);
+	// 	callback();
+	// }
 });
 
 
@@ -485,27 +699,26 @@ export const AWSSecretsConfiguration = util.inherit(Configuration, {
 		this.secretEnvKey = secretEnvKey;
 	},
 
-	refresh: async function refresh(callback) {
-		if (!callback) callback = util.fn.callback;
+	refreshSync: function () {
 
 		if (!process || !process.env || !process.env[this.secretEnvKey]) {
-			callback(util.error(
+			throw util.error(
 				new Error(`Secret not specified.  Use ENV var ${this.secretEnvKey}.`),
 				{ code: 'AWSSecretsConfigurationProviderFailure' }
-			));
-			return;
+			);
 		}
 
 		let values = null;
 
-		let sm = new AWS.SecretsManager({
-			region: process.env.AWS_REGION || "us-east-1"
-		});
-
 		let secretKey = process.env[this.secretEnvKey];
+		let error;
 		try {
-			let value = await sm.getSecretValue({ SecretId: secretKey }).promise();
+			let value = new awsSdkSync.SecretsManager({
+				region: process.env.AWS_REGION || "us-east-1"
+			}).getSecretValue({ SecretId: secretKey });
+
 			try {
+
 				if ('SecretString' in value) {
 					values = JSON.parse(value.SecretString);
 				} else {
@@ -513,23 +726,115 @@ export const AWSSecretsConfiguration = util.inherit(Configuration, {
 					//values = JSON.parse(buff.toString('ascii'));
 				}
 			} catch (err) {
-				callback(util.error(
+				error = util.error(
 					new Error(`Unable to parse secret '${secretKey}'.`),
 					{ code: 'AWSSecretsConfigurationProviderFailure' }
-				));
-				return;
+				);
 			}
 		} catch (err) {
-			callback(util.error(
-				new Error(`Secret '${secretKey}' not found.`),
-				{ code: 'AWSSecretsConfigurationProviderFailure' }
-			));
-			return;
+			error = util.error(
+				new Error(`Secret '${secretKey}' not available. ${err}`),
+				{ code: 'AWSSecretsConfigurationProviderFailure', parent: err }
+			);
+		}
+		if (error != null) {
+			throw error;
 		}
 
 
 		this.expired = false;
 		Configuration.call(this, values);
-		callback();
-	}
+		return this;
+	},
+
+	// refresh: async function refresh(callback) {
+	// 	if (!callback) callback = util.fn.callback;
+	// 	let error;
+	// 	try {
+	// 		this.refreshSync();
+	// 	} catch (err) {
+	// 		error = err;
+	// 	}
+	// 	return callback(error);
+
+	// 	if (!process || !process.env || !process.env[this.secretEnvKey]) {
+	// 		callback(util.error(
+	// 			new Error(`Secret not specified.  Use ENV var ${this.secretEnvKey}.`),
+	// 			{ code: 'AWSSecretsConfigurationProviderFailure' }
+	// 		));
+	// 		return;
+	// 	}
+
+	// 	let values = null;
+
+	// 	let secretKey = process.env[this.secretEnvKey];
+	// 	try {
+	// 		let value: AWS.SecretsManager.GetSecretValueResponse;
+
+	// 		// // Serverless with webpack doesn't like the promise await here
+	// 		// // so this is a workaround to use the aws cli instead 
+	// 		// if (process.env.IS_LOCAL === "true") {
+	// 		try {
+	// 			value = new awsSdkSync.SecretsManager({
+	// 				region: process.env.AWS_REGION || "us-east-1"
+	// 			}).getSecretValue({ SecretId: secretKey });
+	// 			// let fn = `
+	// 			// async function fn(service, method, config, params) {
+	// 			// 	let AWS = require("aws-sdk");
+	// 			// 	let sm = new AWS[service](config);
+	// 			// 	return await sm[method](params).promise();
+	// 			// }`;
+	// 			// let service = "SecretsManager";
+	// 			// let method = "getSecretValue";
+	// 			// let cmd = `(${fn})("${service}","${method}",${JSON.stringify({
+	// 			// 	region: process.env.AWS_REGION || "us-east-1"
+	// 			// })}, ${JSON.stringify({ SecretId: secretKey })}).then(a=>console.log(JSON.stringify(a))).catch(e=>console.log(JSON.stringify({error:e.message})))`;
+	// 			// console.log(cmd);
+	// 			// let stuff = spawnSync(process.argv0, ["-e", cmd]);
+	// 			// value = JSON.parse((stuff.output.join("").toString().match(/({.*})/) || [])[1]) as AWS.SecretsManager.GetSecretValueResponse;
+	// 			// console.log(value)
+	// 			// if (value && (value as any).error) {
+	// 			// 	throw new Error((value as any).error);
+	// 			// }
+	// 			// //					let a = spawnSync(`aws`, ["secretsmanager", "get-secret-value", "--secret-id", secretKey]);
+	// 			// //					value = JSON.parse(a.output.join("").toString()) as AWS.SecretsManager.GetSecretValueResponse;
+	// 		} catch (err) {
+	// 			console.error("Couldn't load secret sync", err);
+	// 		}
+	// 		//}
+	// 		if (value == null) {
+	// 			let sm = new AWS.SecretsManager({
+	// 				region: process.env.AWS_REGION || "us-east-1"
+	// 			});
+
+	// 			value = await sm.getSecretValue({ SecretId: secretKey }).promise();
+	// 		}
+	// 		try {
+	// 			if ('SecretString' in value) {
+	// 				values = JSON.parse(value.SecretString);
+	// 			} else {
+	// 				//let buff = Buffer.from(value.SecretBinary, 'base64');
+	// 				//values = JSON.parse(buff.toString('ascii'));
+	// 			}
+	// 		} catch (err) {
+	// 			callback(util.error(
+	// 				new Error(`Unable to parse secret '${secretKey}'.`),
+	// 				{ code: 'AWSSecretsConfigurationProviderFailure' }
+	// 			));
+	// 			return;
+	// 		}
+	// 	} catch (err) {
+
+	// 		callback(util.error(
+	// 			new Error(`Secret '${secretKey}' not available. ${err}`),
+	// 			{ code: 'AWSSecretsConfigurationProviderFailure', parent: err }
+	// 		));
+	// 		return;
+	// 	}
+
+
+	// 	this.expired = false;
+	// 	Configuration.call(this, values);
+	// 	callback();
+	// }
 });

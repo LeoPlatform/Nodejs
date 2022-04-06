@@ -8,6 +8,8 @@ import { gzipSync, gunzipSync } from "zlib";
 import streams from "../lib/streams";
 import fs from "fs";
 import zlib from "zlib";
+import util from "../lib/aws-util";
+import awsSdkSync from "../lib/aws-sdk-sync";
 chai.use(sinonchai);
 //var assert = require('assert');
 
@@ -22,16 +24,40 @@ let mockSdkConfig = {
 	LeoSettings: "mock-LeoSettings",
 };
 
+let envVars = ["RSTREAMS_CONFIG", "RSTREAMS_CONFIG_SECRET"];
+let keys = [
+	"Region",
+	"LeoStream",
+	"LeoCron",
+	"LeoEvent",
+	"LeoS3",
+	"LeoKinesisStream",
+	"LeoFirehoseStream",
+	"LeoSettings"
+];
+
 describe('RStreams', function () {
+	let sandbox;
+	beforeEach(() => {
+		envVars.forEach(field => {
+			delete process.env[field];
+			delete process[field];
+			delete global[field];
+			keys.forEach(key => {
+				delete process.env[`${field}_${key}`];
+			});
+		});
+
+		delete process.env.LEO_ENVIRONMENT;
+		delete require("leo-config").leosdk;
+		delete (process as any).__config;
+		sandbox = sinon.createSandbox()
+	});
+	afterEach(() => {
+		sandbox.restore();
+	});
+
 	describe('sdk.read/write', function () {
-		let sandbox;
-		beforeEach(() => {
-			delete (process as any).__config;
-			sandbox = sinon.createSandbox()
-		});
-		afterEach(() => {
-			sandbox.restore();
-		});
 
 		it('AWS Mock Test', async function () {
 			let response1: AWS.S3.ListBucketsOutput = {
@@ -383,6 +409,96 @@ describe('RStreams', function () {
 
 		});
 	});
+
+	describe("sdk load config", function () {
+		function AWSRequest(response) {
+			return {
+				promise: async () => {
+					if (response instanceof Error) {
+						throw response;
+					}
+					return response;
+				}
+			};
+		}
+
+		it("default - ignore fail", function () {
+			RStreamsSdk(false);
+		});
+
+		it("default - fail", function () {
+			try {
+				RStreamsSdk();
+				assert.fail("Should throw an error")
+			} catch (err) {
+				console.log(err);
+				assert.equal(err.code, "AWSSecretsConfigurationProviderFailure");
+			}
+		});
+
+
+		it("default - env", function () {
+			process.env.RSTREAMS_CONFIG = JSON.stringify(mockSdkConfig);
+			let sdk = RStreamsSdk();
+			Object.keys(mockSdkConfig).forEach(key => {
+				assert.equal(sdk.configuration.resources[key], mockSdkConfig[key])
+			})
+		});
+
+		it("default - fail Secret not given", function () {
+			try {
+				RStreamsSdk();
+				assert.fail("Should throw an error")
+			} catch (err) {
+				assert.equal(err.message, "Secret not specified.  Use ENV var RSTREAMS_CONFIG_SECRET.");
+			}
+		});
+
+		it("default - fail Secret doesn't exist", function () {
+			try {
+				let getSecretValue = sandbox.stub().throws(
+					//AWSRequest(
+					util.error(
+						new Error("Secrets Manager can't find the specified secret."),
+						{
+							code: "ResourceNotFoundException"
+						}
+					)
+					//)
+				);
+				sandbox.stub(awsSdkSync, 'SecretsManager').returns({ getSecretValue });
+
+				process.env.RSTREAMS_CONFIG_SECRET = "some-random-secret-should-not-exist";
+				RStreamsSdk();
+				assert.fail("Should throw an error")
+			} catch (err) {
+				assert.equal(err.message, "Secret 'some-random-secret-should-not-exist' not available. ResourceNotFoundException: Secrets Manager can't find the specified secret.");
+			}
+		});
+
+		it("default - fail Secret don't have access", async function () {
+			try {
+				let getSecretValue = sandbox.stub().throws(
+					//AWSRequest(
+					util.error(
+						new Error("User: xyz is not authorized to perform: secretsmanager:GetSecretValue on resource: some-random-secret"),
+						{
+							code: "AccessDeniedException"
+						}
+					)
+					//)
+				);
+				sandbox.stub(awsSdkSync, 'SecretsManager').returns({ getSecretValue });
+
+				process.env.RSTREAMS_CONFIG_SECRET = "some-random-secret";
+				RStreamsSdk();
+				assert.fail("Should throw an error")
+			} catch (err) {
+				assert.equal(err.message, "Secret 'some-random-secret' not available. AccessDeniedException: User: xyz is not authorized to perform: secretsmanager:GetSecretValue on resource: some-random-secret");
+			}
+		});
+	});
+
 
 	describe("sdk profile load", function () {
 		let sandbox;
@@ -746,6 +862,126 @@ describe('RStreams', function () {
 				}
 				done(err);
 			});
+		});
+
+		it("offloads async", async function () {
+			interface InData {
+				a: string;
+			}
+
+			let inQueue = "mock-in";
+			let botId = "mock-bot"
+
+			let batchGetResponse = {
+				Responses: {
+					"mock-LeoEvent": [
+						{
+							event: inQueue,
+							max_eid: streams.eventIdFromTimestamp(1647460979245),
+							v: 2,
+							timestamp: 1647460979245
+						}
+					],
+					"mock-LeoCron": [{
+						checkpoints: {
+							read: {
+								[`queue:${inQueue}`]: {
+									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+								}
+							}
+						}
+					}]
+				},
+				UnprocessedKeys: {}
+			};
+
+			let batchGet = sandbox.stub()
+				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+
+			let builder = new BusStreamMockBuilder();
+			builder.addEvents(
+				inQueue,
+				[
+					{
+						a: "1"
+					}, {
+						a: "2"
+					}
+				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+			);
+			let queryResponse = builder.getAll(inQueue);
+			let query = sandbox.stub();
+			queryResponse.forEach((data, index) => {
+				query.onCall(index).callsArgWith(1, null, data);
+			});
+
+
+			let updateResponse = {
+				Responses: {
+					"mock-LeoEvent": [
+						{
+							event: inQueue,
+							max_eid: streams.eventIdFromTimestamp(1647460979245),
+							v: 2,
+							timestamp: 1647460979245
+						}
+					],
+					"mock-LeoCron": [{
+						checkpoints: {
+							read: {
+								[`queue:${inQueue}`]: {
+									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+								}
+							}
+						}
+					}]
+				},
+				UnprocessedKeys: {}
+			};
+			let update = sandbox.stub()
+				.onFirstCall().callsArgWith(1, null, updateResponse);
+
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+
+
+			let sdk = RStreamsSdk(mockSdkConfig);
+			await sdk.offloadEvents<InData>({
+				id: botId,
+				inQueue: inQueue,
+				transform: function (payload, _wrapper, callback): void {
+					callback(null, true);
+				}
+			});
+			expect(update).is.called;
+			let updateCallArgs = update.getCall(0).args[0];
+			delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
+			delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
+			assert.deepEqual(updateCallArgs,
+				{
+					"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
+					"ExpressionAttributeNames": {
+						"#checkpoint": "checkpoint",
+						"#checkpoints": "checkpoints",
+						"#event": "queue:mock-in",
+						"#type": "read"
+					},
+					"ExpressionAttributeValues": {
+						":expected": "z/2022/03/16/20/02/1647460979244",
+						":value": {
+							"checkpoint": "z/2022/03/16/20/02/1647460979244-0000001",
+							"records": 2,
+							"source_timestamp": 1647460979244,
+						}
+					},
+					"Key": {
+						"id": "mock-bot"
+					},
+					"ReturnConsumedCapacity": "TOTAL",
+					"TableName": "mock-LeoCron",
+					"UpdateExpression": "set #checkpoints.#type.#event = :value"
+				}
+			);
+
 		});
 
 		it("offloads - false", function (done) {
