@@ -11,42 +11,6 @@ const { promisify } = require("util");
 const execSync = require("child_process").execSync;
 const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").ConfigProviderChain;
 
-// let deasync;
-// try {
-// 	deasync = require("deasync");
-// 	// deasync = require("./lib/deasync");
-// } catch (err) {
-// 	console.warn("RStreams unable to load deasync module. Asynchronous Config Providers (AWSSecretsConfiguration) will not be available. Try installing deasync or include it in your exported bundle.  If using webpack add deasync to externals and copy the lib to node_modules.");
-// 	deasync = function(fn) {
-// 		return (...args) => {
-// 			let error;
-// 			let data;
-// 			args.push((err, d) => {
-// 				error = err;
-// 				data = d;
-// 			})
-// 			fn(...args);
-// 			if (error != null) {
-// 				throw error;
-// 			} else if (data == null) {
-// 				throw new Error("No config found.");
-// 			}
-// 			return data
-// 		}
-
-// 	}
-// }
-
-//const uuid = require("uuid");
-
-// function chainResolve(chain, cb) {
-// 	chain.resolve((err, data) => {
-// 		cb(err, data);
-// 	});
-// }
-// const chainResolveSync = deasync(chainResolve)
-
-
 function SDK(id, data) {
 	if (typeof id !== "string" && id != null) {
 		data = id;

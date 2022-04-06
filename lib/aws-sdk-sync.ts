@@ -3,7 +3,8 @@ import AWS from "aws-sdk";
 import { spawnSync } from "child_process";
 
 // Build a function to call on a different process
-// Keep webpack from getting the require function.  This isn't run withing the bundle
+// use `module.require` to keep webpack from overriding the function.
+// This isn't run within the bundle
 // It is stringified and run in a different process
 export function invoke(service: string, method: string, config: any, params: any) {
 	let AWS = module.require.call(module, "aws-sdk");
@@ -30,31 +31,6 @@ export function invoke(service: string, method: string, config: any, params: any
 
 function run(service: string, method: string, config: any, params: any) {
 	let fn = `(${invoke.toString()})("${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)})`;
-
-	// let fn = `(function(service, method, config, params) {
-	//     let AWS = require("aws-sdk");
-	//     let hasLogged = false;
-	//     try{
-	//         new AWS[service](config)[method](params, (err, data) => {
-	//             if (!hasLogged){
-	//                 hasLogged = true;
-	//                 console.log(\`RESPONSE::\${JSON.stringify({error:err, response: data})\}::RESPONSE\`);
-	//             }
-	//         });
-	//     } catch(err){
-	//         if (err.message.match(/is not a function/)){
-	//             err.message = \`AWS.\${service}.\${method} is not a function\`;
-	//         } else if (err.message.match(/is not a constructor/)){
-	//             err.message = \`AWS.\${service} is not a constructor\`
-	//         }
-	//         if (!hasLogged){
-	//             hasLogged = true;
-	//             console.log(\`RESPONSE::\${JSON.stringify({error: { message: err.message} })\}::RESPONSE\`);
-	//         }
-	//     }
-	// })("${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)})`;
-
-	//console.log(fn);
 
 	// Spawn node with the function to run `node -e (()=>{})`
 	// Using `RESPONSE::{}::RESPONSE` to denote the response in the output

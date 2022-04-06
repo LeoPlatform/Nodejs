@@ -48,7 +48,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let gotError;
 			try {
 				let chain = new ConfigProviderChain();
-				await chain.resolvePromise();
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = true;
@@ -61,7 +61,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let gotError;
 			try {
 				let chain = new ConfigProviderChain([]);
-				await chain.resolvePromise();
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
@@ -84,7 +84,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let config;
 			try {
 				let chain = new ConfigProviderChain(mockSdkConfig);
-				config = await chain.resolvePromise();
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = true;
 			}
@@ -119,7 +119,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let config;
 			try {
 				let chain = new ConfigProviderChain(mockSdkConfig1, ProvidersInputType.Prepend);
-				config = await chain.resolvePromise();
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = true;
 			}
@@ -153,7 +153,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let config;
 			try {
 				let chain = new ConfigProviderChain(mockSdkConfig1, ProvidersInputType.Append);
-				config = await chain.resolvePromise();
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = true;
 			}
@@ -248,7 +248,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			process.env.RSTREAMS_CONFIG = JSON.stringify(mockSdkConfig);
 			try {
 				let chain = new ConfigProviderChain();
-				config = await chain.resolvePromise();
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = true;
 			}
