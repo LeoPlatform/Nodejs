@@ -397,6 +397,10 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			};
 		}
 
+		beforeEach(() => {
+			AWSSecretsConfiguration.clearCache();
+		});
+
 		it('throws env not set error', async function () {
 
 			let gotError;
