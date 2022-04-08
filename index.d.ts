@@ -42,6 +42,9 @@ export interface Configuration {
 	//stream: 'ClintTestBus-Bus-1AU1ENWIRG4NO-LeoKinesisStream-n0KNkKCuP8EJ',
 }
 
+/**
+ * This is the RStreams SDK bx wuz here.
+ */
 export interface RStreamsSdk {
 	configuration: Configuration;
 	destroy: (callback: (err: any) => void) => void;

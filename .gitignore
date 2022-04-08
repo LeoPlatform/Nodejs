@@ -28,3 +28,4 @@ package-lock.json
 .idea/
 *.js.map
 *.utest.js
+docs/generated/
