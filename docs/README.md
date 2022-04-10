@@ -27,8 +27,10 @@
     typedoc syntax guide: https://typedoc.org/guides/doccomments/
 
     * @deprecated - must be first thing in the doc comment, then text can follow
+    
     * @internal - must be first thing in the doc comment, then text can follow,
       for internal use only, will be removed from generated docs
+
     * typedoc automatically copies the doc comments for functions that reference
       other functions as in `load: typeof StreamUtil.load;`.  The StreaUtil.load
       comment will be used.  Even if you try to put a doc comment on this
@@ -57,7 +59,11 @@
 
       `@todo inconsistent bot_id` 
 
-    * @todo verify
+    * @todo review
       Not sure if the docs written are correct.  They need to be verified.  
+
+    * @todo question <question>
+      This means the question needs answering to complete the doc.  Read the doc and see where the question
+      answer needs to be placed and put it there.
 
       

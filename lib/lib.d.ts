@@ -10,15 +10,114 @@ export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./s
 import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
+
+
+/**
+ * A standard callback function.  If the operation failed, return the first argument only,
+ * often a string or an Error object.  If the operation succeeded and nothing needs to be
+ * returned from the callback, pass no arguments.  If the operation succeeded and something
+ * needs to be returned through the callback, pass null as the first argument and the return
+ * object as the second argument.
+ * 
+ * @param err If present, indicates the operation failed.
+ * @param data If present and err is not present, the return value from the operation.
+ */
 export declare type Callback = (err?: any, data?: any) => void;
 
+/**
+ * Used to marke an event used in through operations.
+ * 
+ * @typeParam T The payload of the event.
+ * @see [[`StreamUtil.through`]]
+ */
 export declare type ThroughEvent<T> = Event<T> | any;
 
+/**
+ * Options when writing data to an instance of the RStreams bus.
+ */
 export interface WriteOptions {
+	/**
+	 * If true, the SDK will write events to S3 and then pass a single event to kinesis whose payload
+	 * references the S3 file.  Thus, one actual event flows through Kinesis and is eventually
+	 * written to the RStreams bus DynamoDB table that stores events in queues will have a single
+	 * event written to it that references the S3 file.  When reading events, the SDK will detect it has
+	 * received an event in a queue that is really a reference to S3 and retrieve the portion of the S3
+	 * file needed to fulfill the SDK read request made.
+	 * 
+	 * This can be useful when a very large number of events need to be written all at once or if the
+	 * events are large.  However, there is some additional ingestion latency incurred by this approach
+	 * and also on reading.  If the size of the S3 files is large, the latency penalty for reading
+	 * is negligible for most use cases.  However, waiting to batch up a sufficient number of events
+	 * can cause a delay getting events into Kinesis for ingestion.  The rule of thumb is files
+	 * around 2mb or larger are fine.  It's OK if an occasional file is small.  However, creating many small
+	 * files smaller should be avoided as it could cause read latency.  For example, if requesting 1000 events
+	 * from a queue if every two events are in an S3 file, the SDK will have to retrieve 500 files to read just
+	 * 1000 events.  Use the other settings to tune the amount of data saved to the file: `records`, `size`, `time`.
+	 * 
+	 * If this and `firehose` are present, firehose will be used.
+	 * 
+	 * @default false
+	 * @todo review
+	 */
 	useS3?: boolean;
+
+	/**
+	 * If true, firehose will be used.  Firehose batches events sent to it to an S3 file in 1 minute
+	 * increments, which of course adds at least a one minute latency. However, firehose can take a vast number 
+	 * of concurrent writes compared to kinesis.  So, use this when you have a giant number of concurrent events 
+	 * you wish to write, where a giant number is X events per X amount of time.
+	 * 
+	 * An RStreams Bus system bot reads the 1 minute batched S3 files written to firehose, separates the events 
+	 * in the file into separate S3 files by queue and then sends a single event to kinesis for each resulting 
+	 * queue-specific S3 file. From there, processing continues as if events were sent to kinesis using s3.
+	 * 
+	 * If this and `s3` are present, firehose will be used.
+	 * 
+	 * @default false
+	 * @TODO question How many concurrent events means we should use kinesis?  Replace X in paragraph above.
+	 * @TODO review
+	 */
 	firehose?: boolean;
+
+	/**
+	 * The number of records, where each record is an event, to micro-batch locally in the SDK before writing 
+	 * them to either kinesis, firehose or S3.  See the other options in this object to understand how this 
+	 * might be useful.
+	 * 
+	 * The SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.
+	 * 
+	 * @default kinesis 100 records (events)
+	 * @default S3 1 file
+	 * @default firehose 10,000 records (events)
+	 */
 	records?: number;
+
+	/**
+	 * The number of bytes to micro-batch locally in the SDK before writing them to either kinesis, firehose or S3.
+	 * See the other options in this object to understand how this might be useful.
+	 * 
+	 * The SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.
+	 * 
+	 * @default kinesis 200k
+	 * @default S3 unbounded
+	 * @default firehose 900k
+	 */
 	size?: number;
+
+	/**
+	 * The amount of time to micro-batch locally in the SDK before writing events to either kinesis, firehose or S3.
+	 * See the other options in this object to understand how this might be useful.
+	 * 
+	 * Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)
+	 * can take: Duration | number | string | FromTo | DurationInputObject.
+	 * 
+	 * The SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.
+	 * 
+	 * @default kinesis 200ms
+	 * @default S3 unbounded
+	 * @default firehose 900k
+	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
+	 */
 	time?: moment.DurationInputArg1;
 }
 
