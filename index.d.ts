@@ -155,7 +155,7 @@ export interface RStreamsSdk {
 	 */
 	aws: {
 		/** Helpful methods for interacting with RStreams' DynamoDB tables. */
-        dynamodb: LeoDynamodb,
+		dynamodb: LeoDynamodb,
 
 		/** A refernce to the AWS S3 library. */
 		s3: AWS.S3,
