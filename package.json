@@ -15,7 +15,7 @@
 		"compile": "tsc",
 		"watch": "tsc -w",
 		"publish-beta": "npm publish --tag beta",
-        "sdk-docs": "typedoc --out docs/generated index.d.ts"
+		"sdk-docs": "typedoc --options docs/typedoc.json"
 	},
 	"dependencies": {
 		"async": "2.6.2",
@@ -48,11 +48,13 @@
 		"@types/sinon-chai": "^3.2.8",
 		"chai": "^4.2.0",
 		"cross-env": "^7.0.3",
+		"fs-extra": "^10.0.1",
 		"mocha": "^9.2.2",
 		"nyc": "^15.1.0",
 		"sinon": "^13.0.1",
 		"sinon-chai": "^3.7.0",
 		"typedoc": "^0.22.13",
+		"typedoc-plugin-replace-in-comments": "^3.2.0",
 		"typescript": "^4.6.2"
 	},
 	"peerDependencies": {

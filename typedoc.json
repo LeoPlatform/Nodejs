@@ -1,6 +1,0 @@
-{
-    "entryPoints": ["index.d.ts"],
-    "out": "docs/generated",
-    "gitRevision": "feature/add-docs"
-    
-}

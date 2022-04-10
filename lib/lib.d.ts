@@ -175,7 +175,7 @@ export declare namespace StreamUtil {
 	 */
 	function offload<T>(config: OffloadOptions<T>, callback: Callback): void;
 	/**
-	 * Stream for writing events to a queue
+	 * Stream for writing events to a queue zz
 	 * @param {string} botId - The id of the bot
 	 * @param {string} outQueue - The queue into which events will be written 
 	 * @param {WriteOptions} config - An object that contains config values that control the flow of events to outQueue

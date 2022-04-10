@@ -12,6 +12,9 @@ export enum ProvidersInputType {
 }
 
 /**
+ * The [Configuring RStreams](rstreams-site-url/rstreams-flow/configuring-rstreams)
+ * guide might be helpful.
+ * 
  * Creates a configuration provider chain that searches for RStreams configurations
  * in a list of configuration providers specified by the {providers} property.
  *
