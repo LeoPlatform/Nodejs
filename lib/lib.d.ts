@@ -305,9 +305,49 @@ export interface BufferOptions {
 	}
 }
 
+/**
+ * These options allow a developer to tell the SDK how often it should automatically checkpoint.  To checkpoint 
+ * is to make a call back to the RStreams bus instance and tell it that a given bot has successfully read up to
+ * the event ID included in the API call.  This ensures that the next time a bot needs to run, the last known
+ * checkpoint position is remembered by the bus and the SDK can begin reading from that point in the queue
+ * forward in time.
+ * 
+ * It is used by adding an instance of this as a step in the pipeline itself to determine when to checkpoint.
+ * 
+ * The SDK will checkpoint as soon as either the `records` or `time` constraint is met.
+ * 
+ * @todo example
+ * @todo question can this go anywhere in the pipeline?  what happens if there's more than one of these?
+ */
 export interface ToCheckpointOptions {
+	/** 
+	 * Checkpoint after this number of records (events).
+	 * @default 1000 records (events)
+	 */
 	records: number;
+
+	/**
+	 * Checkpoint after this amount of time expires.
+	 * 
+	 * Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)
+	 * can take: Duration | number | string | FromTo | DurationInputObject.
+	 * 
+	 * @default 10s
+	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
+	 */ 
 	time: moment.DurationInputArg1;
+
+	/**
+	 * When the SDK writes an updated checkpoint event ID back to the RStreams bus, it checks if someone has changed
+	 * the checpoint out from underneath the bot.  In practice, this would only happen in one of the following two
+	 * scenarios.  1) a developer is running independent sets of code as though it were the same bot erroneously or
+	 * 2) a type of fanout is happening where the multiple copies of the same code is running as the same bot.
+	 * In scenario 1, this flag will be false and the developer will get an error back.  In scenario 2, this 
+	 * flag will intentionally be set to true by whomever is writing the fanout code because it's OK that
+	 * someone else changed the checkpoint since the last time it was read by some code.  
+	 * 
+	 * This is only used in advanced scenarios.
+	 */
 	force: boolean;
 }
 
