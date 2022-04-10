@@ -33,7 +33,9 @@ export declare type Callback = (err?: any, data?: any) => void;
 export declare type ThroughEvent<T> = Event<T> | any;
 
 /**
- * Options when writing data to an instance of the RStreams bus.
+ * Options when writing data to an instance of the RStreams bus.  The options in this
+ * interface provide a lot of control and performance optimization options and developers
+ * should familiarize themselves with them.
  */
 export interface WriteOptions {
 	/**
@@ -53,6 +55,9 @@ export interface WriteOptions {
 	 * files smaller should be avoided as it could cause read latency.  For example, if requesting 1000 events
 	 * from a queue if every two events are in an S3 file, the SDK will have to retrieve 500 files to read just
 	 * 1000 events.  Use the other settings to tune the amount of data saved to the file: `records`, `size`, `time`.
+	 * 
+	 * NOTE! A new feature in the ReadOptions, [[`ReadOptions.fast_s3_read`]], largely solves the problem
+	 * of having lots of small S3 files by enabling the SDK to concurrently read from multiple S3 files.  
 	 * 
 	 * If this and `firehose` are present, firehose will be used.
 	 * 
@@ -121,21 +126,127 @@ export interface WriteOptions {
 	time?: moment.DurationInputArg1;
 }
 
+/**
+ * Options when reading data from an instance of the RStreams bus.  The options in this
+ * interface provide a lot of control and performance optimization options and developers
+ * should familiarize themselves with them.
+ * 
+ * Most bots are based on AWS lambda and lambdas can only run continuosly for 15 minutes.  
+ * So, a bot that sets itself up to read events from a queue has to end at some time.
+ * Depending on how the bot registered itself with the bus, after a bot shuts down 
+ * the bot will either be re-invoked by the RStreams bus when there are new events to be read
+ * or on whatever timer established.
+ */
 export interface ReadOptions {
+	/** @deprecated Don't use. */
 	subqueue?: string;
+
+	/**
+	 * The duration of time the to read for before closing the read stream.  It is common to set this
+	 * to 75% to 80% of the time remaining before the lambda is shut down to give the lambda sufficient time
+	 * to finish processing.  Of course, different types of processing will differ.
+	 * 
+	 * Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)
+	 * can take: Duration | number | string | FromTo | DurationInputObject.
+	 * 
+	 * The read stream will shutdown as soon as one of the constraints is met: `runTime`, `loops`, `limit`, `size`, 
+	 * `stopTime`.
+	 * 
+	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
+	 */
 	runTime?: moment.DurationInputArg1;
+
+	/**
+	 * The max number of times the SDK will query the stream for new events before it shuts down the read stream.
+	 * Consider that each query by the SDK to retrieve events from DynamoDB could return many, many events and
+	 * that an "event" may actually be a pointer to an S3 file full of events.
+	 * 
+	 * It is uncommon for developers to have to set this, much less know it exists.
+	 * 
+	 * @default 100
+	 */
 	loops?: number;
+
+	/**
+	 * The event ID of the starting position to read from with in the queue.  It is common to not provide
+	 * this because each queue is stateful in that it remembers the last read position of a bot.  Then,
+	 * as bots read they make a call back to the RStreams Bus to update the read position.
+	 * 
+	 * Usually, the SDK just handles this for you.  So, if the start isn't provided, the SDK will just
+	 * use the bot's last read position as the starting point.  So, as bots are invoked, read some events
+	 * and do some processing, they automatically update back how far they've read to and then the bot shuts
+	 * down after a period of time.  When the bot starts back up to read again, it knows where it last read
+	 * from and just continues.
+	 * 
+	 * @see [Fundamentals: Event ID](rstreams-site-url/rstreams-guides/core-concepts/fundamentals/#event-id)
+	 */
 	start?: string | null;
+
+	/**
+	 * The limit of the number of records, events, to read in total from the queue before closing the read stream.
+	 * 
+	 * @default unbounded
+	 * 
+	 * The read stream will shutdown as soon as one of the constraints is met: `runTime`, `loops`, `limit`, `size`, 
+	 * `stopTime`.
+	 */
 	limit?: number;
+
+	/**
+	 * The limit of the number of bytes to read in total from the queue before closing the read stream.
+	 * 
+	 * @default unbounded
+	 * 
+	 * The read stream will shutdown as soon as one of the constraints is met: `runTime`, `loops`, `limit`, `size`, 
+	 * `stopTime`.
+	 */
 	size?: number;
+
+	/** @deprecated Don't use. */
 	debug?: boolean;
+
+	/** When to stop reading as a time since the epoch. */
 	stopTime?: number;
+
+	/**
+	 * The largest event ID that you should read, exclusive. So, stop reading when you arrive at this event ID.
+	 * Use `startTime` and this option to read a range of events from a queue.
+	 * 
+	 * @default The SDK will take the current time and turn it into an event ID.
+	 * @see [Fundamentals: Event ID](rstreams-site-url/rstreams-guides/core-concepts/fundamentals/#event-id)
+	 */
 	maxOverride?: string;
+
+	/**
+	 * If true, connect to multiple S3 files simultaneously to pre-fetch files when reading from a queue 
+	 * that has events stored in S3. This is a new feature and so is not on by default, though it can 
+	 * dramatically improve read performance.  It is expected to be made the default in Q3 2022.
+	 * 
+	 * @beta In use now in production and being monitored.  Expected to be GA and made the default in Q3 2022.
+	 * @see [[`WriteOptions.useS3`]]
+	 * @todo inconsistent fast_s3_read
+	 */
 	fast_s3_read?: boolean;
+
+	/**
+	 * When using the [[`ReadOptions.fast_s3_read`]] feature, this specifies how many bytes of s3 data we want 
+	 * to prefetch. The default usually is correct.
+	 * 
+	 * @default 5mb worth of bytes
+	 * @todo inconsistent fast_s3_read_parallel_fetch_max_bytes
+	 */
 	fast_s3_read_parallel_fetch_max_bytes?: number;
+
+	/**
+	 * The max number of records, events, the SDK should retrieve each time it retrieves events from the 
+	 * RStreams Bus' Dynamo DB events table.
+	 * 
+	 * @default: 50 if [[`ReadOptions.fast_s3_read`]] is false
+	 * @default: 1000 if [[`ReadOptions.fast_s3_read`]] is true
+	 * @todo inconsistent stream_query_limit
+	 */
 	stream_query_limit?: number;
 }
-
 
 export interface BufferOptions {
 	time?: moment.DurationInputArg1;

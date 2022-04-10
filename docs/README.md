@@ -11,16 +11,6 @@
     Used to replace these variables in the TypeDoc comments
 
     * **rstreams-site-url** => https://rstreams.org
-    
-1. custom tags in typedoc
-
-   npm install --save-dev typedoc-plugin-custom-tags
-
-   --custom-tags-config docs/typedoc-tags-config.json
-   
-
-   Was added since typedoc doesn't yet support the tsDoc @privateRemarks.  Used this
-   to hide these tags so they don't show up in the docs.
 
 1. tsdoc syntax used
     tsdoc syntax guide: https://tsdoc.org/
