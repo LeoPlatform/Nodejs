@@ -40,11 +40,10 @@ export declare type ThroughEvent<T> = Event<T> | any;
 export interface WriteOptions {
 	/**
 	 * If true, the SDK will write events to S3 and then pass a single event to kinesis whose payload
-	 * references the S3 file.  Thus, one actual event flows through Kinesis and is eventually
-	 * written to the RStreams bus DynamoDB table that stores events in queues will have a single
-	 * event written to it that references the S3 file.  When reading events, the SDK will detect it has
-	 * received an event in a queue that is really a reference to S3 and retrieve the portion of the S3
-	 * file needed to fulfill the SDK read request made.
+	 * references the S3 file.  Thus, one actual event flows through Kinesis and that one event is eventually
+	 * written to the RStreams bus' events DynamoDB table, still referencing the S3 file full of events.
+	 * When reading events, the SDK will detect it has received an event in a queue that is really a reference
+	 * to S3 and retrieve the portion of the S3 file needed to fulfill the SDK read request made.
 	 * 
 	 * This can be useful when a very large number of events need to be written all at once or if the
 	 * events are large.  However, there is some additional ingestion latency incurred by this approach
@@ -56,7 +55,7 @@ export interface WriteOptions {
 	 * from a queue if every two events are in an S3 file, the SDK will have to retrieve 500 files to read just
 	 * 1000 events.  Use the other settings to tune the amount of data saved to the file: `records`, `size`, `time`.
 	 * 
-	 * NOTE! A new feature in the ReadOptions, [[`ReadOptions.fast_s3_read`]], largely solves the problem
+	 * NOTE! A new feature, [[`ReadOptions.fast_s3_read`]], largely solves the problem
 	 * of having lots of small S3 files by enabling the SDK to concurrently read from multiple S3 files.  
 	 * 
 	 * If this and `firehose` are present, firehose will be used.
@@ -248,12 +247,59 @@ export interface ReadOptions {
 	stream_query_limit?: number;
 }
 
+/**
+ * These options govern the movement of data between steps in a Node pipeline, with a step that is the
+ * source producing events and eventually a sink that ends the pipeline.
+ * 
+ * It is used by adding an instance of this as a step in the pipeline itself to determine when to send
+ * data to the next step in the pipeline.
+ * @todo example
+ */
 export interface BufferOptions {
+	/**
+	 * The amount of time to wait before sending data to the next step in the pipeline.
+	 * 
+	 * Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)
+	 * can take: Duration | number | string | FromTo | DurationInputObject.
+	 * 
+	 * The SDK will push events to the next step in the pipeline as soon as one of the 
+	 * `time`, `size` or `records` conditions are met.  It is common to set more than one to ensure
+	 * the pipeline moves smoothly whether there are many events available to move through the pipe or just a few.
+	 * 
+	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
+	 */
 	time?: moment.DurationInputArg1;
+
+	/**
+	 * The max number of bytes to buffer before sending data to the next step in the pipeline.
+	 * 
+	 * The SDK will push events to the next step in the pipeline as soon as one of the 
+	 * `time`, `size` or `records` conditions are met.  It is common to set more than one to ensure
+	 * the pipeline moves smoothly whether there are many events available to move through the pipe or just a few.
+	 */
 	size?: number;
+
+	/**
+	 * The max number of records, events, to buffer before sending data to the next step in the pipeline.
+	 * 
+	 * The SDK will push events to the next step in the pipeline as soon as one of the 
+	 * `time`, `size` or `records` conditions are met.  It is common to set more than one to ensure
+	 * the pipeline moves smoothly whether there are many events available to move through the pipe or just a few.
+	 */
 	records?: number;
+
+	/** A display name to use when logging to the console. */
 	label?: string;
+
+	/**
+	 * Is this buffer acting as a transform stream or a writeable stream (true), meaning if true
+	 * it's the sink.
+	 * 
+	 * @todo unclear Why would you care?  When the next thing after the buffer step is the last step?
+	 */
 	writeStream?: boolean;
+
+	/** @internal Don't use. */
 	commands?: {
 		ignoreCommands: string[];
 	}
