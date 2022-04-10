@@ -25,7 +25,7 @@ import zlib from "zlib";
 export declare type Callback = (err?: any, data?: any) => void;
 
 /**
- * Used to marke an event used in through operations.
+ * Defines an event used in through operations.
  * 
  * @typeParam T The payload of the event.
  * @see [[`StreamUtil.through`]]
@@ -360,19 +360,16 @@ export interface ToCheckpointOptions {
 }
 
 /**
- * These options allow a developer to setup the options for an [[`StreamUtil.enrich`]] pipeline step.
+ * These options for an [[`RStreamsSdk.enrich`]] pipeline step.
  * This reads events from one queue and writes them to another queue.  Put another way,
  * an enrich pipeline operations reads events from an `inQueue` and then writes them to an `outQueue`,
  * allowing for side effects or transformation in the process.
  * 
  * @typeParam T The type of the event read from the source `inQueue`
  * @typeParam U The type of the event that will be written to the destination `outQueue`
- * @param config Config values that control the flow of events from inQueue to outQueue
- * @param transform The SDK will call this function with events from `inQueue` to allow you to transform them on the
- *				  way to `outQueue`
  * 
- * @see [[`StreamUtil.enrich`]]
- * @see [[`StreamUtil.enrichEvents`]]
+ * @see [[`RStreamsSdk.enrich`]]
+ * @see [[`RStreamsSdk.enrichEvents`]]
  * @todo review there was a callback param, I removed it since I think it was a cut/paste error.  Here's what it said: callback A function called when all events have been processed. (payload, metadata, done) => { }
  */
 export interface EnrichOptions<T, U> {
@@ -417,60 +414,153 @@ export interface EnrichOptions<T, U> {
 	 */
 	batch?: BatchOptions | number;
 
-    /** Fine-grained control of reading from the source `inQueue` */
+	/** Fine-grained control of reading from the source `inQueue` */
 	config?: ReadOptions;
 
-    /**
-     * The SDK will invoke this function after reading events from the `inQueue` and will take
-     * the result of this function to send to the destination `outQueue`.
-     * 
-     * @typeParam T The type of the event read from the source `inQueue` and passed to this function
-     * @typeParam U The type of the event that will be returned from this function and sent to the destination `outQueue`
-     * @todo example
-     * @todo review
-     */
+	/**
+	 * The SDK will invoke this function after reading events from the `inQueue` and will take
+	 * the result of this function to send to the destination `outQueue`.
+	 * 
+	 * @todo example
+	 * @todo review
+	 */
 	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
 }
 
 /**
- * Enrich events from one queue to another.
- * @field {string} id - The id of the bot
- * @field {string} inQueue - The queue from which events will be read
- * @field {string} outQueue - The queue into which events will be written 
- * @field {Object} config - An object that contains config values that control the flow of events from inQueue and to outQueue
- * @field {function} transform - A function to transform data from inQueue to outQueue
- * @field {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
+ * These options for an [[`RStreamsSdk.offload`]] pipeline step.
+ * This reads events from a queue and allows for the processing of the data.  Note this inherits all the useful
+ * options from [[`ReadOptions`]] which control reading from `inQueue`.
+ * 
+ * @typeParam T The type of the event read from the source `inQueue`
+ * 
+ * @see [[`RStreamsSdk.offload`]]
+ * @see [[`RStreamsSdk.offloadEvents`]]
  */
 export interface OffloadOptions<T> extends ReadOptions {
+	/** 
+	 * The name of the bot that this code is acting as.  The SDK will use it to query to the bot Dynamo DB 
+	 * table to pull checkpoints and to checkpoint for you. 
+	 */
 	id: string;
+
+	/** The source queue from which events will be read */
 	inQueue: string;
-	//config: ReadOptions;
+
+	/**
+	 * This governs micro-batching events that have been received from the source `inQueue` before they
+	 * are sent to your `transform` function, allowing that function to receive events in batches instead
+	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
+	 * resource such as a database.  Hitting a database for every single event that flows through a pipe can
+	 * be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
+	 * construct a single query to a database to read/write all data as a single DB operation.
+	 * 
+	 * If this is a number, it's just the number of events to micro-batch up.
+	 * @todo review is this doc right?
+	 */
 	batch?: BatchOptions | Number;
-	transform: ProcessFunction<T, boolean>;//(payload: any, event: any, callback: ProcessFunction) => any;
-	//callback: () => any;
+
+	/**
+	 * The SDK will invoke this function after reading events from the `inQueue` where you can do your processing.
+	 * 
+	 * @todo example
+	 * @todo review
+	 * @todo question Why is the second argument a boolean?  What does it mean?
+	 */
+	transform: ProcessFunction<T, boolean>;
 }
 
+/**
+ * Used to manually checkpoint in a pipeline step. It's only rarely used in more advanced cases where 
+ * one waits until the end of a pipeline to checkpoint manually.
+ * 
+ * Let's assume that we are reading from an upstream queue that we want to checkpoint to and keep track
+ * of where we've read to.  Let's assume that we are aggregating events from the upstream queue and turing 
+ * say 10 events from the upstream queue into just 1 event that we write to the downstream queue.  In this
+ * case, we would probably wait until we've done the aggregation.  When we checkpoint, we would set
+ * the `units` to 10, we'd set the `started_timestamp`and `ended_timestamp` to the first/last event timestamps
+ * of the 10 respectively and we'd set the `start_eid to the first event event IDs 
+ * respectively.
+ * 
+ * @see [[`StreamUtil.stats`]] A function that can be called to set the checkpoint.
+ * @see [[`StatsStream`]] Creates a pipeline step that you can use to get/set checkpoints manually
+ * @todo question What function takes this checkpoint data that then sets the checkpoint in the bus?
+ * @todo example
+ * @todo review Not sure this doc is right.
+ */
 export interface CheckpointData {
+	/** The exact event ID to checkpoint */
 	eid: string;
+
+	/** Read the comment on this interface to understand what this is */
 	units?: number;
+
+	/**
+	 * The timestamp of the very first event that made it to a queue of the bus that then flowed down the bus
+	 * to get to here.  This allows the bus to compute source lag times.  Each derivative event that flows down
+	 * the bus should track this and pass it along as events flow/are derived and flow down the bus.
+	 * @todo question is this time since the epoch? Are all that read _timestamp?
+	 */
 	source_timestamp?: number,
+
+	/** Read the comment on this interface to understand what this is */
 	started_timestamp?: number,
+
+	/** Read the comment on this interface to understand what this is */
 	ended_timestamp?: number;
+
+	/** Read the comment on this interface to understand what this is */
 	start_eid?: string;
 }
 
+/**
+ * A pipeline step that is used to manually get/set the checkpoint.  Often, this pipeline step is used to get
+ * and store checkpoints and then at the very end of the pipeline, it will use the saved off data to
+ * manaully checkpoint using [[`StreamUtil.stats`]].
+ * 
+ * Note, this is only rarely used in special cases.
+ * 
+ * @noInheritDoc
+ * @todo example for the functions below also
+ */
 export interface StatsStream extends stream.Transform {
+	/** Exposes a function to allow the developer to set the checkpoint. */
 	checkpoint: {
 		(callback: (err: CheckpointData) => void): void;
 	};
+
+	/** Exposes a function to allow the developer to manually get the checkpoint. */
 	get: {
 		(): CheckpointData;
 	};
 }
 
+/**
+ * This namespace encompasses the majority of the functionality of the SDK.
+ * It might be helpful to start at [[RStreamsSdk]] which exposes functionality from this namespace
+ * that is most commonly used.
+ * 
+ * @todo question We have StreamUtil and Streams which is streams.d.ts.  Why?
+ */
 export declare namespace StreamUtil {
 
+	/**
+	 * Helper function to turn a timestamp into an RStreams event ID.
+	 * 
+	 * @param timestamp The timestamp you want to turn into an RStreams event ID which can be anything used to construct a Moment object.
+	 * @param granularity Specify the granularity of the event ID, maybe just year/month or year/month/hour, etc.
+	 * @returns The generated event ID.
+	 * @todo question I need examples of granularity values to know what to put here
+	 * @todo docbug docs not being inherited, have been copied
+	 */
 	const eventIdFromTimestamp: typeof Streams.eventIdFromTimestamp;
+
+	/**
+	 * Helper function to turn a an RStreams event ID into a timestamp.
+	 * @param eid The event ID to turn into an epoch timestamp.
+	 * @returns The timestamp as a time since the epoch.
+	 * @todo docbug docs not being inherited, have been copied
+	 */
 	const eventIdToTimestamp: typeof Streams.eventIdToTimestamp;
 	const eventstream: typeof es;
 

@@ -12,6 +12,13 @@
 
     * **rstreams-site-url** => https://rstreams.org
 
+1. stop inheriting docs when I don't want it to plugin
+
+   npm install typedoc-plugin-no-inherit --save-dev
+
+   then use `@noInheritDoc` 
+
+
 1. tsdoc syntax used
     tsdoc syntax guide: https://tsdoc.org/
     typedoc syntax guide: https://typedoc.org/guides/doccomments/
@@ -61,5 +68,12 @@
 
     * @todo unclear
       Means the doc is unclear and needs more detail.    
+
+    * @noInheritDoc
+      Plugin installed to prevent inherited docs for example StatsStream inherits from Node's Transform but I don't want 100 inherited functions
+      no one cares about to show up and hide the two functions added.
+
+    * @todo docbugg <description>  
+      when something isn't working in the docs
 
       

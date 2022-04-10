@@ -7,6 +7,13 @@ import { ParserOptionsArgs } from 'fast-csv';
 import { ErrorCallback, DataCallback, Event, FlushCallback, ReadEvent, TransformFunction, ReadableStream, WritableStream, TransformStream } from "./types";
 
 declare type ProcessCallback<T> = (err?: any, result?: boolean | T, opts?: ProcessCallbackOptions) => void;
+
+
+/**
+ * TODO fix the below comments to be more generic
+ * @typeParam T The type of the event read from the source `inQueue` and passed to this function
+ * @typeParam U The type of the event that will be returned from this function and sent to the destination `outQueue`
+ */
 declare type ProcessFunction<T, U> = (payload: T, wrapper: ReadEvent<T>, callback: ProcessCallback<U>) => void;
 declare type CommandWrapFunction<T, U = any> = (
 	obj: T,
@@ -65,7 +72,21 @@ export function pipeline<T1, T2, T3, T4, T5, D extends WritableStream<T5>>(write
 export function pipeline<T1, T2, T3, T4, T5, T6, D extends WritableStream<T6>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
 
 
+/**
+ * Helper function to turn a timestamp into an RStreams event ID.
+ * 
+ * @param timestamp The timestamp you want to turn into an RStreams event ID which can be anything used to construct a Moment object.
+ * @param granularity Specify the granularity of the event ID, maybe just year/month or year/month/hour, etc.
+ * @returns The generated event ID.
+ * @todo question I need examples of granularity values to know what to put here
+ */
 export function eventIdFromTimestamp(timestamp: moment.MomentInput, granularity?: string): string;
+
+/**
+ * Helper function to turn a an RStreams event ID into a timestamp.
+ * @param eid The event ID to turn into an epoch timestamp.
+ * @returns The timestamp as a time since the epoch.
+ */
 export function eventIdToTimestamp(eid: string): number;
 export function commandWrap<T, U>(opts: CommandWrapOptions, func: CommandWrapFunction<T, U>): TransformFunction;
 export function bufferBackoff<T>(each, emit, retryOpts, opts, flush): WritableStream<T>;

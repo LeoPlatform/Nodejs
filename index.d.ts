@@ -97,7 +97,8 @@ export interface RStreamsSdk {
 	configuration: Configuration;
 
 	/** 
-	 * @return Rstreams - used to get the leo stream to do more advanced processing of the streams.
+	 * @return Rstreams Used to get the leo stream to do more advanced processing of the streams.
+	 * @todo question do we still need this? can/should we put all useful things in this interface?
 	 */
 	streams: typeof StreamUtil,
 
@@ -109,41 +110,56 @@ export interface RStreamsSdk {
 	checkpoint: typeof StreamUtil.toCheckpoint;
 
 	/**
-	 * Enrich events from one queue to another.  This is an async/await friendly version of the
-	 * [[`RStreamsSdk.enrich`]]
+	 * Enrich events from one queue to another. This is an async/await friendly version of 
+	 * [[`RStreamsSdk.enrich`]].
 	 * 
-	 * @typeParam T The original event to be enriched
-	 * @typeParam U The resulting event that has been enriched
+	 * @typeParam T The type of the event read from the source queue
+	 * @typeParam U The type of the event that will be written to the destination queue
 	 * @param opts The details of how to enrich and the function that does the work to enrich
+	 * @see [[`RStreamsSdk.enrich`]]
+	 * @todo example
 	 */
 	enrichEvents: <T, U>(opts: EnrichOptions<T, U>) => Promise<void>;
 
 	/**
-	 * Process events from one queue to another.
+	 * This is an async/await friendly version of [[`RStreamsSdk.offload`]].
+	 * 
+	 * Read events from a queue to do general processing (such as write to an external DB).  It's called
+	 * offload because it is commonly used to process events and offload them to external resources
+	 * such as ElasticSearch or other databases that are off of the RStreams Bus.
+	 * 
 	 * @param {EnrichOptions} opts
+	 * @see [[`RStreamsSdk.offload`]]
+	 * @todo example
 	 */
 	offloadEvents: <T>(config: OffloadOptions<T>) => void;
 
 	/**
-	 * A callback-based way to write an event to a queue.
+	 * A callback-based function to write a single event to an RStreams queue.  There are occasions where
+	 * this is useful, perhaps inside a pipeline step.
 	 *
 	 * @typeParam T The data to write as the payload of the event
 	 * @param bot_id The name of the bot to write the event as
 	 * @param outQueue The name of the queue to write to
-	 * @param payload The payload of the event to write
+	 * @param payload The data to write to the queue
 	 * @param callback The function to call when done
+	 * @see [[`RStreamsSdk.putEvents`]] An async/await friendly version of this function.
 	 * @todo inconsistent bot_id
+	 * @todo question offload and enrich are just pass throughs to StreamUtil.offload/enrich. Why isn't this one also?  Why is it actually defined here?
+	 * @todo example
 	 */
 	put: <T>(bot_id: string, outQueue: string, payload: Event<T> | T, callback: Callback) => void;
 
 	/**
-	 * An async/await friendly way to write an event to a queue.
+	 * An async/await friendly function to write a single event to a queue.  There are occasions where
+	 * this is useful, perhaps inside a pipeline step.
 	 *
 	 * @typeParam T The data to write as the payload of the event
 	 * @param bot_id The name of the bot to write the event as
 	 * @param outQueue The name of the queue to write to
 	 * @param payload The payload of the event to write
 	 * @todo inconsistent bot_id
+	 * @todo example
 	 */
 	putEvent: <T>(bot_id: string, outQueue: string, payload: Event<T> | T) => Promise<void>;
 	
