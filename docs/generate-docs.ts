@@ -1,3 +1,5 @@
+//TODO: decide if we're going to need this and if not delete it
+
 // How to extend the doc
 // https://www.freecodecamp.org/news/a-deep-dive-into-typedocs-workflow-and-extensibility-d464683e092c/
 //

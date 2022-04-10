@@ -35,7 +35,10 @@ export declare type ThroughEvent<T> = Event<T> | any;
 /**
  * Options when writing data to an instance of the RStreams bus.  The options in this
  * interface provide a lot of control and performance optimization options and developers
- * should familiarize themselves with them.
+ * should familiarize themselves with them. They are used in a write pipeline step 
+ * to configure how to write.
+ * 
+ * @todo example
  */
 export interface WriteOptions {
 	/**
@@ -128,13 +131,16 @@ export interface WriteOptions {
 /**
  * Options when reading data from an instance of the RStreams bus.  The options in this
  * interface provide a lot of control and performance optimization options and developers
- * should familiarize themselves with them.
+ * should familiarize themselves with them.  They are used in a read pipeline step 
+ * to configure how to read.
  * 
  * Most bots are based on AWS lambda and lambdas can only run continuosly for 15 minutes.  
  * So, a bot that sets itself up to read events from a queue has to end at some time.
  * Depending on how the bot registered itself with the bus, after a bot shuts down 
  * the bot will either be re-invoked by the RStreams bus when there are new events to be read
  * or on whatever timer established.
+ * 
+ * @todo example
  */
 export interface ReadOptions {
 	/** @deprecated Don't use. */
@@ -347,26 +353,82 @@ export interface ToCheckpointOptions {
 	 * someone else changed the checkpoint since the last time it was read by some code.  
 	 * 
 	 * This is only used in advanced scenarios.
+	 * 
+	 * @default false
 	 */
 	force: boolean;
 }
 
 /**
- * Enrich events from one queue to another.
- * @field {string} id - The id of the bot
- * @field {string} inQueue - The queue from which events will be read
- * @field {string} outQueue - The queue into which events will be written 
- * @field {Object} config - An object that contains config values that control the flow of events from inQueue and to outQueue
- * @field {function} transform - A function to transform data from inQueue to outQueue
- * @field {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
+ * These options allow a developer to setup the options for an [[`StreamUtil.enrich`]] pipeline step.
+ * This reads events from one queue and writes them to another queue.  Put another way,
+ * an enrich pipeline operations reads events from an `inQueue` and then writes them to an `outQueue`,
+ * allowing for side effects or transformation in the process.
+ * 
+ * @typeParam T The type of the event read from the source `inQueue`
+ * @typeParam U The type of the event that will be written to the destination `outQueue`
+ * @param config Config values that control the flow of events from inQueue to outQueue
+ * @param transform The SDK will call this function with events from `inQueue` to allow you to transform them on the
+ *				  way to `outQueue`
+ * 
+ * @see [[`StreamUtil.enrich`]]
+ * @see [[`StreamUtil.enrichEvents`]]
+ * @todo review there was a callback param, I removed it since I think it was a cut/paste error.  Here's what it said: callback A function called when all events have been processed. (payload, metadata, done) => { }
  */
 export interface EnrichOptions<T, U> {
+	/** 
+	 * The name of the bot that this code is acting as.  The SDK will use it to query to the bot Dynamo DB 
+	 * table to pull checkpoints and to checkpoint for you. 
+	 */
 	id: string;
+
+	/** The source queue from which events will be read */
 	inQueue: string;
+
+	/** The destination queue into which events will be written */
 	outQueue: string;
+
+	/**
+	 * The event ID of the starting position to read from with in the queue.  It is common to not provide
+	 * this because each queue is stateful in that it remembers the last read position of a bot.  Then,
+	 * as bots read they make a call back to the RStreams Bus to update the read position.
+	 * 
+	 * Usually, the SDK just handles this for you.  So, if the start isn't provided, the SDK will just
+	 * use the bot's last read position as the starting point.  So, as bots are invoked, read some events
+	 * and do some processing, they automatically update back how far they've read to and then the bot shuts
+	 * down after a period of time.  When the bot starts back up to read again, it knows where it last read
+	 * from and just continues.
+	 * 
+	 * @see [Fundamentals: Event ID](rstreams-site-url/rstreams-guides/core-concepts/fundamentals/#event-id)
+	 * @todo review Copied from the start property of the ReadOptions object but there's already config on here so not sure if I'm right about what this is.
+	 */
 	start?: string;
-	batch?: BatchOptions;
+
+	/**
+	 * This governs micro-batching events that have been received from the source `inQueue` before they
+	 * are sent to your `transform` function, allowing that function to receive events in batches instead
+	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
+	 * resource such as a database.  Hitting a database for every single event that flows through a pipe can
+	 * be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
+	 * construct a single query to a database to read/write all data as a single DB operation.
+	 * 
+	 * If this is a number, it's just the number of events to micro-batch up.
+	 * @todo review is this doc right?
+	 */
+	batch?: BatchOptions | number;
+
+    /** Fine-grained control of reading from the source `inQueue` */
 	config?: ReadOptions;
+
+    /**
+     * The SDK will invoke this function after reading events from the `inQueue` and will take
+     * the result of this function to send to the destination `outQueue`.
+     * 
+     * @typeParam T The type of the event read from the source `inQueue` and passed to this function
+     * @typeParam U The type of the event that will be returned from this function and sent to the destination `outQueue`
+     * @todo example
+     * @todo review
+     */
 	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
 }
 

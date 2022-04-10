@@ -115,11 +115,46 @@ export interface ToCsvOptions {
 	nullValue?: any;
 }
 
+/**
+ * Used in pipeline operations to tell the SDK to micro-batch events received in one pipeline step
+ * before sending them to the next pipeline step.
+ * 
+ * The SDK will send events to the next pipeline step as soon as one of the `count`, `bytes` or 
+ * `time` constraints are met.
+ * 
+ * @see [[`EnrichOptions.batch`]] Good doc on using this.
+ * @todo review Is this doc right?
+ * @todo review these were commented out, are they really there and should be deprecated? //records: Number; // same as count //size: Number; // Same as bytes
+ */
 export interface BatchOptions {
+	/** The number of events to micro-batch before sending them to the next step in the pipeline */
 	count?: Number;
-	//records: Number; // same as count
+	
+	/**
+	 * The number of bytes of events to micro-batch up before sending them to the next step in the pipeline 
+	 * 
+	 * @see [[`BatchOptions.field`]]
+	 */
 	bytes?: Number;
-	//size: Number; // Same as bytes
+	
+	/** 
+	 * The amount of time to wait, micro-batching events up before sending them to the next step in the pipeline 
+	 * 
+	 * Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)
+	 * can take: Duration | number | string | FromTo | DurationInputObject.
+	 * 
+	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
+	 */
 	time?: moment.DurationInputArg1;
-	field?: string; // Field within the data that counts toward bytes limit
+
+	/**
+	 * If micro-batching on number of bytes, then you may optionally set this to be the name of the field
+	 * in the event that you wish to have used exclusively to count towards to the total number of bytes.
+	 * This isn't used except in uncommon circumstances where one field alone should control the 
+	 * micro-batching since its size will impact the amount of time the next pipeline step takes to proces.
+	 * 
+	 * @see [[`BatchOptions.bytes`]]
+	 * @todo review
+	 */
+	field?: string;
 }
