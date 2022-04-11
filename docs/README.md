@@ -73,7 +73,10 @@
       Plugin installed to prevent inherited docs for example StatsStream inherits from Node's Transform but I don't want 100 inherited functions
       no one cares about to show up and hide the two functions added.
 
-    * @todo docbugg <description>  
+    * @todo docbug <description>  
       when something isn't working in the docs
+
+    * @todo incomplete <description>
+      the doc needs more attention
 
       

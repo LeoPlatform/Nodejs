@@ -562,13 +562,41 @@ export declare namespace StreamUtil {
 	 * @todo docbug docs not being inherited, have been copied
 	 */
 	const eventIdToTimestamp: typeof Streams.eventIdToTimestamp;
+
+	/** For convenience, a re-export of the popular [event-stream library](https://www.npmjs.com/package/event-stream). */
 	const eventstream: typeof es;
 
 	/**
-	 * @param {list} //list of streams to join together between each step and forward errors + deal with clean up
-	 * Type of https://github.com/mafintosh/pump
+	 * The type definitions make this look daunting.  It's not.  It's merely a set of pipeline steps in a series where
+	 * the first step in the pipeline is the source that produces content, perhaps by reading it from a queue of the bus,
+	 * and then the data is sent to the next step and so on until the final step, the sink, gets the data.
+	 * 
+	 * The reason the types look so complicated is because there must be a specific type for the exact sequence of
+	 * possible pipeline steps that one might chain together.  The different parameterized types, T1/T2/etc., represent
+	 * the data type of the data events that are produced and are modified and move down through the pipe.
+	 * 
+	 * Note that developers don't really need to understand hardly any of this.  Developers need only ask what type
+	 * of pipe they want to create.  Do I want a pipe that just reads from a queue and doesn't send it anywhere else?
+	 * Well, that's an [[`RStreamsSdk.offload`]] pipe.  Do you want to read from one queue, do some processing and/or
+	 * transformation and/or filtering and then write the result to another queue?  Well that's an [[`RStreamsSdk.enrich`]] or
+	 * [[`RStreamsSdk.enrichEvents`]].  With these, you don't have to construct a pipe yourself as these helper methods
+	 * craft one purpose-built for you.
+	 * 
+	 * If you need to do something more involved then this method is for you.  Even then, the SDK dramatically simplifies things
+	 * so you don't have to craft your own pipeline steps.  Instead, you simply call an SDK function to create an instance
+	 * of a pipeline step that does what you want it to.
+	 * 
+	 * @todo example
+	 * @todo question what are all the functions that create pipeline steps
+     * @todo incomplete need to do a lot more here to describe all the pipeline steps and how errors work and so forth.  Probably should link out to the rstreams.org site.
 	 */
 	const pipe: typeof Streams.pipe;
+
+    /**
+     * An async/await friendly version of [[`pipe`]].  Reference the docs there.
+     * 
+     * @see [[`pipe`]]
+     */
 	const pipeAsync: typeof Streams.pipeAsync;
 
 	const split: typeof splitLib;
