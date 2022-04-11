@@ -101,7 +101,40 @@ export function batch<T>(opts: BatchOptions | Number): TransformStream<T, ReadEv
 
 export function passthrough<T, U>(opts?: stream.TransformOptions): TransformStream<T, U>;
 //export function through(transform?: through2.TransformFunction, flush?: through2.FlushCallback): stream.Transform;
+
+/**
+ * This creates a callback based pipeline step that will take data in, possibly transform the data or do computation, and then
+ * send the data on to the next step in the pipeline.
+ * 
+ * @typeParam T The type of the data sent in to be passed through this step.
+ * @typeParam U The type of data to be sent on to the next step in the pipeline.
+ * @param transform A function that does the work of taking the data in, doing something with it and then calling the done function when done.
+ *   The first arg is stripped off by Javascript since it recognizes that the this arg is just to set the this context 
+ *   so that the `this` keyword will work inside the function and itself be the instance of the transform stream which can be useful.
+ *   For example, say you want to push to an event in here to a queue.  You could do that by calling
+ *   `this.push` to push the event to a queue while still sending the queue on the next step in the pipeline afterwards.
+ * 
+ *   So, the first real argument your function will receive is `obj` which is the data event being sent in to be processed/transformed
+ *   and sent on to the next pipeline step.  The second arg is `done`.  You call this when you're done.  Call `done()` if there's no error
+ *   but you want to filter out this event and not pass it on to the next pipeline step.  Call `done(err)` if an error ocurreed where
+ *   `err` is a string or Error object.  Call `done(null, U)` when no error and you want to pass on an event to the next step in the 
+ *   pipeline where `U` is the type of object being sent on.
+ *				  
+ * @param flush A function to be called when the entire pipeline has been flushed to allow for cleanup, perhaps closing a DB connection.
+ * @todo example When you'd want to use this in the transform function.
+ * @todo review
+ * @todo example with flush
+ */
 export function through<T, U>(transform?: (this: TransformStream<T, U>, obj: T, done: DataCallback<U>) => void, flush?: FlushCallback<U>): TransformStream<T, U>;
+
+/**
+ * This creates an async-friendly pipeline step that will take data in, possibly tranform the data or do computatno, and then
+ * send the data on to the next step in the pipeline.  It's almost identical to the callback version except you don't have to call a callback
+ * function, you just resolve or reject the promise.
+ * 
+ * @see [[`through`]] For complete docs.
+ * @todo exmample
+ */
 export function throughAsync<T, U>(transform?: (this: TransformStream<T, U>, obj: T) => Promise<U> | U, flush?: (this: TransformStream<T, U>) => Promise<U> | U): TransformStream<T, U>;
 
 export function writeWrapped<T>(opts: CommandWrapOptions | any, func: CommandWrapFunction<T, any>, flush?: through2.FlushCallback): WritableStream<T>;

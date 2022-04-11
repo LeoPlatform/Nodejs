@@ -588,99 +588,328 @@ export declare namespace StreamUtil {
 	 * 
 	 * @todo example
 	 * @todo question what are all the functions that create pipeline steps
-     * @todo incomplete need to do a lot more here to describe all the pipeline steps and how errors work and so forth.  Probably should link out to the rstreams.org site.
+	 * @todo incomplete need to do a lot more here to describe all the pipeline steps and how errors work and so forth.  Probably should link out to the rstreams.org site.
 	 */
 	const pipe: typeof Streams.pipe;
 
-    /**
-     * An async/await friendly version of [[`pipe`]].  Reference the docs there.
-     * 
-     * @see [[`pipe`]]
-     */
+	/**
+	 * An async/await friendly version of [[`pipe`]].  Reference the docs there.
+	 * 
+	 * @see [[`pipe`]]
+	 */
 	const pipeAsync: typeof Streams.pipeAsync;
 
+	/**
+	 * An export of the super populare [split2](https://www.npmjs.com/package/split2) library.
+	 * 
+	 * It's used to turn events in the pipeline into a set of stringified events where each event is separated by a 
+	 * character, typically newline.  We use it to make [JSON lines](https://jsonlines.org/) files with a single pipeline step that is then
+	 * followed by a step that writes it to an S3 file.
+	 */
 	const split: typeof splitLib;
+
+	/**
+	 * A pipeline step that will split and parse [JSON lines](https://jsonlines.org/), turning them into events.
+	 * 
+	 * @typeParam T The type of object produced from parsing the JSON objects.
+	 * @param skipErrors If true and there's a parse error, the error and the JSON line that couldn't be parsed is skipped.  Defaults to false.
+	 */
 	function parse<T>(skipErrors?: boolean): TransformStream<any, T>;
 
-	/** 
-	* @param {function} func - function that takes the (event, callback, push, and flush).  When finished processing the event, call the callback and pass it back to the stream via second paramater of the callback or the push.
-	* @param {function} done - callback function
-	* @param {string|null|Error} done.err - callback paramater if any errors occurred
-	* @param {ThroughEvent<any>} done.obj - pass the event back to the stream
-	* @param {function} push - Push events back into the stream.  Often used to push multiple events from a single event read
-	* @param {any} push.obj - object to pass back into the stream via bush
-	* @param {function} flush - function to be called when the remaining data has been flushed
-	* @returns {stream}
-	*/
+	/**
+	 * This creates a callback based pipeline step that will take data in, possibly transform the data or do computation, and then
+	 * send the data on to the next step in the pipeline.
+	 * 
+	 * @typeParam T The type of the data sent in to be passed through this step.
+	 * @typeParam U The type of data to be sent on to the next step in the pipeline.
+	 * @param transform A function that does the work of taking the data in, doing something with it and then calling the done function when done.
+	 *   The first arg is stripped off by Javascript since it recognizes that the this arg is just to set the this context 
+	 *   so that the `this` keyword will work inside the function and itself be the instance of the transform stream which can be useful.
+	 *   For example, say you want to push to an event in here to a queue.  You could do that by calling
+	 *   `this.push` to push the event to a queue while still sending the queue on the next step in the pipeline afterwards.
+	 * 
+	 *   So, the first real argument your function will receive is `obj` which is the data event being sent in to be processed/transformed
+	 *   and sent on to the next pipeline step.  The second arg is `done`.  You call this when you're done.  Call `done()` if there's no error
+	 *   but you want to filter out this event and not pass it on to the next pipeline step.  Call `done(err)` if an error ocurreed where
+	 *   `err` is a string or Error object.  Call `done(null, U)` when no error and you want to pass on an event to the next step in the 
+	 *   pipeline where `U` is the type of object being sent on.
+	 *				  
+	 * @param flush A function to be called when the entire pipeline has been flushed to allow for cleanup, perhaps closing a DB connection.
+	 * @todo example When you'd want to use this in the transform function.
+	 * @todo review
+	 * @todo example with flush
+	 * @todo docbug Couldn't get the docs to come up from Streams.through so had to duplicate them here.
+	 */
 	const through: typeof Streams.through;
+
+	/**
+	 * This creates an async-friendly pipeline step that will take data in, possibly tranform the data or do computatno, and then
+	 * send the data on to the next step in the pipeline.  It's almost identical to the callback version except you don't have to call a callback
+	 * function, you just resolve or reject the promise.
+	 * 
+	 * @see [[`through`]] For complete docs.
+	 * @todo exmample
+	 * @todo docbug Couldn't get the docs to come up from Streams.throughAsync so had to duplicate them here.
+	 */
 	const throughAsync: typeof Streams.throughAsync;
 
+	/**
+	 * This is a sink, a step designed to be the last step in the pipe.
+	 * 
+	 * @todo unclear
+	 * @todo incomplete
+	 * @todo example
+	 */
 	const write: typeof Streams.writeWrapped;
 
 	/**
-	 * Used to add logging in the stream.  Helpful for debugging in between streaming operations.
-	 * @param {string} prefix - prefix to include with each log
+	 * Creates a pipeline step that will log events as they pass through which can be helpful for debugging in between streaming operations.
+	 * 
+	 * @param prefix If provided, this prefix is included with each log
+	 * @todo incomplete what does it log and how often
 	 */
 	const log: typeof Streams.log;
+
+	/**
+	 * Creates a pipeline step that is used to manually get/set the checkpoint.  Often, this pipeline step is used to get
+	 * and store checkpoints and then at the very end of the pipeline, it will use the saved off data to checkpoint
+	 * manaully checkpoint.
+	 * @param botId The bot that is doing the reading.
+	 * @param queue The queue we need to checkpoint where we've read to on behalf of the bot `botId`
+	 * @param opts How often to checkpoint.
+	 * 
+	 * @todo unclear not sure I have what this really does
+	 * @todo example
+	 */
 	function stats(botId: string, queue: string, opts?: {
+		/**
+		 * Checkpoint after this number of records or as soon as the `time` condition is met if used and happens sooner.
+		 */
 		records: number;
+
+		/**
+		 * Checkpoint after this amount of time or as soon as the `records` condition is met if used and happens sooner.
+		 * Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)
+		 * can take: Duration | number | string | FromTo | DurationInputObject.
+		 */
 		time: moment.DurationInputArg1;
-		//debug: boolean;
 	}): StatsStream;
 
+	/**
+	 * Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.
+	 * 
+	 * @param config When to checkpoint.
+	 * @todo review
+	 * @todo example
+	 */
 	function toCheckpoint(config?: ToCheckpointOptions): TransformStream<unknown, unknown>;
+
+	/**
+	 * Create a pipeline step that reads from the RStreams bus instance queue `inQueue` doing so
+	 * as bot `botId`.
+	 * 
+	 * @typeParam T The type of data that will be read from the queue.
+	 * @param botId The bot to read as
+	 * @param inQueue The queue to read from
+	 * @param config The options on how to read from this queue
+	 * @todo inconsistent want to alias this and deprecate this name, how should we do this.  what else is this similar to? 
+	 * @todo question is the meant to be used in an ls.pipe? or all by itself?
+	 * @todo example
+	 */
 	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableStream<ReadEvent<T>>;
+
+	/**
+	 * Create a pipeline step that takes the events from the previous pipeline step and then writes them
+	 * to an RStreams bus queeu.
+	 * 
+	 * @param botId The bot to act as when writing.
+	 * @param config Options for writing
+	 * @todo inconsistent want to alias this and deprecate this name, how should we do this.  what else is this similar to? 
+	 * @todo question What is the queue we are writing to?
+	 * @todo question since this returns a transform stream, seems like it is meant to pass an event to a downstream step but that doesn't make sense?
+	 */
 	function toLeo<T>(botId: string, config?: WriteOptions): TransformStream<Event<T>, unknown>;
+
+	/**
+	 * Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.
+	 * 
+	 * @param config Options for when to checkpoint.
+	 * @todo question what's the usage difference in this versus toCheckpoint where this is a Writable and the other is a TransformStream
+	 * @todo unclear Probably have this description wrong.
+	 */
 	function checkpoint(config?: {
+		/**
+		 * Checkpoint after this number of records or as soon as the `time` condition is met if used and happens sooner.
+		 */
 		records: number;
+
+		/**
+		 * Checkpoint after this amount of time or as soon as the `records` condition is met if used and happens sooner.
+		 * Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)
+		 * can take: Duration | number | string | FromTo | DurationInputObject.
+		 */
 		time: moment.DurationInputArg1;
-		//debug: boolean;
 	}): stream.Writable;
 
 
 	/**
-	 * Enrich events from one queue to another.
-	 * @param {EnrichOptions} opts
-	 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
+	 * This is a callback-based version of the [[`RStreamsSdk.enrichEvents`]] function.
+	 * 
+	 * It reads events from one queue and writes them to another queue.  Put another way,
+	 * an enrich operation reads events from a source `inQueue` and then writes them to a destination `outQueue`,
+	 * allowing for side effects or transformation in the process.
+	 * 
+	 * The [[`EnrichOptions.transform`]] function
+	 * is called when events are retrieved from the source queue so you can transform them and send them to the 
+	 * destination queue by calling the callback in the transform function.  The callback here as the second argument
+	 * of this function is meant to be called when all enriching is done on all events (right before it closes down the stream),
+	 * allowing you to do clean up like closing a DB connection or something.
+	 * 
+	 * @typeParam T The type of the data event retrieved from the source queue
+	 * @typeParam U The type of the data event that is sent to the destination queue
+	 * @param opts TThe details of how to enrich and the function that does the work to enrich
+	 * @param callback A function called when all events have been processed
+	 * @todo question why does enrich exist here and not elsewhere
+	 * @todo unclear don't understand the callback here
+	 * @todo example
+	 * @todo review
 	 */
 	function enrich<T, U>(opts: EnrichOptions<T, U>, callback: Callback): void;
+
 	/**
-	 * Process events from one queue to another.
-	 * @param {EnrichOptions} opts
-	 * @return {stream} Stream
+	 * This is a callback-based version of [[`RStreamsSdk.offloadEvents`]].
+	 * 
+	 * It reads events from a queue to do general processing (such as write to an external DB).  It's called
+	 * offload because it is commonly used to process events and offload them to external resources
+	 * such as ElasticSearch or other databases that are off of the RStreams Bus.
+	 * 
+	 * It reads from the queue specified in `opts` and then calls the `opts.transform` function passing in the
+	 * events retrieved so they may be processed.
+	 * 
+	 * @param opts What queue to read from, the transform function and other options.
+	 * @callback callback A function called when all events have been processed
 	 */
 	function offload<T>(config: OffloadOptions<T>, callback: Callback): void;
+
 	/**
-	 * Stream for writing events to a queue zz
-	 * @param {string} botId - The id of the bot
-	 * @param {string} outQueue - The queue into which events will be written 
-	 * @param {WriteOptions} config - An object that contains config values that control the flow of events to outQueue
-	 * @return {stream} Stream
+	 * This creates a pipeline step that acts as the last step of the pipeline, the sink, writing events sent to the 
+	 * pipeline step to the queue specified.
+	 * 
+	 * @param botId The bot to act as when writing, events will be marked as written by this bot
+	 * @param outQueue The queue into which events will be written
+	 * @param config An object that contains config values that control the flow of events to outQueue
+	 * @todo example
 	 */
 	function load<T>(botId: string, outQueue: string, config?: WriteOptions): WritableStream<Event<T> | T>;
-	const devnull: typeof Streams.devnull;
-	const stringify: typeof Streams.stringify;
-	const gzip: typeof zlib.createGzip;
-	const gunzip: typeof zlib.createGunzip;
+
+
 	/**
-	 * @param {string} label - The label for the log.  This will prefix every record that's loged. The result will be console.log(`${label}${count} ${Date.now()-start} ${o.eid||""}`);
-	 * @param {string} records [records=1000] - How many records processed before you log.
+	 * Sometimes you don't care to push data anywhere when you have a pipeline, but you need the fine-grained control
+	 * of making your own pipeline.  When that's the case, use this create a final pipeline step, a sink, to end your pipeline.
+	 * Pipelines must have a sink and this does nothing, optionall logging if you pass in true or if you pass in a string, logs 
+	 * and uses the string as the prefix to what is logged.
+	 */
+	const devnull: typeof Streams.devnull;
+
+	/**
+	 * This creates a pipeline step that turns a Javascript object into a [JSON line](https://jsonlines.org/)
+	 * (newline at the end of the stringified JS object). This is used to make it easy to create JSON lines files.
+	 */
+	const stringify: typeof Streams.stringify;
+
+	/**
+	 * Creates a pipeline step that compresses the data that flows through it.
+	 * 
+	 * This is an export of the `zlib` libraries `createGzip` function which is used to compress
+	 * content as it moves through a pipeline.
+	 */
+	const gzip: typeof zlib.createGzip;
+
+	/**
+	 * Creates a pipeline step that uncompresses the data that flows through it.
+	 * 
+	 * This is an export of the `zlib` libraries `createGunzip` function which is used to uncompress
+	 * content as it moves through a pipeline.
+	 */
+	const gunzip: typeof zlib.createGunzip;
+
+	/**
+	 * This creates a pipeline step that will produce a log statement that includes the event ID, if it is present, 
+	 * every N events which you pass in.  It's convenient to ensure the pipeline is doing something.
 	 */
 	const counter: typeof Streams.counter;
 
 
+   	/**
+	 * This creates a pipeline step that allows events to move through the step.  This is only used in special
+	 * cases and most will not have occasion to use this.
+	 * 
+	 * I need to preread a database to start generating data.  But I need to give you something you can pipe to.  So, I give you
+	 * a passthrough.  It's used if you are the source of you want to put a sink in the middle of a pipe.  So, writing to an S3 file
+	 * is a sink step but we do it in the middle of the stream because we generate many s3 files.  We pipe it to S3 and then we pipe the
+	 * results of that into a pass through.
+	 * 
+	 * @param opts The options for transforming.
+	 * @todo unclear
+	 * @todo review
+	 */
 	function passThrough(opts?: stream.TransformOptions): stream.Transform;
 
-
+   	/**
+	 * This is very advanced functionality that likely won't be used very often. It takes a list of pipeline steps
+	 * and turns them into a single Transform stream step.  If you have to ask why you'd want to do this, you probably
+	 * don't need to know to do this.
+	 * 
+	 * @todo example
+	 * @todo question what are all the functions that create pipeline steps
+	 * @todo incomplete need to do a lot more here to describe all the pipeline steps and how errors work and so forth.  Probably should link out to the rstreams.org site.
+	 */
 	const pipeline: typeof Streams.pipeline;
 
+	/**
+	 * This creates a pipeline step meant to be the last step in a pipeline, the sink, that writes events that flow into it
+	 * into S3.  You should micro-batch events before getting to this step to control how many events to write to the file.
+	 * 
+	 * @param Bucket The name of the AWS S3 bucket to write the file to
+	 * @param File The name of the file to write.
+	 * 
+	 * @todo inconsistent Bucket I get that AWS caps these but nowhere else in the SDK do we.
+	 * @todo inconsistent File I get that AWS caps these but nowhere else in the SDK do we.
+	 */
 	function toS3(Bucket: string, File: string): stream.Writable;
+
+	/**
+	 * This creates a pipeline step that can act as the first step in a pipeline, the source, which reads data
+	 * from an S3 file.
+	 * 
+	 * @param file What to read from.
+	 */
 	function fromS3(file: {
+		/** The name of the S3 bucket to read from */
 		bucket: string,
+
+		/** The name of the file in the bucket to read from */
 		key: string;
+
+		/**
+		 * Read from a specific range in the file.  This is a string that must look like this:
+		 * `bytes=<startingByteoffset>-<endingByteOffset>` where <startingByteoffset> is the start position to read from
+		 * and <endingByteOffset> is the ending position to read from, exclusive.
+		 * 
+		 * @todo question Is this an exclusive read meaning it reads up to but doesn't actually read the endingByteOffset position?
+		 */
 		range?: string;
 	}): stream.Readable;
 
+	/**
+	 * A super convenient function to write data to Dynamo DB table as the final step in a pipeline, the sink, as events
+	 * flow into the pipeline step.
+	 * 
+	 * @param table The name of the Dynamo DB table to write to
+	 * @param opts The options for writing.
+	 * @todo example
+	 * @todo incomplete need to doc up the options in the opts object
+	 */
 	function toDynamoDB(table: string, opts: {
 		hash: string;
 		range: string;
@@ -689,12 +918,33 @@ export declare namespace StreamUtil {
 		time?: moment.DurationInputArg1;
 	}): stream.Writable;
 
+	/**
+	 * This creates a pipeline step to tell the SDK to micro-batch events received in one pipeline step
+	 * before sending them to the next pipeline step.  It's useful to control how many events arrive all
+	 * at once, roughly, to the next pipeline step.  The `opts` is either [[`BatchOptions`]] giving fine-grained
+	 * control or just a number which is the number of events to micro-batch.
+	 */
 	const batch: typeof Streams.batch;
 
 	/**
-	 * @param {boolean|list} fieldList - List of fields to transform | true builds the header list dynmaically
-	 * @param {ToCsvOptions} opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
+	 * This creates a pipeline step that will create a CSV file from the events that flow into this step.
+	 * Underneath the covers it uses the popular [fast-csv](https://c2fo.github.io/fast-csv) node library.
+	 * 
+	 * @param fieldList List of fields to transform | true builds the header list dynmaically
+	 * @param opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
+	 * 
+	 * @todo unclear
 	 */
 	const toCSV: typeof Streams.toCSV;
+
+	/**
+	 * This creates a pipeline step that will parse events from a CSV file and send them to the next step.
+	 * Underneath the covers it uses the popular [fast-csv](https://c2fo.github.io/fast-csv) node library.
+	 * 
+	 * @param fieldList List of fields to transform | true builds the header list dynmaically
+	 * @param opts fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
+	 * 
+	 * @todo unclear
+	 */
 	const fromCSV: typeof Streams.fromCSV;
 }

@@ -110,25 +110,36 @@ export interface RStreamsSdk {
 	checkpoint: typeof StreamUtil.toCheckpoint;
 
 	/**
-	 * Enrich events from one queue to another. This is an async/await friendly version of 
-	 * [[`RStreamsSdk.enrich`]].
+	 * This is an async/await friendly version of the [[`RStreamsSdk.enrich`]] function.
+	 * 
+	 * It reads events from one queue and writes them to another queue.  Put another way,
+	 * an enrich operation reads events from a source `inQueue` and then writes them to a destination `outQueue`,
+	 * allowing for side effects or transformation in the process.
+	 * 
+	 * The [[`EnrichOptions.transform`]] function
+	 * is called when events are retrieved from the source queue so you can transform them and send them to the 
+	 * destination queue by calling the callback in the transform function.  The callback here as the second argument
+	 * of this function is meant to be called when all enriching is done on all events (right before it closes down the stream),
+	 * allowing you to do clean up like closing a DB connection or something. 
 	 * 
 	 * @typeParam T The type of the event read from the source queue
 	 * @typeParam U The type of the event that will be written to the destination queue
 	 * @param opts The details of how to enrich and the function that does the work to enrich
 	 * @see [[`RStreamsSdk.enrich`]]
 	 * @todo example
+	 * @todo unclear The opts.transform function doesn't appear to be promise based?
+	 * @todo incomplete the docs above were partly copied from the callback version and once the unclear above is clear needs correcting.
 	 */
 	enrichEvents: <T, U>(opts: EnrichOptions<T, U>) => Promise<void>;
 
 	/**
 	 * This is an async/await friendly version of [[`RStreamsSdk.offload`]].
 	 * 
-	 * Read events from a queue to do general processing (such as write to an external DB).  It's called
+	 * It reads events from a queue to do general processing (such as write to an external DB).  It's called
 	 * offload because it is commonly used to process events and offload them to external resources
 	 * such as ElasticSearch or other databases that are off of the RStreams Bus.
 	 * 
-	 * @param {EnrichOptions} opts
+	 * @param opts What queue to read from, the transform function and other options.
 	 * @see [[`RStreamsSdk.offload`]]
 	 * @todo example
 	 */
