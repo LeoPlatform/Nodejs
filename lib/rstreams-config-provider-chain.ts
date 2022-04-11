@@ -419,15 +419,17 @@ export const ObjectConfiguration = util.inherit(Configuration, {
 });
 
 
+
 export const AWSSecretsConfiguration = util.inherit(Configuration, {
 
 	/**
 	 * Creates a new ConfigProviderChain with a default set of providers
 	 * specified by {defaultProviders}.
 	 */
-	constructor: function AWSSecretsConfiguration(secretEnvKey) {
+	constructor: function AWSSecretsConfiguration(secretEnvKey, cacheDuration) {
 		Configuration.call(this);
 		this.secretEnvKey = secretEnvKey;
+		this.cacheDuration = cacheDuration || (1000 * 60 * 60);
 	},
 
 	refreshSync: function () {
@@ -442,39 +444,61 @@ export const AWSSecretsConfiguration = util.inherit(Configuration, {
 		let values = null;
 
 		let secretKey = process.env[this.secretEnvKey];
-		let error;
-		try {
-			let value = new awsSdkSync.SecretsManager({
-				region: process.env.AWS_REGION || "us-east-1"
-			}).getSecretValue({ SecretId: secretKey });
+		let region = process.env.AWS_REGION || "us-east-1";
 
+		let cacheKey = `${region}:${secretKey}`;
+		let cachedValue = AWSSecretsConfiguration.valueCache[cacheKey];
+		if (cachedValue != null && cachedValue.expireTime >= Date.now()) {
+			values = cachedValue.data;
+		} else {
+			delete AWSSecretsConfiguration.valueCache[cacheKey];
+		}
+
+		if (values == null) {
+			let error;
 			try {
+				let value = new awsSdkSync.SecretsManager({
+					region: region
+				}).getSecretValue({ SecretId: secretKey });
 
-				if ('SecretString' in value) {
-					values = JSON.parse(value.SecretString);
-				} else {
-					//let buff = Buffer.from(value.SecretBinary, 'base64');
-					//values = JSON.parse(buff.toString('ascii'));
+				try {
+
+					if ('SecretString' in value) {
+						values = JSON.parse(value.SecretString);
+					} else {
+						//let buff = Buffer.from(value.SecretBinary, 'base64');
+						//values = JSON.parse(buff.toString('ascii'));
+					}
+				} catch (err) {
+					error = util.error(
+						new Error(`Unable to parse secret '${secretKey}'.`),
+						{ code: 'AWSSecretsConfigurationProviderFailure' }
+					);
 				}
 			} catch (err) {
 				error = util.error(
-					new Error(`Unable to parse secret '${secretKey}'.`),
-					{ code: 'AWSSecretsConfigurationProviderFailure' }
+					new Error(`Secret '${secretKey}' not available. ${err}`),
+					{ code: 'AWSSecretsConfigurationProviderFailure', parent: err }
 				);
 			}
-		} catch (err) {
-			error = util.error(
-				new Error(`Secret '${secretKey}' not available. ${err}`),
-				{ code: 'AWSSecretsConfigurationProviderFailure', parent: err }
-			);
-		}
-		if (error != null) {
-			throw error;
-		}
+			if (error != null) {
+				throw error;
+			}
 
+			AWSSecretsConfiguration.valueCache[cacheKey] = {
+				expireTime: Date.now() + this.cacheDuration,
+				data: values
+			};
+		}
 
 		this.expired = false;
+
+
 		Configuration.call(this, values);
 		return this;
 	},
 });
+AWSSecretsConfiguration.valueCache = {};
+AWSSecretsConfiguration.clearCache = function () {
+	AWSSecretsConfiguration.valueCache = {};
+};

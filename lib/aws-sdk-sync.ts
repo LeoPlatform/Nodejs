@@ -64,7 +64,7 @@ class Service<T> {
 }
 
 export class SecretsManager extends Service<AWS.SecretsManager.ClientConfiguration> {
-	getSecretValue(params: AWS.SecretsManager.GetSecretValueRequest, options?: AWS.SecretsManager.ClientConfiguration,): AWS.SecretsManager.GetSecretValueResponse {
+	getSecretValue(params: AWS.SecretsManager.GetSecretValueRequest): AWS.SecretsManager.GetSecretValueResponse {
 		return this.invoke("getSecretValue", params);
 	}
 }
