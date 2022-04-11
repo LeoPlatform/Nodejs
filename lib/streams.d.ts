@@ -97,6 +97,9 @@ export interface ProcessCallbackOptions {
 	units?: number;
 }
 
+/**
+ * @todo document
+ */
 export interface CommandWrapOptions {
 	hasCommands?: string;
 	ignoreCommands?: string[];
@@ -108,11 +111,105 @@ export interface CommandWrapOptions {
 //export function pipe(...streams: Array<stream.Transform | pump.Callback>): stream.Transform;
 
 
+/**
+ * Creates a pipeline of steps where the first step produces the data and then it flows to the next step and so on.
+ * The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @paramType T The type of data that is produced by the source
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param write Pipeline step 2: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ */
 export function pipe<T1>(read: ReadableStream<T1>, write: WritableStream<T1> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T1> | stream.Writable;
+
+/**
+ * Creates a pipeline of steps where the first step produces the data and then it flows to the next step and so on.
+ * The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @paramType T1 The type of data that is produced by the source
+ * @paramType T2 The type of data generated and that moves to the next step of the pipe
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 3: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ */
 export function pipe<T1, T2>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, write: WritableStream<T2> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T2> | stream.Writable;
+
+/**
+ * Creates a pipeline of steps where the first step produces the data and then it flows to the next step and so on.
+ * The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @paramType T1 The type of data that is produced by the source
+ * @paramType T2 The type of data generated and that moves to the next step of the pipe
+ * @paramType T3 The type of data generated and that moves to the next step of the pipe
+ *  
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 4: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ */
 export function pipe<T1, T2, T3>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T3> | stream.Writable;
+
+/**
+ * Creates a pipeline of steps where the first step produces the data and then it flows to the next step and so on.
+ * The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @paramType T1 The type of data that is produced by the source
+ * @paramType T2 The type of data generated and that moves to the next step of the pipe
+ * @paramType T3 The type of data generated and that moves to the next step of the pipe
+ * @paramType T4 The type of data generated and that moves to the next step of the pipe 
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 5: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ */
 export function pipe<T1, T2, T3, T4>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T4> | stream.Writable;
+
+/**
+ * Creates a pipeline of steps where the first step produces the data and then it flows to the next step and so on.
+ * The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @paramType T1 The type of data that is produced by the source
+ * @paramType T2 The type of data generated and that moves to the next step of the pipe
+ * @paramType T3 The type of data generated and that moves to the next step of the pipe
+ * @paramType T4 The type of data generated and that moves to the next step of the pipe  
+ * @paramType T5 The type of data generated and that moves to the next step of the pipe  
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t4 Pipeline step 5: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 6: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ */
 export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T5> | stream.Writable;
+
+/**
+ * Creates a pipeline of steps where the first step produces the data and then it flows to the next step and so on.
+ * The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @paramType T1 The type of data that is produced by the source
+ * @paramType T2 The type of data generated and that moves to the next step of the pipe
+ * @paramType T3 The type of data generated and that moves to the next step of the pipe
+ * @paramType T4 The type of data generated and that moves to the next step of the pipe  
+ * @paramType T5 The type of data generated and that moves to the next step of the pipe  
+ * @paramType T6 The type of data generated and that moves to the next step of the pipe  
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t4 Pipeline step 5: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t5 Pipeline step 6: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 7: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ */
 export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T6> | stream.Writable;
 
 
