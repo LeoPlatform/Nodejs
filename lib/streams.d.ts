@@ -6,26 +6,94 @@ import pump from "pump";
 import { ParserOptionsArgs } from 'fast-csv';
 import { ErrorCallback, DataCallback, Event, FlushCallback, ReadEvent, TransformFunction, ReadableStream, WritableStream, TransformStream } from "./types";
 
+/**
+ * This is a standard callback used to tell the SDK that you are done processing something,
+ * either successfully or not successfully.  If the processing succeeded and you don't need to checkpoint
+ * and you don't want to pass anything on to flow to the next processing step, you can just call this function with no arguments.
+ * 
+ * @typeParam T The data to give to the next processing step, in a pipeline that would be putting the data 
+ *   into the pipeline to flow to the next pipeline step.
+ * @param err If processing failed, set this to an Error object representing the failure.
+ * @param result If processing succeed and you don't need to pass anything to another processing step, you can pass true
+ *   here which will checkpoint for you for the event being processed.  If processing succeeded and you need to send a result
+ *   of processing to another processing step, set this to be the data to send.
+ * @param opts This allows you to override the normal options used by the SDK for this one event that you are saying is now "done".
+ * @todo question what is the default for result, to checkpoint or not checkpoint
+ */
 declare type ProcessCallback<T> = (err?: any, result?: boolean | T, opts?: ProcessCallbackOptions) => void;
 
 
 /**
- * TODO fix the below comments to be more generic
- * @typeParam T The type of the event read from the source `inQueue` and passed to this function
- * @typeParam U The type of the event that will be returned from this function and sent to the destination `outQueue`
+ * A function that takes the payload of the event (T) and the wrapper of the entire event (ReadEvent<T>) and then a callback
+ * that produces the transformed value U.
+ * 
+ * @typeParam T The type of the data that is to be processed
+ * @typeParam U The type of the data that will be the result of processing
+ * @param payload The data to be processed
+ * @param wrapper 
+ * @param callback The function to call when done with the result, if any
+ * @todo unclear I don't understand what wrapper is and how it would be used.
  */
 declare type ProcessFunction<T, U> = (payload: T, wrapper: ReadEvent<T>, callback: ProcessCallback<U>) => void;
+
+/**
+ * A function that takes the data to be processed, the callback done function and a push function
+ * that can be used to wrap a command to do work.
+ * 
+ * If the processing succeeded and you don't need to checkpoint
+ * and you don't want to pass anything on to flow to the next processing step, you can just call this function with no arguments.
+ * 
+ * @typeParam T The type of the data to be processed
+ * @typeParam U The type of the data that results from being processed
+ * 
+ * @todo unclear what is this used for? what's an example.
+ */
 declare type CommandWrapFunction<T, U = any> = (
+    /** The data to be processed. */
 	obj: T,
+
+    /** 
+     * The callback function to send back an error or the successful processed result.
+     * 
+     * @param err If processing failed, set this to an Error object representing the failure.
+     * @param result If processing succeed and you don't need to pass anything to another processing step, you can pass true
+     *   here which will checkpoint for you for the event being processed.  If processing succeeded and you need to send a result
+     *   of processing to another processing step, set this to be the data to send.
+     */
 	done: (err?: any, result?: U) => void,
+
+    /**
+     * A convenience method to push the resulting processed data to a queue.
+     * 
+     * @typeParam U The type of the data resulting from processing that should be pushed to a queue.
+     * @param data The data to push to a queue.
+     */
 	push: (data: U) => void
 ) => void;
 
+/**
+ * Super powerful and convenient options to override per event should you want them.  
+ * Perhaps doing an enrich and all events are going from
+ * queue A to queue B but this one event is an error, so you can specificy that the event should be sent
+ * to the dead letter queue instead of the queue it would go to normally.
+ */
 export interface ProcessCallbackOptions {
+    /** The name of the queue this event should be written to */
 	queue?: string;
+
+    /** 
+     * Lets you set the timestamp of the first event that made it to the bus that eventually led to this event
+     * being created as a derivative in one manner or another.
+     */
 	event_source_timestamp?: number;
+
+    /** @deprecated Do not use */
 	event?: string;
+
+    /** Lets you set this one event's event ID manually */
 	eid?: string;
+
+    /** Lets you set the number of parent events this one event has derived from, aggregating N previous event into this one event where N is `units` */
 	units?: number;
 }
 
