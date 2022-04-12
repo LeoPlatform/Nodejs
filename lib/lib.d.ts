@@ -687,7 +687,7 @@ export declare namespace StreamUtil {
 	/**
 	 * Creates a pipeline step that will log events as they pass through which can be helpful for debugging in between streaming operations.
 	 * 
-     * @typeParam T The type of the data that flows through the step to be logged
+	 * @typeParam T The type of the data that flows through the step to be logged
 	 * @param prefix If provided, this prefix is included with each log
 	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * @todo incomplete what does it log and how often
@@ -819,7 +819,7 @@ export declare namespace StreamUtil {
 	 * It reads from the queue specified in `opts` and then calls the `opts.transform` function passing in the
 	 * events retrieved so they may be processed.
 	 * 
-     * @typeParam T The type of the data read from the RStreams bus queue
+	 * @typeParam T The type of the data read from the RStreams bus queue
 	 * @param opts What queue to read from, the transform function and other options.
 	 * @callback callback A function called when all events have been processed
 	 */
@@ -829,7 +829,7 @@ export declare namespace StreamUtil {
 	 * This creates a pipeline step that acts as the last step of the pipeline, the sink, writing events sent to the 
 	 * pipeline step to the queue specified.
 	 * 
-     * @typeParam T The type of the data received by the pipeline step
+	 * @typeParam T The type of the data received by the pipeline step
 	 * @param botId The bot to act as when writing, events will be marked as written by this bot
 	 * @param outQueue The queue into which events will be written
 	 * @param config An object that contains config values that control the flow of events to outQueue

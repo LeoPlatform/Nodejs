@@ -18,6 +18,37 @@
 
    then use `@noInheritDoc` 
 
+1. installed VSCode extension Todo Tree to see @todo's in code, a new icon on the far left called TODO's will show up.
+   Change the background/foreground highlight if you don't like the yellow color that shows up in the code
+   for the tag.  Background color set to none so it won't set the background color.
+
+   Add this to your settings.json
+   ```json
+    "todo-tree.regex.regex": "(//|#|<!--|/\\*|\\* @|^\\s*\\*)\\s*($TAGS)",
+    "todo-tree.regex.regexCaseSensitive": false,
+    "todo-tree.general.tags": [
+        "BUG",
+        "HACK",
+        "FIXME",
+        "TODO",
+        "XXX",
+        "[ ]",
+        "[x]",
+        "TODO question",
+        "TODO unclear",
+        "TODO example",
+        "TODO inconsistent",
+        "TODO review",
+        "TODO docbug",
+        "TODO incomplete",
+        "TODO document"
+    ],
+    ,
+    "todo-tree.highlights.defaultHighlight": {
+      "background": "none",
+      "foreground": "yellow"
+    }
+   ```
 
 1. tsdoc syntax used
     tsdoc syntax guide: https://tsdoc.org/

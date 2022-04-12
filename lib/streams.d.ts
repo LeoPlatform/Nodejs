@@ -498,7 +498,7 @@ export function passthrough<T, U>(opts?: stream.TransformOptions): TransformStre
  * @see [[`throughAsync`]]
  * @returns The pipeline step that is ready to be used in a pipeline
  * 
- * @todo example When you'd want to use this in the transform function.
+ * @todo example When you'd want to use this in the transform function
  * @todo review
  * @todo example with flush
  */
@@ -632,20 +632,20 @@ export function toS3(Bucket: string, File: string): WritableStream<any>;
  * @todo question in lib.d.ts the fromS3 function returns a stream.Readable not a WriteableStream<any>.  Why?
  */
 export function fromS3(file: {
-    /** The name of the S3 bucket to read from */
-    bucket: string,
+	/** The name of the S3 bucket to read from */
+	bucket: string,
 
-    /** The name of the file in the bucket to read from */
-    key: string;
+	/** The name of the file in the bucket to read from */
+	key: string;
 
-    /**
-     * Read from a specific range in the file.  This is a string that must look like this:
-     * `bytes=<startingByteoffset>-<endingByteOffset>` where <startingByteoffset> is the start position to read from
-     * and <endingByteOffset> is the ending position to read from, exclusive.
-     * 
-     * @todo question Is this an exclusive read meaning it reads up to but doesn't actually read the endingByteOffset position?
-     */
-    range?: string;
+	/**
+	 * Read from a specific range in the file.  This is a string that must look like this:
+	 * `bytes=<startingByteoffset>-<endingByteOffset>` where <startingByteoffset> is the start position to read from
+	 * and <endingByteOffset> is the ending position to read from, exclusive.
+	 * 
+	 * @todo question Is this an exclusive read meaning it reads up to but doesn't actually read the endingByteOffset position?
+	 */
+	range?: string;
 }): WritableStream<any>;
 //}
 
@@ -659,33 +659,33 @@ export interface FromCsvOptions extends ParserOptionsArgs { }
  * The subset of the options we support from [fastCSV libraries options](https://c2fo.github.io/fast-csv/docs/parsing/options).
  */
 export interface ToCsvOptions {
-    /**
-     * The delimiter that will separate columns. Set this option if your file uses an alternate delimiter such as
-     * `;`or `\t`.
-     * @default `,`
-     */
+	/**
+	 * The delimiter that will separate columns. Set this option if your file uses an alternate delimiter such as
+	 * `;`or `\t`.
+	 * @default `,`
+	 */
 	delimiter?: string;
 
-    /**
-     * The character to use to escape quotes inside of a quoted field.
-     * 
-     * @default `"`
-     */
+	/**
+	 * The character to use to escape quotes inside of a quoted field.
+	 * 
+	 * @default `"`
+	 */
 	escape?: string;
 
-    /**
-     * The character to use to quote fields that contain a delimiter.
-     * 
-     * @default `"`
-     */
+	/**
+	 * The character to use to quote fields that contain a delimiter.
+	 * 
+	 * @default `"`
+	 */
 	quote?: string;
 
-    /**
-     * The value to write for null.
-     * 
-     * @default `null`
-     * @todo review is this correct?
-     */
+	/**
+	 * The value to write for null.
+	 * 
+	 * @default `null`
+	 * @todo review is this correct?
+	 */
 	nullValue?: any;
 }
 
