@@ -547,9 +547,9 @@ export declare namespace StreamUtil {
 	/**
 	 * Helper function to turn a timestamp into an RStreams event ID.
 	 * 
-	 * @param timestamp The timestamp you want to turn into an RStreams event ID which can be anything used to construct a Moment object.
+	 * @param timestamp The timestamp you want to turn into an RStreams event ID which can be anything used to construct a Moment object
 	 * @param granularity Specify the granularity of the event ID, maybe just year/month or year/month/hour, etc.
-	 * @returns The generated event ID.
+	 * @returns The generated event ID
 	 * @todo question I need examples of granularity values to know what to put here
 	 * @todo docbug docs not being inherited, have been copied
 	 */
@@ -557,8 +557,9 @@ export declare namespace StreamUtil {
 
 	/**
 	 * Helper function to turn a an RStreams event ID into a timestamp.
-	 * @param eid The event ID to turn into an epoch timestamp.
-	 * @returns The timestamp as a time since the epoch.
+	 * 
+	 * @param eid The event ID to turn into an epoch timestamp
+	 * @returns The timestamp as a time since the epoch
 	 * @todo docbug docs not being inherited, have been copied
 	 */
 	const eventIdToTimestamp: typeof Streams.eventIdToTimestamp;
@@ -567,6 +568,9 @@ export declare namespace StreamUtil {
 	const eventstream: typeof es;
 
 	/**
+	 * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
+ 	 * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+	 *  
 	 * The type definitions make this look daunting.  It's not.  It's merely a set of pipeline steps in a series where
 	 * the first step in the pipeline is the source that produces content, perhaps by reading it from a queue of the bus,
 	 * and then the data is sent to the next step and so on until the final step, the sink, gets the data.
@@ -600,7 +604,7 @@ export declare namespace StreamUtil {
 	const pipeAsync: typeof Streams.pipeAsync;
 
 	/**
-	 * An export of the super populare [split2](https://www.npmjs.com/package/split2) library.
+	 * An export of the super popular [split2](https://www.npmjs.com/package/split2) library.
 	 * 
 	 * It's used to turn events in the pipeline into a set of stringified events where each event is separated by a 
 	 * character, typically newline.  We use it to make [JSON lines](https://jsonlines.org/) files with a single pipeline step that is then
@@ -613,12 +617,13 @@ export declare namespace StreamUtil {
 	 * 
 	 * @typeParam T The type of object produced from parsing the JSON objects.
 	 * @param skipErrors If true and there's a parse error, the error and the JSON line that couldn't be parsed is skipped.  Defaults to false.
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 */
 	function parse<T>(skipErrors?: boolean): TransformStream<any, T>;
 
 	/**
 	 * This creates a callback based pipeline step that will take data in, possibly transform the data or do computation, and then
-	 * send the data on to the next step in the pipeline.
+	 * sends the result on to the next step in the pipeline.
 	 * 
 	 * @typeParam T The type of the data sent in to be passed through this step.
 	 * @typeParam U The type of data to be sent on to the next step in the pipeline.
@@ -634,23 +639,40 @@ export declare namespace StreamUtil {
 	 *   `err` is a string or Error object.  Call `done(null, U)` when no error and you want to pass on an event to the next step in the 
 	 *   pipeline where `U` is the type of object being sent on.
 	 *				  
-	 * @param flush A function to be called when the entire pipeline has been flushed to allow for cleanup, perhaps closing a DB connection.
-	 * @todo example When you'd want to use this in the transform function.
-	 * @todo review
-	 * @todo example with flush
-	 * @todo docbug Couldn't get the docs to come up from Streams.through so had to duplicate them here.
-	 */
+	* @param flush A function to be called when the entire pipeline has been flushed to allow for cleanup, perhaps closing a DB connection.
+	* @see [[`throughAsync`]]
+	* @returns The pipeline step that is ready to be used in a pipeline
+	* 
+	* @todo example When you'd want to use this in the transform function.
+	* @todo review
+	* @todo example with flush
+	*/
 	const through: typeof Streams.through;
 
 	/**
-	 * This creates an async-friendly pipeline step that will take data in, possibly tranform the data or do computatno, and then
-	 * send the data on to the next step in the pipeline.  It's almost identical to the callback version except you don't have to call a callback
-	 * function, you just resolve or reject the promise.
+	 * This creates an async/await-friendly pipeline step that will take data in, possibly transform the data or do computation, and then
+	 * sends the result on to the next step in the pipeline.
 	 * 
-	 * @see [[`through`]] For complete docs.
-	 * @todo exmample
-	 * @todo docbug Couldn't get the docs to come up from Streams.throughAsync so had to duplicate them here.
-	 */
+	 * @typeParam T The type of the data sent in to be passed through this step.
+	 * @typeParam U The type of data to be sent on to the next step in the pipeline.
+	 * @param transform A function that does the work of taking the data in, doing something with it and then rejecting or resolving
+	 *   the promise with the result object type U.  If you resolve with no result data, the event is skipped and not sent to the next pipeline step.
+	 *   The first arg is stripped off by Javascript since it recognizes that the this arg is just to set the this context 
+	 *   so that the `this` keyword will work inside the function and itself be the instance of the transform stream which can be useful.
+	 *   For example, say you want to push to an event in here to a queue.  You could do that by calling
+	 *   `this.push` to push the event to a queue while still sending the queue on the next step in the pipeline afterwards.
+	 * 
+	 *   So, the first real argument your function will receive is `obj` which is the data event being sent in to be processed/transformed
+	 *   and sent on to the next pipeline step.
+	 *				  
+	* @param flush A function to be called when the entire pipeline has been flushed to allow for cleanup, perhaps closing a DB connection.
+	* @see [[`through`]]
+	* @returns The pipeline step that is ready to be used in a pipeline
+	* 
+	* @todo example When you'd want to use this in the transform function.
+	* @todo review
+	* @todo example with flush
+	*/
 	const throughAsync: typeof Streams.throughAsync;
 
 	/**
@@ -665,7 +687,9 @@ export declare namespace StreamUtil {
 	/**
 	 * Creates a pipeline step that will log events as they pass through which can be helpful for debugging in between streaming operations.
 	 * 
+     * @typeParam T The type of the data that flows through the step to be logged
 	 * @param prefix If provided, this prefix is included with each log
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * @todo incomplete what does it log and how often
 	 */
 	const log: typeof Streams.log;
@@ -677,6 +701,7 @@ export declare namespace StreamUtil {
 	 * @param botId The bot that is doing the reading.
 	 * @param queue The queue we need to checkpoint where we've read to on behalf of the bot `botId`
 	 * @param opts How often to checkpoint.
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * 
 	 * @todo unclear not sure I have what this really does
 	 * @todo example
@@ -699,6 +724,8 @@ export declare namespace StreamUtil {
 	 * Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.
 	 * 
 	 * @param config When to checkpoint.
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * 
 	 * @todo review
 	 * @todo example
 	 */
@@ -712,6 +739,8 @@ export declare namespace StreamUtil {
 	 * @param botId The bot to read as
 	 * @param inQueue The queue to read from
 	 * @param config The options on how to read from this queue
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * 
 	 * @todo inconsistent want to alias this and deprecate this name, how should we do this.  what else is this similar to? 
 	 * @todo question is the meant to be used in an ls.pipe? or all by itself?
 	 * @todo example
@@ -724,6 +753,8 @@ export declare namespace StreamUtil {
 	 * 
 	 * @param botId The bot to act as when writing.
 	 * @param config Options for writing
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * 
 	 * @todo inconsistent want to alias this and deprecate this name, how should we do this.  what else is this similar to? 
 	 * @todo question What is the queue we are writing to?
 	 * @todo question since this returns a transform stream, seems like it is meant to pass an event to a downstream step but that doesn't make sense?
@@ -734,6 +765,8 @@ export declare namespace StreamUtil {
 	 * Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.
 	 * 
 	 * @param config Options for when to checkpoint.
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * 
 	 * @todo question what's the usage difference in this versus toCheckpoint where this is a Writable and the other is a TransformStream
 	 * @todo unclear Probably have this description wrong.
 	 */
@@ -786,6 +819,7 @@ export declare namespace StreamUtil {
 	 * It reads from the queue specified in `opts` and then calls the `opts.transform` function passing in the
 	 * events retrieved so they may be processed.
 	 * 
+     * @typeParam T The type of the data read from the RStreams bus queue
 	 * @param opts What queue to read from, the transform function and other options.
 	 * @callback callback A function called when all events have been processed
 	 */
@@ -795,6 +829,7 @@ export declare namespace StreamUtil {
 	 * This creates a pipeline step that acts as the last step of the pipeline, the sink, writing events sent to the 
 	 * pipeline step to the queue specified.
 	 * 
+     * @typeParam T The type of the data received by the pipeline step
 	 * @param botId The bot to act as when writing, events will be marked as written by this bot
 	 * @param outQueue The queue into which events will be written
 	 * @param config An object that contains config values that control the flow of events to outQueue
@@ -802,18 +837,28 @@ export declare namespace StreamUtil {
 	 */
 	function load<T>(botId: string, outQueue: string, config?: WriteOptions): WritableStream<Event<T> | T>;
 
-
 	/**
+	 * Creates a pipeline step that can act as a noop sink.
+	 * 
 	 * Sometimes you don't care to push data anywhere when you have a pipeline, but you need the fine-grained control
-	 * of making your own pipeline.  When that's the case, use this create a final pipeline step, a sink, to end your pipeline.
-	 * Pipelines must have a sink and this does nothing, optionall logging if you pass in true or if you pass in a string, logs 
-	 * and uses the string as the prefix to what is logged.
+	 * of making your own pipeline.  When that's the case, use this to create a final pipeline step, a sink, to end your pipeline.
+	 * 
+	 * Pipelines must have a sink or data won't flow through the pipeline since Node streams pull data starting with the sink
+	 * who asks the previous pipeline step for data and then that previous step asks the one before it for data and so on.
+	 * So, no sink means no data flows.  This gives you a noop sink.
+	 * 
+	 * @typeParam T The type of the data sent into this final pipeline step
+	 * @param shouldLog If a string, logs events that come in, prefixing the log statement with the stream.
+	 *   If this is true, logs the event.  Otherwise, does nothing.
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 */
 	const devnull: typeof Streams.devnull;
 
 	/**
 	 * This creates a pipeline step that turns a Javascript object into a [JSON line](https://jsonlines.org/)
 	 * (newline at the end of the stringified JS object). This is used to make it easy to create JSON lines files.
+	 * 
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 */
 	const stringify: typeof Streams.stringify;
 
@@ -822,6 +867,8 @@ export declare namespace StreamUtil {
 	 * 
 	 * This is an export of the `zlib` libraries `createGzip` function which is used to compress
 	 * content as it moves through a pipeline.
+	 * 
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 */
 	const gzip: typeof zlib.createGzip;
 
@@ -830,15 +877,23 @@ export declare namespace StreamUtil {
 	 * 
 	 * This is an export of the `zlib` libraries `createGunzip` function which is used to uncompress
 	 * content as it moves through a pipeline.
+	 * 
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 */
 	const gunzip: typeof zlib.createGunzip;
 
 	/**
-	 * This creates a pipeline step that will produce a log statement that includes the event ID, if it is present, 
-	 * every N events which you pass in.  It's convenient to ensure the pipeline is doing something.
+	 * This creates a pipeline step that takes an event, logs it and then passes the event on to the next pipeline step.
+	 * The log will include the event ID of the event, if it's present.  This is helpful to get visibility into the pipeline.
+	 * 
+	 * @typeParam T The type of the event that flows in, gets logged and then flows unchanged to the next pipeline step.
+	 * @param label If present, log statements are prefixed with this string.
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * 
+	 * @param records If present, only log every Nth event that flows through where N is `records`.
+	 * @todo review
 	 */
 	const counter: typeof Streams.counter;
-
 
    	/**
 	 * This creates a pipeline step that allows events to move through the step.  This is only used in special
@@ -850,6 +905,8 @@ export declare namespace StreamUtil {
 	 * results of that into a pass through.
 	 * 
 	 * @param opts The options for transforming.
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * 
 	 * @todo unclear
 	 * @todo review
 	 */
@@ -872,6 +929,7 @@ export declare namespace StreamUtil {
 	 * 
 	 * @param Bucket The name of the AWS S3 bucket to write the file to
 	 * @param File The name of the file to write.
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * 
 	 * @todo inconsistent Bucket I get that AWS caps these but nowhere else in the SDK do we.
 	 * @todo inconsistent File I get that AWS caps these but nowhere else in the SDK do we.
@@ -883,6 +941,7 @@ export declare namespace StreamUtil {
 	 * from an S3 file.
 	 * 
 	 * @param file What to read from.
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 */
 	function fromS3(file: {
 		/** The name of the S3 bucket to read from */
@@ -893,8 +952,8 @@ export declare namespace StreamUtil {
 
 		/**
 		 * Read from a specific range in the file.  This is a string that must look like this:
-		 * `bytes=<startingByteoffset>-<endingByteOffset>` where <startingByteoffset> is the start position to read from
-		 * and <endingByteOffset> is the ending position to read from, exclusive.
+		 * `bytes=<startingByteoffset>-<endingByteOffset>` where `<startingByteoffset>` is the start position to read from
+		 * and `<endingByteOffset>` is the ending position to read from, exclusive.
 		 * 
 		 * @todo question Is this an exclusive read meaning it reads up to but doesn't actually read the endingByteOffset position?
 		 */
@@ -907,6 +966,8 @@ export declare namespace StreamUtil {
 	 * 
 	 * @param table The name of the Dynamo DB table to write to
 	 * @param opts The options for writing.
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * 
 	 * @todo example
 	 * @todo incomplete need to doc up the options in the opts object
 	 */
@@ -921,8 +982,15 @@ export declare namespace StreamUtil {
 	/**
 	 * This creates a pipeline step to tell the SDK to micro-batch events received in one pipeline step
 	 * before sending them to the next pipeline step.  It's useful to control how many events arrive all
-	 * at once, roughly, to the next pipeline step.  The `opts` is either [[`BatchOptions`]] giving fine-grained
-	 * control or just a number which is the number of events to micro-batch.
+	 * at once, roughly, to the next pipeline step.  It can be helpful for a pipeline step to receive
+	 * a micro-batch of events, say 100 at a time, instead of 1 at a time to leverage economies of scale
+	 * when writing to a database, e.g. doing one query to the database to get 100 records back all at once
+	 * instead of having to do a query to the database for each event as it comes in.
+	 * 
+	 * @typeParam T The type of the data being batched from the previous pipeline step before sending to the next pipeline step
+	 * @param opts If a number, then this is how many events to batch up before sending along.  If [[`BatchOptions`]] then
+	 *   this is fine-grained control to ensure events keep flowing smoothly whether there are a few or many at a given moment.
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 */
 	const batch: typeof Streams.batch;
 
@@ -933,6 +1001,7 @@ export declare namespace StreamUtil {
 	 * @param fieldList List of fields to transform | true builds the header list dynmaically
 	 * @param opts - fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
 	 * 
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * @todo unclear
 	 */
 	const toCSV: typeof Streams.toCSV;
@@ -943,6 +1012,7 @@ export declare namespace StreamUtil {
 	 * 
 	 * @param fieldList List of fields to transform | true builds the header list dynmaically
 	 * @param opts fastCSV options https://c2fo.github.io/fast-csv/docs/parsing/options
+	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * 
 	 * @todo unclear
 	 */
