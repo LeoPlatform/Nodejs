@@ -197,5 +197,9 @@ export interface RStreamsSdk {
 	destroy: (callback: (err: any) => void) => void;
 }
 
+/**
+ * This returns a function that you call to create an instance of the RStreams SDK.
+ * @param config The SDK is usually smart enough to find the config it needs or you can pass it in directly here.
+ */
 declare function ExportTypeFn(config?: ConfigurationResources | typeof ConfigurationProvider): RStreamsSdk;
 export default ExportTypeFn;
