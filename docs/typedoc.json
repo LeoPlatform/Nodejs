@@ -9,7 +9,7 @@
         "../lib/rstreams-configuration.ts"
     ],
     "out": "generated",
-    "gitRevision": "feature/add-docs",
+    "gitRevision": "master",
     "tsconfig": "../tsconfig.json",
     "excludeTags": [
         "todo"
