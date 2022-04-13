@@ -82,9 +82,10 @@ function SDK(id, data) {
 	}
 
 	let leoStream = ls(configuration);
-	return Object.assign((id, data) => {
+	return Object.assign(function(id, data) {
 		return new SDK(id, data)
 	}, {
+		RStreamsSdk: SDK,
 		configuration: configuration,
 		destroy: (callback) => {
 			if (logger) {

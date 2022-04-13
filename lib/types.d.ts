@@ -1,5 +1,7 @@
 export * from "./lib";
 export * from "./streams";
+import { Context } from "aws-lambda";
+import { RStreamsSdk } from "../index";
 /// <reference types="node" />
 import stream from 'stream';
 // export interface LeoStreamOptions extends stream.TransformOptions {
@@ -467,4 +469,12 @@ export interface Checkpoint {
 
 	/** The timestamp of the first event represented by the checkpoint */
 	started_timestamp?: number,
+}
+
+export interface RStreamsContext<R = any> extends Context {
+    //settings: S;
+    resources?: R;
+    botId: string;
+    sdk: RStreamsSdk;
+    getCheckpoint: (queue: string, defaultIfNull: string) => Promise<string>;
 }

@@ -1,5 +1,5 @@
 import util from "util";
-import RSTREAMS_CONFIG from "../index";
+import RSTREAMS_CONFIG, { ConfigurationResources } from "../index";
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import { trace as eventTrace } from "../lib/event-trace";
@@ -70,7 +70,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			assert.equal(gotError.message, "No providers");
 		});
 		it('read object', async function () {
-			let mockSdkConfig = {
+			let mockSdkConfig: ConfigurationResources = {
 				Region: "mock2-Region",
 				LeoStream: "mock2-LeoStream",
 				LeoCron: "mock2-LeoCron",
@@ -94,7 +94,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 
 
 		it('read object prepend', async function () {
-			let mockSdkConfig1 = {
+			let mockSdkConfig1: ConfigurationResources = {
 				Region: "mock7-Region",
 				LeoStream: "mock7-LeoStream",
 				LeoCron: "mock7-LeoCron",
@@ -104,7 +104,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				LeoFirehoseStream: "mock7-LeoFirehoseStream",
 				LeoSettings: "mock7-LeoSettings",
 			};
-			let mockSdkConfig2 = {
+			let mockSdkConfig2: ConfigurationResources = {
 				Region: "mock6-Region",
 				LeoStream: "mock6-LeoStream",
 				LeoCron: "mock6-LeoCron",
@@ -128,7 +128,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 		});
 
 		it('read object append', async function () {
-			let mockSdkConfig1 = {
+			let mockSdkConfig1: ConfigurationResources = {
 				Region: "mock8-Region",
 				LeoStream: "mock8-LeoStream",
 				LeoCron: "mock8-LeoCron",
@@ -138,7 +138,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				LeoFirehoseStream: "mock8-LeoFirehoseStream",
 				LeoSettings: "mock8-LeoSettings",
 			};
-			let mockSdkConfig2 = {
+			let mockSdkConfig2: ConfigurationResources = {
 				Region: "mock9-Region",
 				LeoStream: "mock9-LeoStream",
 				LeoCron: "mock9-LeoCron",
@@ -182,9 +182,9 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			process.env.RSTREAMS_CONFIG = JSON.stringify({ s3: mockSdkConfig.LeoS3, resources: mockSdkConfig });
 			try {
 				let chain = new EnvironmentConfiguration("RSTREAMS_CONFIG");
-				config1 = chain.resolveSync(chain);
+				config1 = chain.resolveSync();
 				refresh = chain.needsRefresh()
-				config2 = chain.resolveSync(chain);
+				config2 = chain.resolveSync();
 			} catch (err) {
 				gotError = true;
 			}
@@ -202,7 +202,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			process.env.RSTREAMS_CONFIG = '{"hello":2]';
 			try {
 				let chain = new EnvironmentConfiguration("RSTREAMS_CONFIG");
-				chain.resolveSync(chain);
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
@@ -223,7 +223,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			process.env.RSTREAMS_CONFIG_LeoSettings = "mock3-LeoSettings";
 			try {
 				let chain = new EnvironmentConfiguration("RSTREAMS_CONFIG");
-				chain.resolveSync(chain);
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
@@ -262,7 +262,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let gotError;
 			try {
 				let chain = new FileTreeConfiguration(".", ["hello.world"]);
-				chain.resolveSync(chain);
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
@@ -294,7 +294,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let config;
 			try {
 				let chain = new LeoConfiguration();
-				config = chain.resolveSync(chain);
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = err;
 			}
@@ -307,7 +307,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let gotError;
 			try {
 				let chain = new LeoConfiguration();
-				chain.resolveSync(chain);
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
@@ -324,7 +324,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let config;
 			try {
 				let chain = new ObjectConfiguration(null, "");
-				config = chain.resolveSync(chain);
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = err;
 			}
@@ -339,7 +339,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let config;
 			try {
 				let chain = new ObjectConfiguration({}, "");
-				config = chain.resolveSync(chain);
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = err;
 			}
@@ -352,7 +352,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let gotError;
 			try {
 				let chain = new ObjectConfiguration({}, "RSTREAMS_CONFIG");
-				chain.resolveSync(chain);
+				chain.resolveSync();
 			} catch (err) {
 				gotError = err;
 			}
@@ -376,7 +376,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			let config;
 			try {
 				let chain = new ObjectConfiguration({ RSTREAMS_CONFIG: mockSdkConfig }, "RSTREAMS_CONFIG");
-				config = chain.resolveSync(chain);
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = err;
 			}
@@ -407,7 +407,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			try {
 				delete process.env.rstreams_secret;
 				let chain = new AWSSecretsConfiguration("rstreams_secret");
-				chain.resolveSync(chain);
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
@@ -424,7 +424,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			sandbox.stub(awsSdkSync, 'SecretsManager').returns({ getSecretValue });
 			try {
 				let chain = new AWSSecretsConfiguration("rstreams_secret");
-				chain.resolveSync(chain);
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
@@ -441,7 +441,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			sandbox.stub(awsSdkSync, 'SecretsManager').returns({ getSecretValue });
 			try {
 				let chain = new AWSSecretsConfiguration("rstreams_secret");
-				chain.resolveSync(chain);
+				chain.resolveSync();
 				assert.fail("Should throw an error");
 			} catch (err) {
 				gotError = err;
@@ -472,7 +472,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 
 			try {
 				let chain = new AWSSecretsConfiguration("rstreams_secret");
-				config = chain.resolveSync(chain);
+				config = chain.resolveSync();
 			} catch (err) {
 				gotError = true;
 			}

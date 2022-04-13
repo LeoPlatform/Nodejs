@@ -115,6 +115,7 @@ module.exports = function(configOverride, botHandler) {
 		};
 
 		context.settings = settings;
+		context.sdk = leosdk;
 
 
 		// if (event.requestContext) { //new lambda proxy method

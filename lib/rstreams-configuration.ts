@@ -28,18 +28,32 @@ import util from "./aws-util";
  *     in conjunction with {expired}.
 
  */
-const Configuration = util.inherit({
+export default class Configuration {
+	expireTime: number = 0;
+	expired: boolean = false;
+
+	Region: string;
+	LeoStream: string;
+	LeoEvent: string;
+	LeoS3: string;
+	LeoKinesisStream: string;
+	LeoFirehoseStream: string;
+	LeoSettings: string;
+	LeoCron: string;
+
 	/**
 	 * A configuration object can be created using positional arguments or an options
 	 * hash.
 	 *
 
 	 */
-	constructor: function Configuration(config: any = {}) {
+	constructor(config: any = {}) {
+		this.update(config)
+	}
 
+	update(config: any = {}) {
 		this.expired = false;
-		this.expireTime = null;
-		this.refreshCallbacks = [];
+		this.expireTime = 0;
 
 		// Got verbose style so switch it to just the resource style
 		if (config.s3 && config.resources) {
@@ -58,24 +72,24 @@ const Configuration = util.inherit({
 		].forEach(field => {
 			this[field] = config[field];
 		});
-	},
+	}
 
 	/**
 	 * @return [Integer] the number of seconds before {expireTime} during which
 	 *   the configuration will be considered expired.
 	 */
-	expiryWindow: 15,
+	expiryWindow: number = 15;
 
 	/**
 	 * @return [Boolean] whether the configuration object should call {refresh}
 	 * @note Subclasses should override this method to provide custom refresh
 	 *   logic.
 	 */
-	needsRefresh: function needsRefresh() {
+	needsRefresh() {
 		var currentTime = util.date.getDate().getTime();
 		var adjustedTime = new Date(currentTime + this.expiryWindow * 1000);
 
-		if (this.expireTime && adjustedTime > this.expireTime) {
+		if (this.expireTime && adjustedTime.valueOf() > this.expireTime) {
 			return true;
 		} else {
 			let valid = [
@@ -93,9 +107,9 @@ const Configuration = util.inherit({
 
 			return this.expired || !valid
 		}
-	},
+	}
 
-	resolveSync: function resolveSync() {
+	resolveSync() {
 		this.getSync();
 		return {
 			Region: this.Region,
@@ -107,7 +121,7 @@ const Configuration = util.inherit({
 			LeoFirehoseStream: this.LeoFirehoseStream,
 			LeoSettings: this.LeoSettings,
 		};
-	},
+	}
 
 	/**
 	 * Gets the existing configuration, refreshing them if they are not yet loaded
@@ -116,12 +130,12 @@ const Configuration = util.inherit({
 	 * loaded into the object.
 	 */
 
-	getSync: function getSync() {
+	getSync() {
 		if (this.needsRefresh()) {
 			this.refreshSync();
 			this.expired = false;
 		}
-	},
+	}
 
 	/**
 	 * Refreshes the configuration. Users should call {get} before attempting
@@ -133,9 +147,8 @@ const Configuration = util.inherit({
 	 * @see get
 	 */
 
-	refreshSync: function () {
+	refreshSync() {
 		this.expired = false;
 	}
-});
+};
 
-export default Configuration;

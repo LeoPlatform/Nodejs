@@ -72,13 +72,13 @@ export interface Configuration {
 	//validate: [Function: validate],
 	//setProfile: [Function: setProfile],
 	//bus: {
-	//	s3: 'clinttestbus-bus-1au1enwirg4no-leos3-feq3u3g89jgu',
-	//	firehose: 'ClintTestBus-Bus-1AU1ENWIRG4NO-LeoFirehoseStream-4AGnnPEP5kml'
+	//	s3: 'leos3',
+	//	firehose: 'LeoFirehoseStream'
 	//},
-	//firehose: 'ClintTestBus-Bus-1AU1ENWIRG4NO-LeoFirehoseStream-4AGnnPEP5kml',
-	//kinesis: 'ClintTestBus-Bus-1AU1ENWIRG4NO-LeoKinesisStream-n0KNkKCuP8EJ',
-	//s3: 'clinttestbus-bus-1au1enwirg4no-leos3-feq3u3g89jgu',
-	//stream: 'ClintTestBus-Bus-1AU1ENWIRG4NO-LeoKinesisStream-n0KNkKCuP8EJ',
+	//firehose: 'LeoFirehoseStream',
+	//kinesis: 'LeoKinesisStream',
+	//s3: 'leos3',
+	//stream: 'LeoKinesisStream',
 }
 
 /**
@@ -86,8 +86,8 @@ export interface Configuration {
  * in the SDK.  Many of these functions come from [[`StreamUtil`]] which also includes
  * more advanced capabilities. 
  */
-export interface RStreamsSdk {
-	/** 
+export declare class RStreamsSdk {
+	constructor(config?: ConfigurationResources | typeof ConfigurationProvider);	/** 
 	 * Config used to communicate with AWS resources that comprise the RStreams Bus used by the SDK.
 	 * It is included here for information purposes and so you can access the AWS resources that 
 	 * the SDK discovered and is using.
@@ -100,7 +100,7 @@ export interface RStreamsSdk {
 	 * @return Rstreams Used to get the leo stream to do more advanced processing of the streams.
 	 * @todo question do we still need this? can/should we put all useful things in this interface?
 	 */
-	streams: typeof StreamUtil,
+	streams: typeof StreamUtil;
 
 	load: typeof StreamUtil.load;
 	offload: typeof StreamUtil.offload;
@@ -173,13 +173,9 @@ export interface RStreamsSdk {
 	 * @todo example
 	 */
 	putEvent: <T>(bot_id: string, outQueue: string, payload: Event<T> | T) => Promise<void>;
-	
-	/** A library allowing one to manually create, update, checkpoint or retrieve information on a bot. */
-	bot: LeoCron,
 
-	/**
-	 * Contains a reference to helpful, commonly used libraries.
-	 */
+	/** A library allowing one to manually create, update, checkpoint or retrieve information on a bot. */
+	bot: LeoCron;
 	aws: {
 		/** Helpful methods for interacting with RStreams' DynamoDB tables. */
 		dynamodb: LeoDynamodb,
@@ -204,3 +200,4 @@ export interface RStreamsSdk {
  */
 declare function ExportTypeFn(config?: ConfigurationResources | typeof ConfigurationProvider): RStreamsSdk;
 export default ExportTypeFn;
+

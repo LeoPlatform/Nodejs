@@ -423,7 +423,7 @@ describe('RStreams', function () {
 		}
 
 		it("default - ignore fail", function () {
-			RStreamsSdk(false);
+			RStreamsSdk(false as any);
 		});
 
 		it("default - fail", function () {

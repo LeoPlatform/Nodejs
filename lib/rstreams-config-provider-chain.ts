@@ -3,7 +3,7 @@ import Configuration from "./rstreams-configuration";
 import fs from "fs";
 import path from "path";
 import awsSdkSync from "./aws-sdk-sync";
-let RStreams = require('./rstreams');
+import { ConfigurationResources } from "../index";
 
 export enum ProvidersInputType {
 	Replace,
@@ -56,28 +56,28 @@ export enum ProvidersInputType {
  *   @see defaultProviders
  */
 
-export const ConfigProviderChain = util.inherit(Configuration, {
+type Provider = (() => Configuration) | Configuration | ConfigurationResources;
+
+export class ConfigProviderChain extends Configuration {
+	providers: Provider[];
 
 	/**
 	 * Creates a new ConfigProviderChain with a default set of providers
 	 * specified by {defaultProviders}.
 	 */
-	constructor: function ConfigProviderChain(providers: any[], addToDefaults: ProvidersInputType = ProvidersInputType.Replace) {
-		if (providers && !Array.isArray(providers)) {
-			providers = [providers];
-		}
+	constructor(providers?: Provider | Provider[], addToDefaults: ProvidersInputType = ProvidersInputType.Replace) {
+		super();
 		if (providers && addToDefaults == ProvidersInputType.Replace) {
-			this.providers = providers;
+			this.providers = [].concat(providers);
 		} else {
-			this.providers = RStreams.ConfigProviderChain.defaultProviders.slice(0);
+			this.providers = ConfigProviderChain.defaultProviders.slice(0);
 			if (providers && addToDefaults == ProvidersInputType.Prepend) {
-				this.providers = providers.concat(this.providers);
+				this.providers = [].concat(providers, this.providers);
 			} else if (providers && addToDefaults == ProvidersInputType.Append) {
 				this.providers = this.providers.concat(providers);
 			}
 		}
-		this.resolveCallbacks = [];
-	},
+	}
 
 	/**
 	 * Resolves the provider chain by searching for the first set of
@@ -85,7 +85,7 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 	 *
 	 * @return [RStreams.Configuration] the provider, for chaining.
 	 */
-	resolveSync: function () {
+	resolveSync() {
 		let self = this;
 		if (self.providers.length === 0) {
 			throw new Error('No providers');
@@ -124,7 +124,108 @@ export const ConfigProviderChain = util.inherit(Configuration, {
 		return value;
 	}
 
-});
+
+	/**
+ * The default set of providers used by a vanilla ConfigProviderChain.
+ *
+ * In Node.js:
+ *
+ * ```javascript
+ * RStreams.ConfigProviderChain.defaultProviders = [
+ *	function () { return new EnvironmentConfiguration('RSTREAMS_CONFIG'); },
+ *	function () { return new EnvironmentConfiguration('leosdk'); },
+ *	function () { return new EnvironmentConfiguration('leo-sdk'); },
+ *	function () { return new EnvironmentConfiguration('LEOSDK'); },
+ *	function () { return new EnvironmentConfiguration('LEO-SDK'); },
+ *	function () { return new LeoConfiguration(); },
+ *	function () { return new ObjectConfiguration(process, "leosdk"); },
+ *	function () { return new ObjectConfiguration(process, "leo-sdk"); },
+ *	function () { return new ObjectConfiguration(process, "rstreams_config"); },
+ *	function () { return new ObjectConfiguration(global, "leosdk"); },
+ *	function () { return new ObjectConfiguration(global, "leo-sdk"); },
+ *	function () { return new ObjectConfiguration(global, "rstreams_config"); },
+ *	function () {
+ *		return new FileTreeConfiguration(process.cwd(), [
+ *			"leo.config.json",
+ *			"leo.config.js",
+ *			"rstreams.config.json",
+ *			"rstreams.config.js",
+ *			"leoconfig.json",
+ *			"leoconfig.js",
+ *			"rstreamsconfig.json",
+ *			"rstreamsconfig.js",
+ *
+ *			"config/leo.config.json",
+ *			"config/leo.config.js",
+ *			"config/rstreams.config.json",
+ *			"config/rstreams.config.js",
+ *			"config/leoconfig.json",
+ *			"config/leoconfig.js",
+ *			"config/rstreamsconfig.json",
+ *			"config/rstreamsconfig.js",
+ *		]);
+ *	},
+ *	function () { return new AWSSecretsConfiguration('LEO_CONFIG_SECRET'); },
+ *	function () { return new AWSSecretsConfiguration('RSTREAMS_CONFIG_SECRET'); },
+ *
+ * ]
+ * ```
+ */
+	public static defaultProviders: Provider[] = [
+
+		/* Rstreams Env locations */
+		function () { return new EnvironmentConfiguration('RSTREAMS_CONFIG'); },
+
+		/* Leo Env locations */
+		function () { return new EnvironmentConfiguration('leosdk'); },
+		function () { return new EnvironmentConfiguration('leo-sdk'); },
+		function () { return new EnvironmentConfiguration('LEOSDK'); },
+		function () { return new EnvironmentConfiguration('LEO-SDK'); },
+
+		/* leo-config */
+		function () { return new LeoConfiguration(); },
+
+		/* process Object locations */
+		function () { return new ObjectConfiguration(process, "leosdk"); },
+		function () { return new ObjectConfiguration(process, "leo-sdk"); },
+		function () { return new ObjectConfiguration(process, "rstreams_config"); },
+
+		/* global Object locations */
+		function () { return new ObjectConfiguration(global, "leosdk"); },
+		function () { return new ObjectConfiguration(global, "leo-sdk"); },
+		function () { return new ObjectConfiguration(global, "rstreams_config"); },
+
+		/* File tree locations */
+		function () {
+			return new FileTreeConfiguration(process.cwd(), [
+				"leo.config.json",
+				"leo.config.js",
+				"rstreams.config.json",
+				"rstreams.config.js",
+				"leoconfig.json",
+				"leoconfig.js",
+				"rstreamsconfig.json",
+				"rstreamsconfig.js",
+
+				"config/leo.config.json",
+				"config/leo.config.js",
+				"config/rstreams.config.json",
+				"config/rstreams.config.js",
+				"config/leoconfig.json",
+				"config/leoconfig.js",
+				"config/rstreamsconfig.json",
+				"config/rstreamsconfig.js",
+			]);
+		},
+
+		/* AWS Secrets locations */
+		function () { return new AWSSecretsConfiguration('LEO_CONFIG_SECRET'); },
+		function () { return new AWSSecretsConfiguration('RSTREAMS_CONFIG_SECRET'); },
+
+	];
+}
+
+export default ConfigProviderChain;
 
 /**
  * The default set of providers used by a vanilla ConfigProviderChain.
@@ -173,78 +274,75 @@ export const ConfigProviderChain = util.inherit(Configuration, {
  * ```
  */
 
-ConfigProviderChain.defaultProviders = [
+// ConfigProviderChain.defaultProviders = [
 
-	/* Rstreams Env locations */
-	function () { return new EnvironmentConfiguration('RSTREAMS_CONFIG'); },
+// 	/* Rstreams Env locations */
+// 	function () { return new EnvironmentConfiguration('RSTREAMS_CONFIG'); },
 
-	/* Leo Env locations */
-	function () { return new EnvironmentConfiguration('leosdk'); },
-	function () { return new EnvironmentConfiguration('leo-sdk'); },
-	function () { return new EnvironmentConfiguration('LEOSDK'); },
-	function () { return new EnvironmentConfiguration('LEO-SDK'); },
+// 	/* Leo Env locations */
+// 	function () { return new EnvironmentConfiguration('leosdk'); },
+// 	function () { return new EnvironmentConfiguration('leo-sdk'); },
+// 	function () { return new EnvironmentConfiguration('LEOSDK'); },
+// 	function () { return new EnvironmentConfiguration('LEO-SDK'); },
 
-	/* leo-config */
-	function () { return new LeoConfiguration(); },
+// 	/* leo-config */
+// 	function () { return new LeoConfiguration(); },
 
-	/* process Object locations */
-	function () { return new ObjectConfiguration(process, "leosdk"); },
-	function () { return new ObjectConfiguration(process, "leo-sdk"); },
-	function () { return new ObjectConfiguration(process, "rstreams_config"); },
+// 	/* process Object locations */
+// 	function () { return new ObjectConfiguration(process, "leosdk"); },
+// 	function () { return new ObjectConfiguration(process, "leo-sdk"); },
+// 	function () { return new ObjectConfiguration(process, "rstreams_config"); },
 
-	/* global Object locations */
-	function () { return new ObjectConfiguration(global, "leosdk"); },
-	function () { return new ObjectConfiguration(global, "leo-sdk"); },
-	function () { return new ObjectConfiguration(global, "rstreams_config"); },
+// 	/* global Object locations */
+// 	function () { return new ObjectConfiguration(global, "leosdk"); },
+// 	function () { return new ObjectConfiguration(global, "leo-sdk"); },
+// 	function () { return new ObjectConfiguration(global, "rstreams_config"); },
 
-	/* File tree locations */
-	function () {
-		return new FileTreeConfiguration(process.cwd(), [
-			"leo.config.json",
-			"leo.config.js",
-			"rstreams.config.json",
-			"rstreams.config.js",
-			"leoconfig.json",
-			"leoconfig.js",
-			"rstreamsconfig.json",
-			"rstreamsconfig.js",
+// 	/* File tree locations */
+// 	function () {
+// 		return new FileTreeConfiguration(process.cwd(), [
+// 			"leo.config.json",
+// 			"leo.config.js",
+// 			"rstreams.config.json",
+// 			"rstreams.config.js",
+// 			"leoconfig.json",
+// 			"leoconfig.js",
+// 			"rstreamsconfig.json",
+// 			"rstreamsconfig.js",
 
-			"config/leo.config.json",
-			"config/leo.config.js",
-			"config/rstreams.config.json",
-			"config/rstreams.config.js",
-			"config/leoconfig.json",
-			"config/leoconfig.js",
-			"config/rstreamsconfig.json",
-			"config/rstreamsconfig.js",
-		]);
-	},
+// 			"config/leo.config.json",
+// 			"config/leo.config.js",
+// 			"config/rstreams.config.json",
+// 			"config/rstreams.config.js",
+// 			"config/leoconfig.json",
+// 			"config/leoconfig.js",
+// 			"config/rstreamsconfig.json",
+// 			"config/rstreamsconfig.js",
+// 		]);
+// 	},
 
-	/* AWS Secrets locations */
-	function () { return new AWSSecretsConfiguration('LEO_CONFIG_SECRET'); },
-	function () { return new AWSSecretsConfiguration('RSTREAMS_CONFIG_SECRET'); },
+// 	/* AWS Secrets locations */
+// 	function () { return new AWSSecretsConfiguration('LEO_CONFIG_SECRET'); },
+// 	function () { return new AWSSecretsConfiguration('RSTREAMS_CONFIG_SECRET'); },
 
-];
-
-
-export default ConfigProviderChain;
-Configuration
+// ];
 
 
 
-export const EnvironmentConfiguration = util.inherit(Configuration, {
+
+export class EnvironmentConfiguration extends Configuration {
+	envPrefix: string;
 
 	/**
 	 * Creates a new ConfigProviderChain with a default set of providers
 	 * specified by {defaultProviders}.
 	 */
-	constructor: function EnvironmentConfiguration(envPrefix) {
-		Configuration.call(this);
+	constructor(envPrefix: string) {
+		super();
 		this.envPrefix = envPrefix;
-		//this.get(function () { });
-	},
+	}
 
-	refreshSync: function () {
+	refreshSync() {
 
 		if (!process || !process.env) {
 			throw util.error(
@@ -292,27 +390,28 @@ export const EnvironmentConfiguration = util.inherit(Configuration, {
 		}
 
 		this.expired = false;
-		Configuration.call(this, values);
+		this.update(values);
 		return this;
-	},
-});
+	}
+}
 
 
-
-export const FileTreeConfiguration = util.inherit(Configuration, {
+export class FileTreeConfiguration extends Configuration {
+	startingDirectory: string;
+	filenames: string[];
 
 	/**
 	 * Creates a new ConfigProviderChain with a default set of providers
 	 * specified by {defaultProviders}.
 	 */
-	constructor: function FileTreeConfiguration(startingDirectory, filenames) {
-		Configuration.call(this);
+	constructor(startingDirectory: string, filenames: string[]) {
+		super();
 		this.startingDirectory = startingDirectory;
 		this.filenames = Array.isArray(filenames) ? filenames : [filenames];
 		//this.get(function () { });
-	},
+	}
 
-	refreshSync: function () {
+	refreshSync() {
 
 		let values = null;
 
@@ -333,7 +432,8 @@ export const FileTreeConfiguration = util.inherit(Configuration, {
 				let file = path.resolve(dir, filename);
 				if (fs.existsSync(file)) {
 					try {
-						values = require(file);
+						let requireFn = module.require;
+						values = requireFn(file);
 						break outer;
 					} catch (err) {
 						errors.push(err);
@@ -351,24 +451,23 @@ export const FileTreeConfiguration = util.inherit(Configuration, {
 
 
 		this.expired = false;
-		Configuration.call(this, values);
+		this.update(values);
 		return this;
-	},
-});
+	}
+}
 
 
-export const LeoConfiguration = util.inherit(Configuration, {
+export class LeoConfiguration extends Configuration {
 
 	/**
 	 * Creates a new ConfigProviderChain with a default set of providers
 	 * specified by {defaultProviders}.
 	 */
-	constructor: function LeoConfiguration() {
-		Configuration.call(this);
-		//this.get(function () { });
-	},
+	constructor() {
+		super();
+	}
 
-	refreshSync: function () {
+	refreshSync() {
 		let config = require("leo-config");
 
 		let values = config.leosdk || config.leo_sdk || config["leo-sdk"] ||
@@ -381,25 +480,27 @@ export const LeoConfiguration = util.inherit(Configuration, {
 		}
 
 		this.expired = false;
-		Configuration.call(this, values);
+		this.update(values);
 		return this;
-	},
-});
+	}
+}
 
-export const ObjectConfiguration = util.inherit(Configuration, {
+export class ObjectConfiguration extends Configuration {
+	field: string;
+	root: any;
 
 	/**
 	 * Creates a new ConfigProviderChain with a default set of providers
 	 * specified by {defaultProviders}.
 	 */
-	constructor: function LeoConfiguration(root: any, field: string) {
-		Configuration.call(this);
+	constructor(root: any, field: string) {
+		super();
 		this.field = field;
 		this.root = root;
 		//this.get(function () { });
-	},
+	}
 
-	refreshSync: function refresh() {
+	refreshSync() {
 		if (this.root == null || this.field == null || this.field == "") {
 			throw util.error(
 				new Error(`Root and Field must be specified.`),
@@ -416,26 +517,31 @@ export const ObjectConfiguration = util.inherit(Configuration, {
 		}
 
 		this.expired = false;
-		Configuration.call(this, values);
+		this.update(values);
 		return this;
-	},
-});
+	}
+}
 
 
-
-export const AWSSecretsConfiguration = util.inherit(Configuration, {
+export class AWSSecretsConfiguration extends Configuration {
+	secretEnvKey: string;
+	cacheDuration: number;
+	static valueCache: any = {};
+	public static clearCache() {
+		AWSSecretsConfiguration.valueCache = {};
+	};
 
 	/**
 	 * Creates a new ConfigProviderChain with a default set of providers
 	 * specified by {defaultProviders}.
 	 */
-	constructor: function AWSSecretsConfiguration(secretEnvKey, cacheDuration) {
-		Configuration.call(this);
+	constructor(secretEnvKey: string, cacheDuration?: number) {
+		super();
 		this.secretEnvKey = secretEnvKey;
 		this.cacheDuration = cacheDuration || (1000 * 60 * 60);
-	},
+	}
 
-	refreshSync: function () {
+	refreshSync() {
 
 		if (!process || !process.env || !process.env[this.secretEnvKey]) {
 			throw util.error(
@@ -497,11 +603,7 @@ export const AWSSecretsConfiguration = util.inherit(Configuration, {
 		this.expired = false;
 
 
-		Configuration.call(this, values);
+		this.update(values);
 		return this;
-	},
-});
-AWSSecretsConfiguration.valueCache = {};
-AWSSecretsConfiguration.clearCache = function () {
-	AWSSecretsConfiguration.valueCache = {};
-};
+	}
+}
