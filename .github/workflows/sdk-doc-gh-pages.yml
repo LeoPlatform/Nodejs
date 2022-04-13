@@ -2,7 +2,7 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - feature/add-docs #TODO: set back to main once no longer on own branch
+      - master
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
