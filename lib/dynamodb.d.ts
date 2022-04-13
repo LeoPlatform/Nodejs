@@ -3,9 +3,21 @@ import { AWSError } from "aws-sdk";
 declare type Callback<E> = (err: E) => void;
 declare type DataCallback<E, T> = (err: E, data: T) => void;
 
+/**
+ * @todo unclear why is this empty
+ */
 interface GetOptions { }
+
+/**
+ * @todo unclear why is this empty
+ */
 interface PutOptions { }
 
+/**
+ * Helper functions to interact with Dynamo DB.
+ * 
+ * @todo document functions below
+ */
 export interface LeoDynamodb {
 	getSettingPromise: any;
 	setSettingPromise: any;
