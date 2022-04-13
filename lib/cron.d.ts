@@ -45,16 +45,30 @@ interface ReportCompleteOptions {
  * @todo review
  */
 interface GetOptions {
-    /** @todo unclear */
+    /** 
+     * @internal Don't use.
+     * The lambda settings value of your object and you can override them when you do a get.
+     */
 	overrides?: any;
 
-    /** @todo unclear  */
+    /** 
+     * @internal Don't use.
+     * 
+     * Whether to add the checkpoint results into the LeoSdk registry. So, the next time you go to checkpoint
+     * it uses the registry to get checkpoint information instead of having to back to the bot table.
+     * 
+     * @default true 
+     */
 	register?: boolean
 
-    /** @todo unclear */
+    /**
+     * @internal Don't use.
+     */
 	instances?: { [key: string]: InstanceData }
 
-    /** @todo unclear */
+    /**
+     * Which instance do I want if there is more than one instance of this bot for fanout.
+     */
 	instance?: string
 }
 
@@ -215,74 +229,81 @@ export interface LeoCron {
 	subscribe: (id: string, queue: string, data: BotData) => void;
 
     /**
-     * @todo unclear
+     * Tells the SDK that as soon as this bot ends, run it again.  Most of the time
+     * developers don't need to do this as the SDK will just do the right thing.
      */
 	runAgain: () => void;
 
     /**
-     * @todo unclear
+     * @internal Don't use.
      */
 	getLastResult: () => void;
 
     /**
-     * @todo unclear
+     * @internal Don't use.
+     * Sets an in-memory message in the registry.
      */
 	setMessage: (message: string) => void;
 
     /**
-     * @todo unclear
+     * Returns a system.
+     * 
+     * @todo docbug missing return type
      */
 	getAttachedSystemByAlias: (alias: string[]) => void;
 
     /**
-     * @todo unclear
+     * Get system by ID not by alias.
      */
 	getAttachedSystem: (id: string) => void;
 
     /**
-     * @todo unclear
+     * Get all details on a bot from the RStreams bus bot DynamoDB table.
+     * @todo docbug wrong types
      */
 	get: <T>(id: string, opts: GetOptions, callback: DataCallback<any, T>) => void;
 
     /**
-     * @todo unclear
-     * @todo question preg/opts missing types
+     * @internal Don't use.
+     * @todo docbug preg/opts missing types
      */
 	buildPayloads: (cron: CronData, prev, opts) => void;
 
     /**
-     * @todo unclear
-     * @todo question types missing?
+     * @internal Don't use.
+     * @todo docbug types missing?
      */
 	shouldRun: (oldImage, newImage, cache, callback) => void;
 
     /**
-     * @todo unclear
-     * @todo question types missing?
+     * @internal Don't use.
+     * @todo docbug types missing?
      */    
 	hasMoreToDo: (oldImage, newImage, key) => void;
 
     /**
-     * @todo unclear
-     * @todo question types missing?
+     * @internal Don't use.
+     * @todo docbug types missing?
      */
 	start: (event, opts, callback) => void;
 
     /**
-     * @todo unclear
-     * @todo question types missing?
+     * @internal Don't use.
+     * @todo docbug types missing?
      */
 	end: (status, opts, callback) => void;
 
     /**
-     * @todo unclear
-     * @todo question types missing?
+     * @internal Don't use.
+     * @todo docbug types missing?
      */
 	run: (event, handler, callback) => void;
 
     /**
-     * @todo unclear
-     * @todo question types missing?
+     * Used internally by the SDK to create a new bot.  This should only ever be used
+     * if creating a bot that does not go through cloud formation.
+     * 
+     * @todo docbug types missing?
      */
 	createBot: (id: string, bot, opts) => void;
 }

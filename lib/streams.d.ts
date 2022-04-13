@@ -33,6 +33,7 @@ declare type ProcessCallback<T> = (err?: any, result?: boolean | T, opts?: Proce
  * @param wrapper 
  * @param callback The function to call when done with the result, if any
  * @todo unclear I don't understand what wrapper is and how it would be used.
+ * @todo docbug Missing that this can be either callback or promise based in the type definition
  */
 declare type ProcessFunction<T, U> = (payload: T, wrapper: ReadEvent<T>, callback: ProcessCallback<U>) => void;
 
