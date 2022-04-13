@@ -1,14 +1,23 @@
 {
-    "entryPoints": ["../index.d.ts", "../lib/cron.d.ts", "../lib/streams.d.ts", "../lib/types.d.ts", "../lib/dynamodb.d.ts", "../lib/rstreams-config-provider-chain.ts"],
+    "entryPoints": [
+        "../index.d.ts",
+        "../lib/cron.d.ts",
+        "../lib/streams.d.ts",
+        "../lib/types.d.ts",
+        "../lib/dynamodb.d.ts",
+        "../lib/rstreams-config-provider-chain.ts",
+        "../lib/rstreams-configuration.ts"
+    ],
     "out": "generated",
     "gitRevision": "feature/add-docs",
     "tsconfig": "../tsconfig.json",
-    "excludeTags": ["todo"],
+    "excludeTags": [
+        "todo"
+    ],
     "replace-in-comments-config": [
         {
             "pattern": "rstreams-site-url",
             "replace": "https://rstreams.org"
         }
     ]
-    
 }

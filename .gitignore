@@ -29,3 +29,4 @@ package-lock.json
 *.js.map
 *.utest.js
 docs/generated/
+/docs/generate-docs.js
