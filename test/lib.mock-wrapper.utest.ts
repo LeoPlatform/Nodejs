@@ -6,6 +6,7 @@ import fs, { existsSync } from "fs";
 import { promisify } from "util";
 import path from "path";
 import Module from "module";
+import stream from "stream";
 
 describe('lib/mock-wrapper.ts', function () {
 	let sandbox;
@@ -157,7 +158,6 @@ describe('lib/mock-wrapper.ts', function () {
 
 
 	describe("toLeo", () => {
-
 		it('mock from write', async function () {
 			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
 
@@ -186,8 +186,78 @@ describe('lib/mock-wrapper.ts', function () {
 			]]);
 			assert.isNotNull("RSTREAMS_MOCK_DATA_Q_MockQueue")
 		});
+	});
+
+	describe("fromS3", () => {
+		it("reads file that doesn't exist", async function () {
+			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
+
+			sandbox.stub(fs, "existsSync").returns(false);
+			setMockDataLocation(".mock-data");
+			wrapper(ls);
+			assert(ls["mocked"], "should be mocked");
 
 
+			try {
+				ls.fromS3({ key: "KEY", bucket: "BUCKET" });
+				assert.fail("Should have thrown and error");
+			} catch (err) {
+				assert.deepEqual(err.code, "NoSuchKey");
+			}
+		});
+
+		it("reads file that exist", async function () {
+			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
+
+			sandbox.stub(fs, "existsSync").returns(true);
+			sandbox.stub(fs, "createReadStream").callsFake(() => {
+				return ls.eventstream.readArray([{
+					a: 1,
+					b: "2"
+				}]);
+			});
+
+			setMockDataLocation(".mock-data");
+			wrapper(ls);
+			assert(ls["mocked"], "should be mocked");
+
+			// Override the creating of eids in the wrapper to give a constant
+
+			let data = [];
+			await ls.pipeAsync(ls.fromS3({ key: "KEY", bucket: "BUCKET" }),
+				ls.through((d, done) => {
+					data.push(d)
+					done();
+				}),
+				ls.devnull()
+			);
+
+			assert.deepEqual(data, [{
+				a: 1,
+				b: "2"
+			}]);
+		});
+	});
+
+	describe("toS3", () => {
+
+
+		it("writes to a file", async function () {
+			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
+
+			sandbox.stub(fs, "existsSync").returns(true);
+			sandbox.stub(fs, "createWriteStream").callsFake(() => {
+				return new stream.Writable();
+			});
+
+			setMockDataLocation(".mock-data");
+			wrapper(ls);
+			assert(ls["mocked"], "should be mocked");
+
+			let s3Stream = ls.toS3("BUCKET", "KEY")
+
+			assert(s3Stream instanceof stream.Writable, "Sholuld be a Writable stream");
+		});
 	});
 });
 
