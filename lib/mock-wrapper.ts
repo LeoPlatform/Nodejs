@@ -14,7 +14,7 @@ const requireFn = module.require;
 
 declare type LeoStream = typeof StreamUtil;
 export default function (leoStream: LeoStream) {
-	if ((leoStream as any).mocked) {
+	if (process.env.RSTREAMS_MOCK_DATA == null || (leoStream as any).mocked) {
 		return;
 	}
 	let registry = process as any;
