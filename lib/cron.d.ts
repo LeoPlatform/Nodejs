@@ -5,7 +5,7 @@ import { Moment } from "moment";
  * Defines a callback function that takes an error object.
  * @typeParam E The Error object.
  */
-declare type Callback<E> = (err: E) => void;
+export declare type Callback<E> = (err: E) => void;
 
 /**
  * Defines a callback function That takes an error on failure and data on success.
@@ -117,7 +117,7 @@ interface Checkpoint {
  * A type used to represent a duration in milliseconds.
  * @todo question Why did we do it this way?
  */
-declare type Milliseconds = number;
+export declare type Milliseconds = number;
 
 /**
  * This is the set of operations that act on the RStreams bus instance's bot DynamoDB table that tracks
@@ -278,7 +278,7 @@ export interface LeoCron {
 	/**
 	 * @internal Don't use.
 	 * @todo docbug types missing?
-	 */	
+	 */
 	hasMoreToDo: (oldImage, newImage, key) => void;
 
 	/**

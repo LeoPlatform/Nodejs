@@ -30,7 +30,7 @@ export default function (leoStream: LeoStream) {
 	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions): ReadableStream<ReadEvent<T>> => {
 		queue = refUtil.ref(queue).id;
 		// Look for events that were written to this queue in this process
-		let runtimeQueue = process.env[`RSTREAMS_MOCK_DATA_${queue}`] || "";
+		let runtimeQueue = process.env[`RSTREAMS_MOCK_DATA_Q_${queue}`] || "";
 
 		// Allow for a queue to to the actual data
 		if (runtimeQueue === "passthrough") {
@@ -62,7 +62,7 @@ export default function (leoStream: LeoStream) {
 		let mockStream = leoStream.through<Event<T>, unknown>((writeData: Event<T>, callback) => {
 			let queue = refUtil.ref(writeData.event).id;
 			// Mark queue to have in memory data from this batch
-			process.env[`RSTREAMS_MOCK_DATA_${queue}`] = settings.batchId;
+			process.env[`RSTREAMS_MOCK_DATA_Q_${queue}`] = settings.batchId;
 			registry.rstreamsMock.queues.add(queue);
 
 			// Add an eid 
