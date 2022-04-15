@@ -10,6 +10,7 @@ const { default: Configuration } = require("./lib/rstreams-configuration");
 const { promisify } = require("util");
 const execSync = require("child_process").execSync;
 const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").ConfigProviderChain;
+const mockWrapper = require("./lib/mock-wrapper");
 
 function SDK(id, data) {
 	if (typeof id !== "string" && id != null) {
@@ -82,6 +83,9 @@ function SDK(id, data) {
 	}
 
 	let leoStream = ls(configuration);
+	if (process.env.RSTREAMS_MOCK_DATA) {
+		mockWrapper.default(leoStream);
+	}
 	return Object.assign(function(id, data) {
 		return new SDK(id, data)
 	}, {
