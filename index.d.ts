@@ -87,7 +87,8 @@ export interface Configuration {
  * more advanced capabilities. 
  */
 export declare class RStreamsSdk {
-	constructor(config?: ConfigurationResources | typeof ConfigurationProvider);	/** 
+	constructor(config?: ConfigurationResources | typeof ConfigurationProvider);
+    /** 
 	 * Config used to communicate with AWS resources that comprise the RStreams Bus used by the SDK.
 	 * It is included here for information purposes and so you can access the AWS resources that 
 	 * the SDK discovered and is using.
@@ -102,11 +103,17 @@ export declare class RStreamsSdk {
 	 */
 	streams: typeof StreamUtil;
 
+    /** @method */
 	load: typeof StreamUtil.load;
+    /** @method */
 	offload: typeof StreamUtil.offload;
+    /** @method */
 	enrich: typeof StreamUtil.enrich;
+    /** @method */
 	read: typeof StreamUtil.fromLeo;
+    /** @method */
 	write: typeof StreamUtil.toLeo;
+    /** @method */
 	checkpoint: typeof StreamUtil.toCheckpoint;
 
 	/**
@@ -125,6 +132,7 @@ export declare class RStreamsSdk {
 	 * @typeParam T The type of the event read from the source queue
 	 * @typeParam U The type of the event that will be written to the destination queue
 	 * @param opts The details of how to enrich and the function that does the work to enrich
+     * @method
 	 * @see [[`RStreamsSdk.enrich`]]
 	 * @todo example
 	 * @todo unclear The opts.transform function doesn't appear to be promise based?
@@ -141,6 +149,7 @@ export declare class RStreamsSdk {
 	 * 
 	 * @param opts What queue to read from, the transform function and other options.
 	 * @see [[`RStreamsSdk.offload`]]
+     * @method
 	 * @todo example
 	 */
 	offloadEvents: <T>(config: OffloadOptions<T>) => void;
@@ -155,6 +164,7 @@ export declare class RStreamsSdk {
 	 * @param payload The data to write to the queue
 	 * @param callback The function to call when done
 	 * @see [[`RStreamsSdk.putEvents`]] An async/await friendly version of this function.
+     * @method
 	 * @todo inconsistent bot_id
 	 * @todo question offload and enrich are just pass throughs to StreamUtil.offload/enrich. Why isn't this one also?  Why is it actually defined here?
 	 * @todo example
@@ -169,6 +179,7 @@ export declare class RStreamsSdk {
 	 * @param bot_id The name of the bot to write the event as
 	 * @param outQueue The name of the queue to write to
 	 * @param payload The payload of the event to write
+     * @method
 	 * @todo inconsistent bot_id
 	 * @todo example
 	 */
@@ -189,6 +200,7 @@ export declare class RStreamsSdk {
 
 	/**
 	 * @deprecated This is a legacy feature that is no longer used that remains for backward compatibility.
+     * @method
 	 */
 	destroy: (callback: (err: any) => void) => void;
 }
