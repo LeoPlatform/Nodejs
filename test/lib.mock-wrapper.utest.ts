@@ -1,11 +1,9 @@
 import sinon from "sinon";
-import chai, { expect, assert } from "chai";
+import { assert } from "chai";
 import wrapper from "../lib/mock-wrapper";
 import utilFn from "../lib/stream/leo-stream";
-import fs, { existsSync } from "fs";
+import fs from "fs";
 import { promisify } from "util";
-import path from "path";
-import Module from "module";
 import stream from "stream";
 
 describe('lib/mock-wrapper.ts', function () {
@@ -42,20 +40,6 @@ describe('lib/mock-wrapper.ts', function () {
 
 		it('mock from jsonl', async function () {
 			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
-
-			// sandbox.stub(module, "require").callsFake(() => [{ a: 1, b: "2" }]);
-			// sandbox.stub(fs, "existsSync")
-			// 	.onFirstCall().returns(false)
-			// 	.onSecondCall().callsFake((f) => {
-			// 		// require._pathCache[f]
-			// 		// require.cache[f] = {
-			// 		// 	isPreloading: true, require, id: f,
-			// 		// 	exports: [{ a: 1, b: "2" }],
-			// 		// 	filename: f, loaded: true, parent: module, children: [],
-			// 		// 	path: path.dirname(f), paths: []
-			// 		// };
-			// 		return true;
-			// 	});
 
 			sandbox.stub(fs, "existsSync").returns(true);
 			sandbox.stub(fs, "createReadStream").callsFake(() => {
@@ -153,21 +137,83 @@ describe('lib/mock-wrapper.ts', function () {
 			(ls.fromLeo("Mock", "MockQueue") as any).checkpoint(() => (invoked = true));
 			assert(invoked, "Should have called callback");
 		});
+
+		it('mock passthrough queue', async function () {
+			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
+
+			process.env["RSTREAMS_MOCK_DATA_Q_MockQueue"] = "passthrough";
+
+			sandbox.stub(fs, "existsSync").returns(true);
+			sandbox.stub(ls, "fromLeo").callsFake(() => {
+				return ls.eventstream.readArray([{
+					a: 1,
+					b: "2"
+				}]);
+			});
+			setMockDataLocation(".mock-data");
+			wrapper(ls);
+			assert(ls["mocked"], "should be mocked");
+			let data = [];
+			await
+				ls.pipeAsync(
+					ls.fromLeo("Mock", "MockQueue"),
+					ls.through((d, done) => {
+						data.push(d);
+						done();
+					}),
+					ls.devnull()
+				);
+			assert.deepEqual(data, [{
+				a: 1,
+				b: "2"
+			}]);
+		});
 	});
-
-
 
 	describe("toLeo", () => {
 		it('mock from write', async function () {
 			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
 
 			let data = [];
-			let error;
 			sandbox.stub(fs, "existsSync").returns(true);
 			sandbox.stub(fs, "createWriteStream").callsFake(() => {
-				return ls.eventstream.writeArray((err, d) => {
-					error = err;
+				return ls.write((d, done) => {
 					data.push(d);
+					done();
+				});
+			});
+			setMockDataLocation(".mock-data");
+			wrapper(ls);
+			assert(ls["mocked"], "should be mocked");
+
+			let count = 0;
+			// Override the creating of eids in the wrapper to give a constant
+			(ls as any).eventIdFromTimestamp = () => `z/2022/04/15/23/08/1650064081366-000000${count++}`
+			await
+				ls.pipeAsync(
+					ls.eventstream.readArray([
+						{ event: "MockQueue", id: "MockParentBot", payload: { b: 1, c: true } },
+						{ event: "MockQueue", id: "MockParentBot", payload: { b: 2, c: false } }
+					]),
+					ls.toLeo("MOCK")
+				);
+
+			assert.deepEqual(data, [
+				"{\"event\":\"MockQueue\",\"id\":\"MockParentBot\",\"payload\":{\"b\":1,\"c\":true},\"eid\":\"z/2022/04/15/23/08/1650064081366-0000000\"}\n",
+				"{\"event\":\"MockQueue\",\"id\":\"MockParentBot\",\"payload\":{\"b\":2,\"c\":false},\"eid\":\"z/2022/04/15/23/08/1650064081366-0000001\"}\n"
+			]);
+			assert.isNotNull(process.env["RSTREAMS_MOCK_DATA_Q_MockQueue"]);
+		});
+
+		it('mock from write no data', async function () {
+			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
+
+			let data = [];
+			sandbox.stub(fs, "existsSync").returns(true);
+			sandbox.stub(fs, "createWriteStream").callsFake(() => {
+				return ls.write((d, done) => {
+					data.push(d);
+					done();
 				});
 			});
 			setMockDataLocation(".mock-data");
@@ -178,13 +224,12 @@ describe('lib/mock-wrapper.ts', function () {
 			(ls as any).eventIdFromTimestamp = () => "z/2022/04/15/23/08/1650064081366-0000000"
 			await
 				ls.pipeAsync(
-					ls.eventstream.readArray([{ event: "MockQueue", id: "MockParentBot", payload: { b: 1, c: true } }]),
+					ls.eventstream.readArray([]),
 					ls.toLeo("MOCK")
 				);
-			assert.deepEqual(data, [[
-				"{\"event\":\"MockQueue\",\"id\":\"MockParentBot\",\"payload\":{\"b\":1,\"c\":true},\"eid\":\"z/2022/04/15/23/08/1650064081366-0000000\"}\n"
-			]]);
-			assert.isNotNull("RSTREAMS_MOCK_DATA_Q_MockQueue")
+
+			assert.deepEqual(data, []);
+			assert.isUndefined(process.env["RSTREAMS_MOCK_DATA_Q_MockQueue"]);
 		});
 	});
 
@@ -240,8 +285,6 @@ describe('lib/mock-wrapper.ts', function () {
 	});
 
 	describe("toS3", () => {
-
-
 		it("writes to a file", async function () {
 			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
 
@@ -257,6 +300,25 @@ describe('lib/mock-wrapper.ts', function () {
 			let s3Stream = ls.toS3("BUCKET", "KEY")
 
 			assert(s3Stream instanceof stream.Writable, "Sholuld be a Writable stream");
+		});
+	});
+
+	describe("callbacks", () => {
+		it("calls callback", async function () {
+			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
+
+			setMockDataLocation(".mock-data");
+			wrapper(ls);
+			assert(ls["mocked"], "should be mocked");
+
+			let cron = {};
+			let runid = "runid-1";
+
+			// verifying they don't throw errors
+			assert.isUndefined(await promisify(ls.cron.checkLock)(cron, runid, 100));
+			assert.isUndefined(await promisify(ls.cron.reportComplete)(cron, runid, "complete", "", {}));
+			assert.isUndefined(await promisify(ls.cron.createLock)("cron", runid, 100));
+			assert.isUndefined(await promisify(ls.cron.removeLock)("cron", runid));
 		});
 	});
 });

@@ -93,6 +93,7 @@ export default function (leoStream: LeoStream) {
 					done(err);
 				}
 			}
+
 			Object.values(fileStreams).forEach((s: stream.Writable) => {
 				s.end(cb);
 			});
