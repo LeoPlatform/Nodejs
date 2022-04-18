@@ -17,10 +17,10 @@ function SDK(id, data) {
 		data = id;
 		id = data.id || "default_bot";
 	}
+	let dataOrig = data;
 
 	if (data == null || data === false || data instanceof Configuration) {
 		let chain = data || new ConfigProviderChain();
-		let dataOrig = data;
 		try {
 			data = chain.resolveSync();
 		} catch (err) {
@@ -86,9 +86,12 @@ function SDK(id, data) {
 	if (process.env.RSTREAMS_MOCK_DATA) {
 		mockWrapper.default(leoStream);
 	}
-	return Object.assign(function(id, data) {
+
+	// Only make this a function if it is the default loader
+	// Otherwise use an {} as the base
+	return Object.assign(dataOrig === false ? function(id, data) {
 		return new SDK(id, data)
-	}, {
+	} : {}, {
 		RStreamsSdk: SDK,
 		configuration: configuration,
 		destroy: (callback) => {

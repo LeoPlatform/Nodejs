@@ -58,7 +58,7 @@ export interface WritableStream<T> extends stream.Writable {
 	 * @param chunk The object to push into the stream
 	 * @param encoding Not needed due to object mode
 	 * @param callback Will call callback if there's an error
-	 */	
+	 */
 	_write(chunk: T, encoding: BufferEncoding, callback?: ErrorCallback): void;
 
 	/**
@@ -252,7 +252,7 @@ export interface Event<T> {
 	 * The millisecond (time since epoch) of when this event was created by the developer.
 	 * @default now
 	 */
-	timestamp: number;
+	timestamp?: number;
 
 	/** 
 	 * The timestamp of the first event that made it to the bus that this event eventually derived from, however far back
@@ -260,7 +260,7 @@ export interface Event<T> {
 	 * 
 	 * @default now
 	 */
-	event_source_timestamp: number;
+	event_source_timestamp?: number;
 
 	/** The RStreams queue-specific data that this event exists to wrap */
 	payload?: T;
@@ -381,13 +381,8 @@ interface InternalCorrelationId {
  * @todo question how do you define stuff to get passed into your bot invocation
  * @todo example
  */
-export type BotInvocationEvent2<T extends any = {}> = T & {
-	/** The ID of the bot this code is running as */
-	botId: string,
+export type BotInvocationEventTyped<T extends any = {}> = T & BotInvocationEvent
 
-	/** Details about the bot including checkpoints and so on */
-	__cron: Cron,
-}
 /**
  * @todo unclear why is this here?
  */
@@ -472,9 +467,9 @@ export interface Checkpoint {
 }
 
 export interface RStreamsContext<R = any> extends Context {
-    //settings: S;
-    resources?: R;
-    botId: string;
-    sdk: RStreamsSdk;
-    getCheckpoint: (queue: string, defaultIfNull: string) => Promise<string>;
+	//settings: S;
+	resources?: R;
+	botId: string;
+	sdk: RStreamsSdk;
+	getCheckpoint: (queue: string, defaultIfNull: string) => Promise<string>;
 }

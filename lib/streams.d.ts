@@ -5,6 +5,7 @@ import through2 from 'through2';
 import pump from "pump";
 import { ParserOptionsArgs } from 'fast-csv';
 import { ErrorCallback, DataCallback, Event, FlushCallback, ReadEvent, TransformFunction, ReadableStream, WritableStream, TransformStream } from "./types";
+import * as es from "event-stream";
 
 /**
  * This is a standard callback used to tell the SDK that you are done processing something,
@@ -375,6 +376,9 @@ export function eventIdFromTimestamp(timestamp: moment.MomentInput, granularity?
  * @returns The timestamp as a time since the epoch
  */
 export function eventIdToTimestamp(eid: string): number;
+
+/** For convenience, a re-export of the popular [event-stream library](https://www.npmjs.com/package/event-stream). */
+export const eventstream: typeof es;
 
 /**
  * 
