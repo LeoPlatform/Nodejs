@@ -7995,141 +7995,6 @@
 							}
 						},
 						{
-							"id": 104,
-							"name": "createSource",
-							"kind": 1024,
-							"kindString": "Property",
-							"flags": {},
-							"sources": [
-								{
-									"fileName": "index.d.ts",
-									"line": 220,
-									"character": 1
-								}
-							],
-							"type": {
-								"type": "reflection",
-								"declaration": {
-									"id": 105,
-									"name": "__type",
-									"kind": 65536,
-									"kindString": "Type literal",
-									"flags": {},
-									"signatures": [
-										{
-											"id": 106,
-											"name": "__type",
-											"kind": 4096,
-											"kindString": "Call signature",
-											"flags": {},
-											"comment": {
-												"shortText": "A stream generated from a function that returns and array of data of type T",
-												"text": "Allows for custom state to be kept and passed to the function generating new data\n"
-											},
-											"typeParameter": [
-												{
-													"id": 107,
-													"name": "T",
-													"kind": 131072,
-													"kindString": "Type parameter",
-													"flags": {},
-													"comment": {
-														"shortText": "The data emitted from the stream"
-													}
-												},
-												{
-													"id": 108,
-													"name": "R",
-													"kind": 131072,
-													"kindString": "Type parameter",
-													"flags": {},
-													"comment": {
-														"shortText": "The current state of the source stream"
-													},
-													"default": {
-														"type": "intrinsic",
-														"name": "any"
-													}
-												}
-											],
-											"parameters": [
-												{
-													"id": 109,
-													"name": "fn",
-													"kind": 32768,
-													"kindString": "Parameter",
-													"flags": {},
-													"comment": {
-														"shortText": "Function that produces records to flow down stream"
-													},
-													"type": {
-														"type": "reference",
-														"id": 112,
-														"typeArguments": [
-															{
-																"type": "reference",
-																"id": 107,
-																"name": "T"
-															},
-															{
-																"type": "reference",
-																"id": 108,
-																"name": "R"
-															}
-														],
-														"name": "CreateSourceFunction"
-													}
-												},
-												{
-													"id": 110,
-													"name": "opt",
-													"kind": 32768,
-													"kindString": "Parameter",
-													"flags": {
-														"isOptional": true
-													},
-													"type": {
-														"type": "reference",
-														"id": 118,
-														"name": "CreateSourceOptions"
-													}
-												},
-												{
-													"id": 111,
-													"name": "state",
-													"kind": 32768,
-													"kindString": "Parameter",
-													"flags": {
-														"isOptional": true
-													},
-													"comment": {
-														"shortText": "The current custom state of the source stream\n"
-													},
-													"type": {
-														"type": "reference",
-														"id": 108,
-														"name": "R"
-													}
-												}
-											],
-											"type": {
-												"type": "reference",
-												"id": 695,
-												"typeArguments": [
-													{
-														"type": "reference",
-														"id": 107,
-														"name": "T"
-													}
-												],
-												"name": "ReadableStream"
-											}
-										}
-									]
-								}
-							}
-						},
-						{
 							"id": 27,
 							"name": "streams",
 							"kind": 1024,
@@ -8220,6 +8085,142 @@
 													}
 												],
 												"name": "WritableStream"
+											}
+										}
+									]
+								}
+							}
+						},
+						{
+							"id": 104,
+							"name": "createSource",
+							"kind": 2048,
+							"kindString": "Method",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "index.d.ts",
+									"line": 222,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "reflection",
+								"declaration": {
+									"id": 105,
+									"name": "__type",
+									"kind": 65536,
+									"kindString": "Type literal",
+									"flags": {},
+									"signatures": [
+										{
+											"id": 106,
+											"name": "__type",
+											"kind": 2048,
+											"kindString": "Method",
+											"flags": {},
+											"comment": {
+												"shortText": "A stream generated from a function that returns and array of data of type T",
+												"text": "Allows for custom state to be kept and passed to the function generating new data\n",
+												"returns": "A Stream of data type T"
+											},
+											"typeParameter": [
+												{
+													"id": 107,
+													"name": "T",
+													"kind": 131072,
+													"kindString": "Type parameter",
+													"flags": {},
+													"comment": {
+														"shortText": "The data emitted from the stream"
+													}
+												},
+												{
+													"id": 108,
+													"name": "R",
+													"kind": 131072,
+													"kindString": "Type parameter",
+													"flags": {},
+													"comment": {
+														"shortText": "The current state of the source stream"
+													},
+													"default": {
+														"type": "intrinsic",
+														"name": "any"
+													}
+												}
+											],
+											"parameters": [
+												{
+													"id": 109,
+													"name": "fn",
+													"kind": 32768,
+													"kindString": "Parameter",
+													"flags": {},
+													"comment": {
+														"shortText": "Function that produces records to flow down stream"
+													},
+													"type": {
+														"type": "reference",
+														"id": 112,
+														"typeArguments": [
+															{
+																"type": "reference",
+																"id": 107,
+																"name": "T"
+															},
+															{
+																"type": "reference",
+																"id": 108,
+																"name": "R"
+															}
+														],
+														"name": "CreateSourceFunction"
+													}
+												},
+												{
+													"id": 110,
+													"name": "opt",
+													"kind": 32768,
+													"kindString": "Parameter",
+													"flags": {
+														"isOptional": true
+													},
+													"type": {
+														"type": "reference",
+														"id": 118,
+														"name": "CreateSourceOptions"
+													}
+												},
+												{
+													"id": 111,
+													"name": "state",
+													"kind": 32768,
+													"kindString": "Parameter",
+													"flags": {
+														"isOptional": true
+													},
+													"comment": {
+														"shortText": "The current custom state of the source stream"
+													},
+													"type": {
+														"type": "reference",
+														"id": 108,
+														"name": "R"
+													}
+												}
+											],
+											"type": {
+												"type": "reference",
+												"id": 695,
+												"typeArguments": [
+													{
+														"type": "reference",
+														"id": 107,
+														"name": "T"
+													}
+												],
+												"name": "ReadableStream"
 											}
 										}
 									]
@@ -9306,7 +9307,6 @@
 								92,
 								91,
 								26,
-								104,
 								27
 							]
 						},
@@ -9315,6 +9315,7 @@
 							"kind": 2048,
 							"children": [
 								61,
+								104,
 								97,
 								41,
 								65,
@@ -10214,7 +10215,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 236,
+									"line": 238,
 									"character": 1
 								}
 							],
@@ -10237,7 +10238,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 233,
+									"line": 235,
 									"character": 1
 								}
 							],
@@ -10260,7 +10261,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 231,
+							"line": 233,
 							"character": 17
 						}
 					]
@@ -12087,7 +12088,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 226,
+							"line": 228,
 							"character": 20
 						}
 					],
@@ -12118,7 +12119,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 226,
+									"line": 228,
 									"character": 49
 								}
 							],
@@ -12241,7 +12242,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 244,
+							"line": 246,
 							"character": 17
 						}
 					],
