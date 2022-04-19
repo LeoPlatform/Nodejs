@@ -81,14 +81,14 @@ export default function (leoStream: LeoStream) {
 			}
 		}, (done) => {
 			let count = Object.keys(fileStreams).length;
-			if (count <= 0) {
+			if (count === 0) {
 				done();
 				return;
 			}
 			let called = false;
 			let cb = (err) => {
 				count--;
-				if (!called && (count <= 0 || err)) {
+				if (!called && (count === 0 || err)) {
 					called = true;
 					done(err);
 				}
