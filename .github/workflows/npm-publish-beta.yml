@@ -9,18 +9,6 @@ on:
     branches: [ beta ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 12
-      - run: npm ci
-      - run: npm i aws-sdk@^2.581.0
-      - run: npm run compile --if-present
-      - run: npm run coverage-all
-
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
@@ -30,10 +18,14 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      - run: npm version prerelease --preid=beta-test
+      - run: npm ci
+      - run: npm i aws-sdk@^2.581.0
+      - run: npm run compile --if-present
+      - run: npm run coverage-all
+      #- run: npm version prerelease --preid=beta-test
       - run: git push
       - run: echo ${{github.ref}}
       - run: echo beta release
-      - run: npm publish --tag beta-test
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      #- run: npm publish --tag beta-test
+      #  env:
+      #    NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
