@@ -216,6 +216,8 @@ export declare class RStreamsSdk {
 	 * @param fn Function that produces records to flow down stream
 	 * @param opts Options to limit how may records to produce or how long to produce them
 	 * @param state The current custom state of the source stream
+	 * @returns A Stream of data type T
+	 * @method
 	 */
 	createSource: <T, R = any>(fn: CreateSourceFunction<T, R>, opt?: CreateSourceOptions, state?: R) => ReadableStream<T>;
 }
