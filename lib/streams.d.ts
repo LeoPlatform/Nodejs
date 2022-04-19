@@ -5,6 +5,7 @@ import through2 from 'through2';
 import pump from "pump";
 import { ParserOptionsArgs } from 'fast-csv';
 import { ErrorCallback, DataCallback, Event, FlushCallback, ReadEvent, TransformFunction, ReadableStream, WritableStream, TransformStream } from "./types";
+import * as es from "event-stream";
 
 /**
  * This is a standard callback used to tell the SDK that you are done processing something,
@@ -342,12 +343,20 @@ export function pipeAsync<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1>, t1: 
  * @todo incomplete
  * @returns The single pipeline step that wraps up all the steps passed in into a single step
  */
-export function pipeline<T1, D extends WritableStream<T1>>(write: WritableStream<T1>, drain: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
-export function pipeline<T1, T2, D extends WritableStream<T2>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
-export function pipeline<T1, T2, T3, D extends WritableStream<T3>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
-export function pipeline<T1, T2, T3, T4, D extends WritableStream<T4>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
-export function pipeline<T1, T2, T3, T4, T5, D extends WritableStream<T5>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
-export function pipeline<T1, T2, T3, T4, T5, T6, D extends WritableStream<T6>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+//export function pipeline<T1, D extends WritableStream<T1>>(write: WritableStream<T1>, drain: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, D extends WritableStream<T2>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, D extends WritableStream<T3>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, D extends WritableStream<T4>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, T5, D extends WritableStream<T5>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, T5, T6, D extends WritableStream<T6>>(write: WritableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+
+
+export function pipeline<T1, T2, D extends WritableStream<T2>>(write: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, D extends WritableStream<T3>>(write: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, D extends WritableStream<T4>>(write: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, T5, D extends WritableStream<T5>>(write: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, T5, T6, D extends WritableStream<T6>>(write: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+
 
 
 /**
@@ -358,7 +367,7 @@ export function pipeline<T1, T2, T3, T4, T5, T6, D extends WritableStream<T6>>(w
  * @returns The generated event ID
  * @todo question I need examples of granularity values to know what to put here
  */
-export function eventIdFromTimestamp(timestamp: moment.MomentInput, granularity?: string): string;
+export function eventIdFromTimestamp(timestamp: moment.MomentInput, granularity?: string, record?: number): string;
 
 /**
  * Helper function to turn a an RStreams event ID into a timestamp.
@@ -367,6 +376,9 @@ export function eventIdFromTimestamp(timestamp: moment.MomentInput, granularity?
  * @returns The timestamp as a time since the epoch
  */
 export function eventIdToTimestamp(eid: string): number;
+
+/** For convenience, a re-export of the popular [event-stream library](https://www.npmjs.com/package/event-stream). */
+export const eventstream: typeof es;
 
 /**
  * 
@@ -704,14 +716,14 @@ export interface ToCsvOptions {
 export interface BatchOptions {
 	/** The number of events to micro-batch before sending them to the next step in the pipeline */
 	count?: Number;
-	
+
 	/**
 	 * The number of bytes of events to micro-batch up before sending them to the next step in the pipeline 
 	 * 
 	 * @see [[`BatchOptions.field`]]
 	 */
 	bytes?: Number;
-	
+
 	/** 
 	 * The amount of time to wait, micro-batching events up before sending them to the next step in the pipeline 
 	 * 

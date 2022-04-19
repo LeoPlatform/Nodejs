@@ -340,7 +340,7 @@ export interface ToCheckpointOptions {
 	 * 
 	 * @default 10s
 	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
-	 */ 
+	 */
 	time: moment.DurationInputArg1;
 
 	/**
@@ -567,9 +567,15 @@ export declare namespace StreamUtil {
 	/** For convenience, a re-export of the popular [event-stream library](https://www.npmjs.com/package/event-stream). */
 	const eventstream: typeof es;
 
+	/** A library allowing one to manually create, update, checkpoint or retrieve information on a bot. */
+	const cron: LeoCron;
+
+	/** Helpful methods for interacting with RStreams' DynamoDB tables. */
+	const dynamodb: LeoDynamodb;
+
 	/**
 	 * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
- 	 * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+	   * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
 	 *  
 	 * The type definitions make this look daunting.  It's not.  It's merely a set of pipeline steps in a series where
 	 * the first step in the pipeline is the source that produces content, perhaps by reading it from a queue of the bus,
@@ -729,7 +735,7 @@ export declare namespace StreamUtil {
 	 * @todo review
 	 * @todo example
 	 */
-	function toCheckpoint(config?: ToCheckpointOptions): TransformStream<unknown, unknown>;
+	function toCheckpoint(config?: ToCheckpointOptions): WritableStream<unknown>;
 
 	/**
 	 * Create a pipeline step that reads from the RStreams bus instance queue `inQueue` doing so
@@ -895,32 +901,32 @@ export declare namespace StreamUtil {
 	 */
 	const counter: typeof Streams.counter;
 
-   	/**
-	 * This creates a pipeline step that allows events to move through the step.  This is only used in special
-	 * cases and most will not have occasion to use this.
-	 * 
-	 * I need to preread a database to start generating data.  But I need to give you something you can pipe to.  So, I give you
-	 * a passthrough.  It's used if you are the source of you want to put a sink in the middle of a pipe.  So, writing to an S3 file
-	 * is a sink step but we do it in the middle of the stream because we generate many s3 files.  We pipe it to S3 and then we pipe the
-	 * results of that into a pass through.
-	 * 
-	 * @param opts The options for transforming.
-	 * @returns The pipeline step that is ready to be used in a pipeline
-	 * 
-	 * @todo unclear
-	 * @todo review
-	 */
+	/**
+* This creates a pipeline step that allows events to move through the step.  This is only used in special
+* cases and most will not have occasion to use this.
+* 
+* I need to preread a database to start generating data.  But I need to give you something you can pipe to.  So, I give you
+* a passthrough.  It's used if you are the source of you want to put a sink in the middle of a pipe.  So, writing to an S3 file
+* is a sink step but we do it in the middle of the stream because we generate many s3 files.  We pipe it to S3 and then we pipe the
+* results of that into a pass through.
+* 
+* @param opts The options for transforming.
+* @returns The pipeline step that is ready to be used in a pipeline
+* 
+* @todo unclear
+* @todo review
+*/
 	function passThrough(opts?: stream.TransformOptions): stream.Transform;
 
-   	/**
-	 * This is very advanced functionality that likely won't be used very often. It takes a list of pipeline steps
-	 * and turns them into a single Transform stream step.  If you have to ask why you'd want to do this, you probably
-	 * don't need to know to do this.
-	 * 
-	 * @todo example
-	 * @todo question what are all the functions that create pipeline steps
-	 * @todo incomplete need to do a lot more here to describe all the pipeline steps and how errors work and so forth.  Probably should link out to the rstreams.org site.
-	 */
+	/**
+* This is very advanced functionality that likely won't be used very often. It takes a list of pipeline steps
+* and turns them into a single Transform stream step.  If you have to ask why you'd want to do this, you probably
+* don't need to know to do this.
+* 
+* @todo example
+* @todo question what are all the functions that create pipeline steps
+* @todo incomplete need to do a lot more here to describe all the pipeline steps and how errors work and so forth.  Probably should link out to the rstreams.org site.
+*/
 	const pipeline: typeof Streams.pipeline;
 
 	/**

@@ -24,7 +24,8 @@
 		"lib/compile.js",
 		"lib/kms.js",
 		"lib/template.js",
-		"wrappers/test.js"
+		"wrappers/test.js",
+		"docs/*"
 	],
 	"reporter": [
 		"html",
