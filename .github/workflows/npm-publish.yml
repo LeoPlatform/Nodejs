@@ -6,7 +6,6 @@ name: NPM Publish Prod Package
 on:
   release:
     types: [ created ]
-    branches: [ master ]
 
 jobs:
   publish-npm:
@@ -21,21 +20,28 @@ jobs:
       - run: npm i aws-sdk@^2.581.0
       - run: npm run compile --if-present
       - run: npm run coverage-all
-      - name: Extract branch name
+
+      - name: Extract Version from Git Tag
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-      - run: echo ${{github.ref}}
-      - run: echo ${{steps.extract_branch.outputs.branch}}
-      - run: echo prod release
-      - if: steps.extract_branch.outputs.branch == 'master'
-        - run: echo npm version minor
-        - run: echo git push
-        - run: echo npm publish
-      - if: steps.extract_branch.outputs.branch == 'beta'
-        - run: echo npm version prerelease --preid=${{steps.extract_branch.outputs.branch}}
-        - run: echo git push
-        - run: echo npm publish --tag ${{steps.extract_branch.outputs.branch}}
-      #- run: npm publish
-        #env:
-          #NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        run: echo "##[set-output name=version;]$(echo ${GITHUB_REF#refs/tags/v})"
+        id: extract_version
+
+      - name: Extract npm Tag from Tag Tag
+        shell: bash
+        run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/v*-})"
+        id: extract_tag
+
+      - run: echo ref ${{github.ref}}
+      - run: echo version ${{steps.extract_version.outputs.version}}
+      - run: echo tag ${{steps.extract_tag.outputs.tag}}
+
+      - run: npm version ${{steps.extract_version.outputs.version}}
+
+      - if: steps.extract_tag.outputs.tag == github.ref
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - if: steps.extract_tag.outputs.tag != github.ref
+        run: npm publish --tag ${{steps.extract_tag.outputs.tag}}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
