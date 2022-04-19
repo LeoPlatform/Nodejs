@@ -17,6 +17,8 @@ jobs:
         with:
           node-version: 12
       - run: npm ci
+      - run: npm i aws-sdk@^2.581.0
+      - run: npm run compile --if-present
       - run: npm run coverage-all
 
   publish-npm:
@@ -28,10 +30,8 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm i aws-sdk@^2.581.0
-      - run: npm run compile --if-present
       - run: npm version prerelease --preid=beta-test
+      - run: git push
       - run: echo ${{github.ref}}
       - run: echo beta release
       - run: npm publish --tag beta-test
