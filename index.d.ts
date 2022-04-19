@@ -208,11 +208,19 @@ export declare class RStreamsSdk {
 	createSource: <T, R = any>(fn: CreateSourceFunction<T, R>, opt?: CreateSourceOptions, state?: R) => ReadableStream<T>;
 }
 
-
+/**
+ * Async function that you write that takes the current state R and returns an array of data tpye T
+ */
 export declare type CreateSourceFunction<T, R> = (state: R) => Promise<T[] | undefined>;
 
+/**
+ * Options for the function [[`RStreamsSdk.createSource`]]
+ */
 export interface CreateSourceOptions {
+	/** max number or records to emit before ending the stream */
 	records?: number;
+
+	/** max number of milliseconds to wait before closing the stream */
 	milliseconds?: number;
 }
 

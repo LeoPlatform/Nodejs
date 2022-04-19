@@ -12,15 +12,6 @@ import util from "../lib/aws-util";
 import awsSdkSync from "../lib/aws-sdk-sync";
 chai.use(sinonchai);
 
-
-interface SourceData {
-	data1: number;
-	data2: string;
-}
-interface MySourceState {
-	counter: number
-}
-
 let mockSdkConfig = {
 	Region: "mock-Region",
 	LeoStream: "mock-LeoStream",
@@ -1504,13 +1495,17 @@ describe('RStreams', function () {
 	});
 
 	describe("sdk createSource", function () {
+
+		interface SourceData {
+			data1: number;
+			data2: string;
+		}
+		interface MySourceState {
+			counter: number
+		}
+
 		it("no results", async function () {
 			let sdk = RStreamsSdk(mockSdkConfig);
-
-			interface SourceData {
-				data1: number;
-				data2: string;
-			}
 
 			let output = [];
 			await sdk.streams.pipeAsync(
@@ -1528,11 +1523,6 @@ describe('RStreams', function () {
 
 		it("multiple queries", async function () {
 			let sdk = RStreamsSdk(mockSdkConfig);
-
-			interface SourceData {
-				data1: number;
-				data2: string;
-			}
 
 			let output = [];
 			let dataSource: SourceData[][] = [
@@ -1636,11 +1626,6 @@ describe('RStreams', function () {
 
 		it("countdown", async function () {
 			let sdk = RStreamsSdk(mockSdkConfig);
-
-			interface SourceData {
-				data1: number;
-				data2: string;
-			}
 
 			let output = [];
 			await sdk.streams.pipeAsync(
