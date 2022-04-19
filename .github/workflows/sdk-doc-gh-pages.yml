@@ -2,7 +2,7 @@ name: Deploy Docs
 on:
   push:
     branches:
-      - feature/doc-improvement2  #set back to master
+      - master
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
