@@ -35,13 +35,13 @@ jobs:
       - run: echo version ${{steps.extract_version.outputs.version}}
       - run: echo tag ${{steps.extract_tag.outputs.tag}}
 
-      - run: echo npm version ${{steps.extract_version.outputs.version}}
+      - run: npm version ${{steps.extract_version.outputs.version}}
 
       - if: steps.extract_tag.outputs.tag == github.ref
-        run: echo npm publish
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - if: steps.extract_tag.outputs.tag != github.ref
-        run: echo npm publish --tag ${{steps.extract_tag.outputs.tag}}
+        run: npm publish --tag ${{steps.extract_tag.outputs.tag}}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
