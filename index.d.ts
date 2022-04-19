@@ -6,6 +6,7 @@ import { LeoDynamodb } from "./lib/dynamodb";
 import AWS, { Credentials } from "aws-sdk";
 import { Event } from "./lib/types";
 import ConfigurationProvider from "./lib/rstreams-configuration";
+import { ReadableStream } from "./lib/types";
 export * from "./lib/types";
 
 /**
@@ -191,6 +192,28 @@ export declare class RStreamsSdk {
 	 * @deprecated This is a legacy feature that is no longer used that remains for backward compatibility.
 	 */
 	destroy: (callback: (err: any) => void) => void;
+
+
+	/**
+	 * A stream generated from a function that returns and array of data of type T
+	 * 
+	 * Allows for custom state to be kept and passed to the function generating new data
+	 * 
+	 * @typeParam T The data emitted from the stream
+	 * @typeParam R The current state of the source stream
+	 * @param fn Function that produces records to flow down stream
+	 * @param opts Options to limit how may records to produce or how long to produce them
+	 * @param state The current custom state of the source stream
+	 */
+	createSource: <T, R = any>(fn: CreateSourceFunction<T, R>, opt?: CreateSourceOptions, state?: R) => ReadableStream<T>;
+}
+
+
+export declare type CreateSourceFunction<T, R> = (state: R) => Promise<T[] | undefined>;
+
+export interface CreateSourceOptions {
+	records?: number;
+	milliseconds?: number;
 }
 
 /**

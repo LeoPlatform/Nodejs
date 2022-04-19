@@ -11,6 +11,7 @@ const { promisify } = require("util");
 const execSync = require("child_process").execSync;
 const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").ConfigProviderChain;
 const mockWrapper = require("./lib/mock-wrapper");
+const leologger = require("leo-logger")("sdk");
 
 function SDK(id, data) {
 	if (typeof id !== "string" && id != null) {
@@ -180,6 +181,110 @@ function SDK(id, data) {
 				region: configuration.aws.region,
 				credentials: configuration.credentials
 			})
+		},
+		createSource: function(fn, opts = {}, state = {}) {
+			let log = leologger.sub("CreateSource");
+			// Set default option values
+			opts = Object.assign({
+				records: Number.POSITIVE_INFINITY,
+				milliseconds: undefined
+			}, opts);
+
+			// Counter/Timers
+			let startTime = Date.now();
+			let lastStart = startTime;
+			let totalRecords = 0;
+
+			// Stream pass through - This is the returned object
+			let pass = this.streams.passThrough({ objectMode: true });
+
+
+			// Setup a timeout if requrested
+			let timeout;
+			if (opts.milliseconds != null && opts.milliseconds > 0) {
+				timeout = setTimeout(() => {
+					if (!pass.isEnding) {
+						log.debug('Requested timeout ms hit. Ending');
+						pass.end();
+					}
+				}, opts.milliseconds);
+			}
+
+			// Override stream end to cleanup timers
+			// and protect agains duplicate calls
+			pass.isEnding = false;
+			pass.orig_end = pass.end;
+			pass.end = function() {
+				log.debug('Pass.end Called');
+				if (!pass.isEnding) {
+					pass.isEnding = true;
+					timeout && clearTimeout(timeout);
+					pass.orig_end();
+				}
+			};
+
+
+			// Convience method for async writting with backpressure
+			pass.throttleWrite = function(data) {
+				return new Promise((resolve) => {
+					if (!pass.write(data)) {
+						pass.once('drain', () => {
+							resolve();
+						});
+					} else {
+						resolve();
+					}
+				});
+			};
+
+			// Generator to poll for more data
+			async function* poller() {
+
+				// Get the initial set of data to stream
+				let records = await fn(state);
+
+				// Loop yielding and fetching records until 
+				// 1) There are no more recrods
+				// 2) Time runs out
+				// 3) We have yielding the requested number of records
+				outerLoop:
+				while ((records != null && records.length > 0) && opts.records > totalRecords && !pass.isEnding) {
+					for (const hit of records) {
+						totalRecords++;
+
+						// send the results back to the caller and wait to be resumed
+						// that's why this is a generator function (function*)
+						yield hit;
+
+						// Break out of the current batch because we hit 
+						// an end condition
+						if (opts.records <= totalRecords || pass.isEnding) {
+							break outerLoop;
+						}
+					}
+
+					log.debug(`Batch Records: ${records.length}, Percent: ${totalRecords}/${opts.records}, Total Duration: ${Date.now() - startTime}, Batch Duration ${Date.now() - lastStart}`);
+					lastStart = Date.now();
+
+					// Get the next set of records
+					records = await fn(state);
+				}
+			}
+
+			// Async function to query and write data to the stream
+			let run = (async function() {
+				for await (const data of poller()) {
+					await pass.throttleWrite(data);
+				}
+			});
+
+			// Start running the async function with hooks to pass along errors
+			// and end the pass through
+			run()
+				.then(() => pass.end())
+				.catch(err => pass.emit('error', err));
+
+			return pass;
 		}
 	});
 }

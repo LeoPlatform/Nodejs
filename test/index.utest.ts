@@ -11,7 +11,15 @@ import zlib from "zlib";
 import util from "../lib/aws-util";
 import awsSdkSync from "../lib/aws-sdk-sync";
 chai.use(sinonchai);
-//var assert = require('assert');
+
+
+interface SourceData {
+	data1: number;
+	data2: string;
+}
+interface MySourceState {
+	counter: number
+}
 
 let mockSdkConfig = {
 	Region: "mock-Region",
@@ -1492,6 +1500,381 @@ describe('RStreams', function () {
 				}
 				done(err);
 			});
+		});
+	});
+
+	describe("sdk createSource", function () {
+		it("no results", async function () {
+			let sdk = RStreamsSdk(mockSdkConfig);
+
+			interface SourceData {
+				data1: number;
+				data2: string;
+			}
+
+			let output = [];
+			await sdk.streams.pipeAsync(
+				sdk.createSource<SourceData>(async () => {
+					return [];
+				}),
+				sdk.streams.write((data: SourceData, done) => {
+					output.push(data);
+					done();
+				})
+			);
+
+			assert.deepEqual(output, []);
+		});
+
+		it("multiple queries", async function () {
+			let sdk = RStreamsSdk(mockSdkConfig);
+
+			interface SourceData {
+				data1: number;
+				data2: string;
+			}
+
+			let output = [];
+			let dataSource: SourceData[][] = [
+				[1, 2, 3, 4, 5, 6].map(i => ({ data1: i, data2: i.toString() })),
+				[10, 20, 30, 40, 50, 60].map(i => ({ data1: i, data2: i.toString() }))
+			];
+			await sdk.streams.pipeAsync(
+				sdk.createSource<SourceData>(async () => {
+					return dataSource.shift();
+				}),
+				sdk.streams.write((data: SourceData, done) => {
+					output.push(data);
+					done();
+				})
+			);
+
+			assert.deepEqual(output,
+				[
+					{
+						"data1": 1,
+						"data2": "1",
+					},
+					{
+						"data1": 2,
+						"data2": "2",
+					},
+					{
+						"data1": 3,
+						"data2": "3",
+					},
+					{
+						"data1": 4,
+						"data2": "4",
+					},
+					{
+						"data1": 5,
+						"data2": "5",
+					},
+					{
+						"data1": 6,
+						"data2": "6",
+					},
+					{
+						"data1": 10,
+						"data2": "10",
+					},
+					{
+						"data1": 20,
+						"data2": "20",
+					},
+					{
+						"data1": 30,
+						"data2": "30",
+					},
+					{
+						"data1": 40,
+						"data2": "40",
+					},
+					{
+						"data1": 50,
+						"data2": "50",
+					},
+					{
+						"data1": 60,
+						"data2": "60",
+					}
+				]
+			);
+		});
+
+
+		it("Error query", async function () {
+			let sdk = RStreamsSdk(mockSdkConfig);
+
+			interface SourceData {
+				data1: number;
+				data2: string;
+			}
+
+			let output = [];
+			let error: Error;
+			try {
+				await sdk.streams.pipeAsync(
+					sdk.createSource<SourceData>(async () => {
+						throw new Error("Some Random Error");
+					}),
+					sdk.streams.write((data: SourceData, done) => {
+						output.push(data);
+						done();
+					})
+				);
+			} catch (err) {
+				error = err;
+			}
+
+			assert.isNotNull(error);
+			assert.equal(error.message, "Some Random Error");
+			assert.deepEqual(output, []);
+		});
+
+
+		it("countdown", async function () {
+			let sdk = RStreamsSdk(mockSdkConfig);
+
+			interface SourceData {
+				data1: number;
+				data2: string;
+			}
+
+			let output = [];
+			await sdk.streams.pipeAsync(
+				sdk.createSource<SourceData, MySourceState>(async (state) => {
+					let number = state.counter;
+					state.counter--;
+					if (number <= 0) {
+						return [];
+					} else {
+						return [{ data1: number, data2: number.toString() }];
+					}
+				}, {}, {
+					counter: 10
+				}),
+				sdk.streams.write((data: SourceData, done) => {
+					output.push(data);
+					done();
+				})
+			);
+
+			assert.deepEqual(output,
+				[
+					{
+						"data1": 10,
+						"data2": "10",
+					},
+					{
+						"data1": 9,
+						"data2": "9",
+					},
+					{
+						"data1": 8,
+						"data2": "8",
+					},
+					{
+						"data1": 7,
+						"data2": "7",
+					},
+					{
+						"data1": 6,
+						"data2": "6",
+					},
+					{
+						"data1": 5,
+						"data2": "5",
+					},
+					{
+						"data1": 4,
+						"data2": "4",
+					},
+					{
+						"data1": 3,
+						"data2": "3",
+					},
+					{
+						"data1": 2,
+						"data2": "2",
+					},
+					{
+						"data1": 1,
+						"data2": "1",
+					}
+				],
+			);
+		});
+
+		it("countdown limited", async function () {
+			let sdk = RStreamsSdk(mockSdkConfig);
+
+			let output = [];
+			await sdk.streams.pipeAsync(
+				sdk.createSource<SourceData, MySourceState>(async (state) => {
+					let number = state.counter;
+					state.counter--;
+					if (number <= 0) {
+						return [];
+					} else {
+						return [{ data1: number, data2: number.toString() }];
+					}
+				}, {
+					records: 5
+				}, {
+					counter: 10
+				}),
+				sdk.streams.write((data: SourceData, done) => {
+					output.push(data);
+					done();
+				})
+			);
+
+			assert.deepEqual(output,
+				[
+					{
+						"data1": 10,
+						"data2": "10",
+					},
+					{
+						"data1": 9,
+						"data2": "9",
+					},
+					{
+						"data1": 8,
+						"data2": "8",
+					},
+					{
+						"data1": 7,
+						"data2": "7",
+					},
+					{
+						"data1": 6,
+						"data2": "6",
+					}
+				],
+			);
+		});
+
+		it("countdown time limited", async function () {
+			let sdk = RStreamsSdk(mockSdkConfig);
+
+
+
+			let output = [];
+			await sdk.streams.pipeAsync(
+				sdk.createSource<SourceData, MySourceState>(async (state) => {
+					let number = state.counter;
+					state.counter--;
+					if (number <= 0) {
+						return;
+					} else {
+						await new Promise(resovle => setTimeout(() => resovle(undefined), 40));
+						return [{ data1: number, data2: number.toString() }];
+					}
+				}, {
+					milliseconds: 100
+				}, {
+					counter: 100
+				}),
+				sdk.streams.write((data: SourceData, done) => {
+					output.push(data);
+					done();
+				})
+			);
+
+			assert.deepEqual(output,
+				[
+					{
+						"data1": 100,
+						"data2": "100",
+					},
+					{
+						"data1": 99,
+						"data2": "99",
+					}
+				],
+			);
+		});
+
+		it("countdown time limited but not hit", async function () {
+			let sdk = RStreamsSdk(mockSdkConfig);
+
+
+
+			let output = [];
+			await sdk.streams.pipeAsync(
+				sdk.createSource<SourceData, MySourceState>(async (state) => {
+					let number = state.counter;
+					state.counter--;
+					if (number <= 0) {
+						return;
+					} else {
+						await new Promise(resovle => setTimeout(() => resovle(undefined), 40));
+						return [{ data1: number, data2: number.toString() }];
+					}
+				}, {
+					milliseconds: 10000
+				}, {
+					counter: 2
+				}),
+				sdk.streams.write((data: SourceData, done) => {
+					output.push(data);
+					done();
+				})
+			);
+
+			assert.deepEqual(output,
+				[
+					{
+						"data1": 2,
+						"data2": "2",
+					},
+					{
+						"data1": 1,
+						"data2": "1",
+					}
+				],
+			);
+		});
+
+		it("countdown return undefined", async function () {
+			let sdk = RStreamsSdk(mockSdkConfig);
+
+
+
+			let output = [];
+			await sdk.streams.pipeAsync(
+				sdk.createSource<SourceData, MySourceState>(async (state) => {
+					let number = state.counter;
+					state.counter--;
+					if (number <= 0) {
+						return;
+					} else {
+						return [{ data1: number, data2: number.toString() }];
+					}
+				}, {}, {
+					counter: 2
+				}),
+				sdk.streams.write((data: SourceData, done) => {
+					output.push(data);
+					done();
+				})
+			);
+
+			assert.deepEqual(output,
+				[
+					{
+						"data1": 2,
+						"data2": "2",
+					},
+					{
+						"data1": 1,
+						"data2": "1",
+					}
+				],
+			);
 		});
 	});
 });
