@@ -29,13 +29,13 @@ jobs:
       - run: echo ${{steps.extract_branch.outputs.branch}}
       - run: echo prod release
       - if: steps.extract_branch.outputs.branch == 'master'
-        run: echo npm version minor
-        run: echo git push
-        run: echo npm publish
+        - run: echo npm version minor
+        - run: echo git push
+        - run: echo npm publish
       - if: steps.extract_branch.outputs.branch == 'beta'
-        run: echo npm version prerelease --preid=${{steps.extract_branch.outputs.branch}}
-        run: echo git push
-        run: echo npm publish --tag ${{steps.extract_branch.outputs.branch}}
+        - run: echo npm version prerelease --preid=${{steps.extract_branch.outputs.branch}}
+        - run: echo git push
+        - run: echo npm publish --tag ${{steps.extract_branch.outputs.branch}}
       #- run: npm publish
         #env:
           #NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
