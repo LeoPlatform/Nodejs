@@ -31,16 +31,17 @@ jobs:
         run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/v*-})"
         id: extract_tag
 
+      - run: echo ref ${{github.ref}}
       - run: echo version ${{steps.extract_version.outputs.version}}
       - run: echo tag ${{steps.extract_tag.outputs.tag}}
 
       - run: echo npm version ${{steps.extract_version.outputs.version}}
 
-      - if: steps.extract_tag.outputs.tag == ${{github.ref}}
+      - if: steps.extract_tag.outputs.tag == github.ref
         run: echo npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-      - if: steps.extract_tag.outputs.tag != ${{github.ref}}
+      - if: steps.extract_tag.outputs.tag != github.ref
         run: echo npm publish --tag ${{steps.extract_tag.outputs.tag}}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
