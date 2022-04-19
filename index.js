@@ -199,7 +199,7 @@ function SDK(id, data) {
 			let pass = this.streams.passThrough({ objectMode: true });
 
 
-			// Setup a timeout if requrested
+			// Setup a timeout if requested
 			let timeout;
 			if (opts.milliseconds != null && opts.milliseconds > 0) {
 				timeout = setTimeout(() => {
