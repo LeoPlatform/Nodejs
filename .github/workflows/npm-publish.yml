@@ -30,11 +30,11 @@ jobs:
         shell: bash
         run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/v*-})"
         id: extract_tag
-        
+
       - run: echo version ${{steps.extract_version.outputs.version}}
       - run: echo tag ${{steps.extract_tag.outputs.tag}}
 
-        run: echo npm version ${{steps.extract_version.outputs.version}}
+      - run: echo npm version ${{steps.extract_version.outputs.version}}
 
       - if: steps.extract_tag.outputs.tag == GITHUB_REF
         run: echo npm publish
