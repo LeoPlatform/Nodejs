@@ -41,12 +41,12 @@ jobs:
 
       - if: "!contains(steps.extract_branch.outputs.branch, 'beta')"
         run: echo npm publish
-          env:
-            NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - if: "contains(steps.extract_branch.outputs.branch, 'beta')"
         run: echo npm publish --tag beta
-          env:
-            NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       #- run: npm publish
         #env:
