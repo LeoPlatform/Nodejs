@@ -8,7 +8,7 @@
         "../lib/rstreams-config-provider-chain.ts",
         "../lib/rstreams-configuration.ts"
     ],
-    "out": "generated",
+    "out": "build",
     "gitRevision": "master",
     "tsconfig": "../tsconfig.json",
     "excludeTags": [
@@ -19,5 +19,7 @@
             "pattern": "rstreams-site-url",
             "replace": "https://rstreams.org"
         }
-    ]
+    ],
+    "defaultCategory": " ",
+    "categorizeByGroup": true
 }
