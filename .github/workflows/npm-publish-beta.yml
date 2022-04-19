@@ -22,7 +22,7 @@ jobs:
       - run: npm run compile --if-present
       - run: npm run coverage-all
       #- run: npm version prerelease --preid=beta-test
-      - run: git push
+      - run: echo git push
       - run: echo ${{github.ref}}
       - run: echo beta release
       #- run: npm publish --tag beta-test

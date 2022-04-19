@@ -28,14 +28,20 @@ jobs:
       - run: echo ${{github.ref}}
       - run: echo ${{steps.extract_branch.outputs.branch}}
       - run: echo prod release
-      - if: steps.extract_branch.outputs.branch == 'master'
-        - run: echo npm version minor
-        - run: echo git push
-        - run: echo npm publish
-      - if: steps.extract_branch.outputs.branch == 'beta'
-        - run: echo npm version prerelease --preid=${{steps.extract_branch.outputs.branch}}
-        - run: echo git push
-        - run: echo npm publish --tag ${{steps.extract_branch.outputs.branch}}
+      - if: "!contains(steps.extract_branch.outputs.branch, 'beta')"
+        steps:
+          - run: echo npm version minor
+          - run: echo git push
+          - run: echo npm publish
+            env:
+              NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - if: "contains(steps.extract_branch.outputs.branch, 'beta')"
+        steps:
+          - run: echo npm version prerelease --preid=beta
+          - run: echo git push
+          - run: echo npm publish --tag beta
+            env:
+              NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       #- run: npm publish
         #env:
           #NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
