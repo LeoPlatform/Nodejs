@@ -357,6 +357,11 @@ export function pipeline<T1, T2, T3, T4, D extends WritableStream<T4>>(write: Re
 export function pipeline<T1, T2, T3, T4, T5, D extends WritableStream<T5>>(write: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
 export function pipeline<T1, T2, T3, T4, T5, T6, D extends WritableStream<T6>>(write: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
 
+export function pipeline<T1, T2, D extends WritableStream<T2>>(write: stream.Stream, t1: TransformStream<T1, T2>, t2?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, D extends WritableStream<T3>>(write: stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, D extends WritableStream<T4>>(write: stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, T5, D extends WritableStream<T5>>(write: stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
+export function pipeline<T1, T2, T3, T4, T5, T6, D extends WritableStream<T6>>(write: stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6?: D, errorCallback?: ErrorCallback): D extends ReadableStream<infer U> ? TransformStream<T1, U> : WritableStream<T1>;
 
 
 /**
