@@ -18,7 +18,7 @@
 		"build-docs": "cd docs && ts-node build-docs.ts"
 	},
 	"dependencies": {
-		"async": "2.6.2",
+		"async": "2.6.4",
 		"backoff": "2.5.0",
 		"event-stream": "4.0.1",
 		"extend": "3.0.2",
