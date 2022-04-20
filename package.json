@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "6.0.4",
+	"version": "6.0.5",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -41,6 +41,7 @@
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.93",
 		"@types/chai": "^4.3.0",
+		"@types/event-stream": "^4.0.0",
 		"@types/mocha": "^9.1.0",
 		"@types/node": "^16.11.12",
 		"@types/pumpify": "^1.4.1",
