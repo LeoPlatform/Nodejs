@@ -10,6 +10,7 @@ import fs from "fs";
 import zlib from "zlib";
 import util from "../lib/aws-util";
 import awsSdkSync from "../lib/aws-sdk-sync";
+import { ReadableStream } from "../lib/types";
 chai.use(sinonchai);
 
 let mockSdkConfig = {
@@ -36,7 +37,7 @@ let keys = [
 ];
 
 describe('RStreams', function () {
-	let sandbox;
+	let sandbox: sinon.SinonSandbox;
 	beforeEach(() => {
 		envVars.forEach(field => {
 			delete process.env[field];
@@ -79,7 +80,7 @@ describe('RStreams', function () {
 				}
 			};
 
-			function AWSRequest(response) {
+			function AWSRequest(response: AWS.S3.ListBucketsOutput) {
 				return { promise: async () => response };
 			}
 
@@ -148,7 +149,7 @@ describe('RStreams', function () {
 			let events = await new Promise((resolve, reject) => {
 				ls.pipe(
 					sdk.read(botId, queue, { start: ls.eventIdFromTimestamp(1647460979244) }),
-					ls.eventstream.writeArray((err, results) => {
+					ls.eventstream.writeArray((err: any, results: unknown) => {
 						err ? reject(err) : resolve(results)
 					})
 				);
@@ -220,7 +221,7 @@ describe('RStreams', function () {
 			expect(firehosePutRecordBatch).is.not.called;
 			expect(kinesisPutRecords).is.called;
 			let expectedData = "H4sIAAAAAAAACo3OwQqDMAwG4LuPkXMLLXUOfBmpGqasXZymDil991VhR3HH5A/5vwhjDzV46p6yJZZ5EjDZzZHN+wgDOkf54EOz6yEJwBVf3CwU5g4bHj0ubP0Eta7Ke1kZczNKKQHnyfHgV0mB5TtgwNyKu0SlIl6QHkR73m74r0efevSVR6fiC2oPrJkjAQAA";
-			kinesisPutRecords.getCall(0).args[0].Records.forEach(r => {
+			kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: any; }) => {
 				// convert buffers to strings
 				r.Data = zlib.gunzipSync(Buffer.from(r.Data.toString("base64"), "base64")).toString();
 			});
@@ -316,7 +317,7 @@ describe('RStreams', function () {
 
 			let firehosePutRecordBatch = sandbox.stub();
 
-			let s3Upload = (obj, callback) => {
+			let s3Upload = (obj: { Body: ReadableStream<any>; }, callback: (arg0: Error) => void) => {
 				ls.pipe(obj.Body, ls.devnull(), (e) => callback(e));
 			};
 
@@ -347,7 +348,7 @@ describe('RStreams', function () {
 			});
 			expect(firehosePutRecordBatch).is.not.called;
 			expect(kinesisPutRecords).is.called;
-			kinesisPutRecords.getCall(0).args[0].Records.forEach(r => {
+			kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: any; }) => {
 				// convert buffers to strings
 				r.Data = JSON.parse(gunzipSync(r.Data).toString());
 
@@ -410,7 +411,7 @@ describe('RStreams', function () {
 	});
 
 	describe("sdk load config", function () {
-		function AWSRequest(response) {
+		function AWSRequest(response: any) {
 			return {
 				promise: async () => {
 					if (response instanceof Error) {
@@ -500,7 +501,7 @@ describe('RStreams', function () {
 
 
 	describe("sdk profile load", function () {
-		let sandbox;
+		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
 			delete require("leo-config").leoaws;
 			sandbox = sinon.createSandbox()
@@ -579,7 +580,7 @@ describe('RStreams', function () {
 	});
 
 	describe("sdk enrich", function () {
-		let sandbox;
+		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
 			sandbox = sinon.createSandbox()
 		});
@@ -705,7 +706,7 @@ describe('RStreams', function () {
 						{ "id": "mock-bot", "event": "mock-out", "payload": { "b": "1" }, "event_source_timestamp": 1647460979244, "eid": 0, "correlation_id": { "source": "mock-in", "start": "z/2022/03/16/20/02/1647460979244-0000000", "units": 1 }, "timestamp": 1647460979244 },
 						{ "id": "mock-bot", "event": "mock-out", "payload": { "b": "2" }, "event_source_timestamp": 1647460979244, "eid": 1, "correlation_id": { "source": "mock-in", "start": "z/2022/03/16/20/02/1647460979244-0000001", "units": 1 }, "timestamp": 1647460979244 }
 					].map(d => JSON.stringify(d) + "\n").join("");
-					kinesisPutRecords.getCall(0).args[0].Records.forEach(r => {
+					kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: any; }) => {
 						// convert buffers to strings
 						// timestamp is dynamic so replace it to be a known value
 						r.Data = zlib.gunzipSync(Buffer.from(r.Data.toString("base64"), "base64")).toString().replace(/"timestamp":\d+/g, '"timestamp":1647460979244');
@@ -730,7 +731,7 @@ describe('RStreams', function () {
 	});
 
 	describe("sdk offload", function () {
-		let sandbox;
+		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
 			sandbox = sinon.createSandbox()
 		});

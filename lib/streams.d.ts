@@ -122,9 +122,9 @@ export interface CommandWrapOptions {
  * @param write Pipeline step 2: The sink that is the last step of the pipe
  * @param errorCallback Called if something goes wrong
  * @returns The pipeline itself
- * @todo question how is the return value a pipeline, how does WritableStream<T1> | stream.Writable mean pipeline.
+ * @todo question how is the return value a pipeline, how does WritableStream<T1> | stream.Stream mean pipeline.
  */
-export function pipe<T1>(read: ReadableStream<T1>, write: WritableStream<T1> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T1> | stream.Writable;
+export function pipe<T1>(read: ReadableStream<T1> | stream.Stream, write: WritableStream<T1> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T1> | stream.Stream;
 
 /**
  * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
@@ -139,7 +139,7 @@ export function pipe<T1>(read: ReadableStream<T1>, write: WritableStream<T1> | s
  * @param errorCallback Called if something goes wrong
  * @returns The pipeline itself
  */
-export function pipe<T1, T2>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, write: WritableStream<T2> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T2> | stream.Writable;
+export function pipe<T1, T2>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, write: WritableStream<T2> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T2> | stream.Stream;
 
 /**
  * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
@@ -156,7 +156,7 @@ export function pipe<T1, T2>(read: ReadableStream<T1>, t1: TransformStream<T1, T
  * @param errorCallback Called if something goes wrong
  * @returns The pipeline itself
  */
-export function pipe<T1, T2, T3>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T3> | stream.Writable;
+export function pipe<T1, T2, T3>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T3> | stream.Stream;
 
 /**
  * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
@@ -175,7 +175,7 @@ export function pipe<T1, T2, T3>(read: ReadableStream<T1>, t1: TransformStream<T
  * @param errorCallback Called if something goes wrong
  * @returns The pipeline itself
  */
-export function pipe<T1, T2, T3, T4>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T4> | stream.Writable;
+export function pipe<T1, T2, T3, T4>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T4> | stream.Stream;
 
 /**
  * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
@@ -196,7 +196,7 @@ export function pipe<T1, T2, T3, T4>(read: ReadableStream<T1>, t1: TransformStre
  * @param errorCallback Called if something goes wrong
  * @returns The pipeline itself
  */
-export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T5> | stream.Writable;
+export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T5> | stream.Stream;
 
 /**
  * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
@@ -219,7 +219,7 @@ export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1>, t1: Transform
  * @param errorCallback Called if something goes wrong
  * @returns The pipeline itself
  */
-export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T6> | stream.Writable;
+export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T6> | stream.Stream;
 
 /**
  * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
@@ -230,7 +230,7 @@ export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1>, t1: Trans
  * @param write Pipeline step 2: The sink that is the last step of the pipe
  * @returns A promise so it can play nice with async/await
  */
-export function pipeAsync<T1>(read: ReadableStream<T1>, write: WritableStream<T1>): Promise<void>;
+export function pipeAsync<T1>(read: ReadableStream<T1> | stream.Stream, write: WritableStream<T1>): Promise<void>;
 
 /**
  * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
@@ -244,7 +244,7 @@ export function pipeAsync<T1>(read: ReadableStream<T1>, write: WritableStream<T1
  * @param write Pipeline step 3: The sink that is the last step of the pipe
  * @returns A promise so it can play nice with async/await
  */
-export function pipeAsync<T1, T2>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, write: WritableStream<T2>): Promise<void>;
+export function pipeAsync<T1, T2>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, write: WritableStream<T2>): Promise<void>;
 
 /**
  * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
@@ -260,7 +260,7 @@ export function pipeAsync<T1, T2>(read: ReadableStream<T1>, t1: TransformStream<
  * @param write Pipeline step 4: The sink that is the last step of the pipe
  * @returns A promise so it can play nice with async/await
  */
-export function pipeAsync<T1, T2, T3>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3>): Promise<void>;
+export function pipeAsync<T1, T2, T3>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3>): Promise<void>;
 
 /**
  * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
@@ -277,7 +277,7 @@ export function pipeAsync<T1, T2, T3>(read: ReadableStream<T1>, t1: TransformStr
  * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
  * @param write Pipeline step 5: The sink that is the last step of the pipe
  */
-export function pipeAsync<T1, T2, T3, T4>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4>): Promise<void>;
+export function pipeAsync<T1, T2, T3, T4>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4>): Promise<void>;
 
 /**
  * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
@@ -297,7 +297,7 @@ export function pipeAsync<T1, T2, T3, T4>(read: ReadableStream<T1>, t1: Transfor
  * @param write Pipeline step 6: The sink that is the last step of the pipe
  * @returns A promise so it can play nice with async/await
  */
-export function pipeAsync<T1, T2, T3, T4, T5>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5>): Promise<void>;
+export function pipeAsync<T1, T2, T3, T4, T5>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5>): Promise<void>;
 
 /**
  * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
@@ -319,14 +319,14 @@ export function pipeAsync<T1, T2, T3, T4, T5>(read: ReadableStream<T1>, t1: Tran
  * @param write Pipeline step 7: The sink that is the last step of the pipe
  * @returns A promise so it can play nice with async/await
  */
-export function pipeAsync<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1>, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6>): Promise<void>;
+export function pipeAsync<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6>): Promise<void>;
 
-// export function pipe<T1>(read: ReadableStream<T1> | stream.Readable, write: WritableStream<T1> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T1>;
-// export function pipe<T1, T2>(read: ReadableStream<T1> | stream.Readable, t1: TransformStream<T1, T2>, write: WritableStream<T2> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T2>;
-// export function pipe<T1, T2, T3>(read: ReadableStream<T1> | stream.Readable, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T3>;
-// export function pipe<T1, T2, T3, T4>(read: ReadableStream<T1> | stream.Readable, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T4>;
-// export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1> | stream.Readable, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T5>;
-// export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1> | stream.Readable, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6> | stream.Writable, errorCallback?: ErrorCallback): WritableStream<T6>;
+// export function pipe<T1>(read: ReadableStream<T1> | stream.Stream | stream.Readable, write: WritableStream<T1> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T1>;
+// export function pipe<T1, T2>(read: ReadableStream<T1> | stream.Stream | stream.Readable, t1: TransformStream<T1, T2>, write: WritableStream<T2> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T2>;
+// export function pipe<T1, T2, T3>(read: ReadableStream<T1> | stream.Stream | stream.Readable, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, write: WritableStream<T3> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T3>;
+// export function pipe<T1, T2, T3, T4>(read: ReadableStream<T1> | stream.Stream | stream.Readable, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, write: WritableStream<T4> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T4>;
+// export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1> | stream.Stream | stream.Readable, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, write: WritableStream<T5> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T5>;
+// export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1> | stream.Stream | stream.Readable, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T6>;
 
 //export function pipe(...args:(ReadableStream<any>|TransformStream<any,any>|WritableStream<any>)[])
 
