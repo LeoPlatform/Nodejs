@@ -18,101 +18,9 @@ function each(object, iterFunction) {
 	}
 }
 
-export function inherit(klass?, features?) {
-	var newObject = null;
-	if (features === undefined) {
-		features = klass;
-		klass = Object;
-		newObject = {};
-	} else {
-		var ctor = function ConstructorWrapper() { };
-		ctor.prototype = klass.prototype;
-		newObject = new ctor();
-	}
-
-	// constructor not supplied, create pass-through ctor
-	if (features.constructor === Object) {
-		features.constructor = function () {
-			if (klass !== Object) {
-				return klass.apply(this, arguments);
-			}
-		};
-	}
-
-	features.constructor.prototype = newObject;
-	update(features.constructor.prototype, features);
-	features.constructor.__super__ = klass;
-	return features.constructor;
-}
-
-export function promisifyMethod(methodName?, PromiseDependency?) {
-	return function promise() {
-		var self = this;
-		var args = Array.prototype.slice.call(arguments);
-		return new PromiseDependency(function (resolve, reject) {
-			args.push(function (err, data) {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(data);
-				}
-			});
-			self[methodName].apply(self, args);
-		});
-	};
-}
-
-export function addPromises(constructors?, PromiseDependency?) {
-	var deletePromises = false;
-	if (PromiseDependency === undefined && AWS && AWS.config) {
-		PromiseDependency = AWS.config.getPromisesDependency();
-	}
-	if (PromiseDependency === undefined && typeof Promise !== 'undefined') {
-		PromiseDependency = Promise;
-	}
-	if (typeof PromiseDependency !== 'function') deletePromises = true;
-	if (!Array.isArray(constructors)) constructors = [constructors];
-
-	for (var ind = 0; ind < constructors.length; ind++) {
-		var constructor = constructors[ind];
-		if (deletePromises) {
-			if (constructor.deletePromisesFromClass) {
-				constructor.deletePromisesFromClass();
-			}
-		} else if (constructor.addPromisesToClass) {
-			constructor.addPromisesToClass(PromiseDependency);
-		}
-	}
-}
-
-export const fn = {
-	noop: function () { },
-	callback: function (err) { if (err) throw err; },
-
-	// /**
-	//  * Turn a synchronous function into as "async" function by making it call
-	//  * a callback. The underlying function is called with all but the last argument,
-	//  * which is treated as the callback. The callback is passed passed a first argument
-	//  * of null on success to mimick standard node callbacks.
-	//  */
-	// makeAsync: function makeAsync(fn, expectedArgs) {
-	// 	if (expectedArgs && expectedArgs <= fn.length) {
-	// 		return fn;
-	// 	}
-
-	// 	return function () {
-	// 		var args = Array.prototype.slice.call(arguments, 0);
-	// 		var callback = args.pop();
-	// 		var result = fn.apply(null, args);
-	// 		callback(result);
-	// 	};
-	// }
-}
-
 export function copy(object) {
 	if (object === null || object === undefined) return object;
 	var dupe = {};
-	// jshint forin:false
 	for (var key in object) {
 		dupe[key] = object[key];
 	}
@@ -153,14 +61,6 @@ export function error(err, options) {
 
 	return err;
 }
-export function arrayEach(array, iterFunction) {
-	for (var idx in array) {
-		if (Object.prototype.hasOwnProperty.call(array, idx)) {
-			var ret = iterFunction.call(this, array[idx], parseInt(idx, 10));
-			if (ret === abort) break;
-		}
-	}
-}
 
 export const date = {
 
@@ -180,11 +80,6 @@ export const date = {
 };
 
 export default {
-	inherit,
-	promisifyMethod,
-	addPromises,
 	error,
-	arrayEach,
-	fn,
 	date
 };

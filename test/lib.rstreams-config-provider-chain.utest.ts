@@ -26,7 +26,7 @@ let keys = [
 describe('lib/rstreams-config-provider-chain.ts', function () {
 	let sandbox;
 	beforeEach(() => {
-		sandbox = sinon.createSandbox()
+		sandbox = sinon.createSandbox();
 		envVars.forEach(field => {
 			delete process.env[field];
 			delete process[field];
@@ -89,7 +89,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				gotError = true;
 			}
 			assert(!gotError, "should not have thrown an error");
-			assert.deepEqual(justKeyFields(config), mockSdkConfig)
+			assert.deepEqual(justKeyFields(config), mockSdkConfig);
 		});
 
 
@@ -124,7 +124,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				gotError = true;
 			}
 			assert(!gotError, "should not have thrown an error");
-			assert.deepEqual(justKeyFields(config), mockSdkConfig1)
+			assert.deepEqual(justKeyFields(config), mockSdkConfig1);
 		});
 
 		it('read object append', async function () {
@@ -158,7 +158,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				gotError = true;
 			}
 			assert(!gotError, "should not have thrown an error");
-			assert.deepEqual(justKeyFields(config), mockSdkConfig2)
+			assert.deepEqual(justKeyFields(config), mockSdkConfig2);
 		});
 	});
 
@@ -183,15 +183,15 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 			try {
 				let chain = new EnvironmentConfiguration("RSTREAMS_CONFIG");
 				config1 = chain.resolveSync();
-				refresh = chain.needsRefresh()
+				refresh = chain.needsRefresh();
 				config2 = chain.resolveSync();
 			} catch (err) {
 				gotError = true;
 			}
 			assert(!gotError, "should not have thrown an error");
 			assert(!refresh, "Shouldn't need refresh");
-			assert.deepEqual(justKeyFields(config1), mockSdkConfig)
-			assert.deepEqual(justKeyFields(config2), mockSdkConfig)
+			assert.deepEqual(justKeyFields(config1), mockSdkConfig);
+			assert.deepEqual(justKeyFields(config2), mockSdkConfig);
 		});
 	});
 	describe("ENV", function () {
@@ -253,7 +253,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				gotError = true;
 			}
 			assert(!gotError, "should not have thrown an error");
-			assert.deepEqual(justKeyFields(config), mockSdkConfig)
+			assert.deepEqual(justKeyFields(config), mockSdkConfig);
 		});
 	});
 	describe("Tree", function () {
@@ -477,7 +477,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				gotError = true;
 			}
 			assert(!gotError, "should not have thrown an error");
-			assert.deepEqual(justKeyFields(config), mockSdkConfig)
+			assert.deepEqual(justKeyFields(config), mockSdkConfig);
 		});
 	});
 });
