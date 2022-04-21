@@ -401,19 +401,6 @@ export interface EnrichOptions<T, U> {
 	 */
 	start?: string;
 
-	/**
-	 * This governs micro-batching events that have been received from the source `inQueue` before they
-	 * are sent to your `transform` function, allowing that function to receive events in batches instead
-	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
-	 * resource such as a database.  Hitting a database for every single event that flows through a pipe can
-	 * be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
-	 * construct a single query to a database to read/write all data as a single DB operation.
-	 * 
-	 * If this is a number, it's just the number of events to micro-batch up.
-	 * @todo review is this doc right?
-	 */
-	batch?: BatchOptions | number;
-
 	/** Fine-grained control of reading from the source `inQueue` */
 	config?: ReadOptions;
 
@@ -425,6 +412,37 @@ export interface EnrichOptions<T, U> {
 	 * @todo review
 	 */
 	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
+}
+
+/**
+ * These options for an [[`RStreamsSdk.enrich`]] pipeline step.  This reads events from one queue and writes 
+ * them to another queue.  Put another way, an enrich pipeline operations reads events from an `inQueue` and 
+ * then writes them to an `outQueue`, allowing for side effects or transformation in the process.
+ * 
+ * This inherits from [[`EnrichOptions`]] and adds the ability to batch the data read from the source inQueue 
+ * before it is sent to the `transform` function which means your transform function will recieve an array of 
+ * type T which is the batched events instead of just a single event of type T.
+ * 
+ * @typeParam T The type of the event read from the source `inQueue`
+ * @typeParam U The type of the event that will be written to the destination `outQueue`
+ * 
+ * @see [[`RStreamsSdk.enrich`]]
+ * @see [[`RStreamsSdk.enrichEvents`]]
+ * @todo review there was a callback param, I removed it since I think it was a cut/paste error.  Here's what it said: callback A function called when all events have been processed. (payload, metadata, done) => { }
+ */
+export interface EnrichBatchOptions<T, U> extends EnrichOptions<ReadEvent<T>[], U> {
+   	/**
+	 * This governs micro-batching events that have been received from the source `inQueue` before they
+	 * are sent to your `transform` function, allowing that function to receive events in batches instead
+	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
+	 * resource such as a database.  Hitting a database for every single event that flows through a pipe can
+	 * be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
+	 * construct a single query to a database to read/write all data as a single DB operation.
+	 * 
+	 * If this is a number, it's just the number of events to micro-batch up.
+	 * @todo review is this doc right?
+	 */
+	batch: BatchOptions | number;
 }
 
 /**
@@ -448,6 +466,31 @@ export interface OffloadOptions<T> extends ReadOptions {
 	inQueue: string;
 
 	/**
+	 * The SDK will invoke this function after reading events from the `inQueue` where you can do your processing.
+	 * 
+	 * @todo example
+	 * @todo review
+	 * @todo question Why is the second argument a boolean?  What does it mean?
+	 */
+	transform: ProcessFunction<T, boolean>;
+}
+
+/**
+ * These options for an [[`RStreamsSdk.offload`]] pipeline step.
+ * This reads events from a queue and allows for the processing of the data.  Note this inherits all the useful
+ * options from [[`ReadOptions`]] which control reading from `inQueue`.
+ * 
+ * This inherits from [[`OffloadOptions`]] and adds the ability to batch the data read from the source inQueue 
+ * before it is sent to the `transform` function which means your transform function will recieve an array of 
+ * type T which is the batched events instead of just a single event of type T.
+ * 
+ * @typeParam T The type of the event read from the source `inQueue`
+ * 
+ * @see [[`RStreamsSdk.offload`]]
+ * @see [[`RStreamsSdk.offloadEvents`]]
+ */
+ export interface OffloadBatchOptions<T> extends OffloadOptions<T[]> {
+   	/**
 	 * This governs micro-batching events that have been received from the source `inQueue` before they
 	 * are sent to your `transform` function, allowing that function to receive events in batches instead
 	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
@@ -458,17 +501,8 @@ export interface OffloadOptions<T> extends ReadOptions {
 	 * If this is a number, it's just the number of events to micro-batch up.
 	 * @todo review is this doc right?
 	 */
-	batch?: BatchOptions | Number;
-
-	/**
-	 * The SDK will invoke this function after reading events from the `inQueue` where you can do your processing.
-	 * 
-	 * @todo example
-	 * @todo review
-	 * @todo question Why is the second argument a boolean?  What does it mean?
-	 */
-	transform: ProcessFunction<T, boolean>;
-}
+	batch: BatchOptions | Number;
+ }
 
 /**
  * Used to manually checkpoint in a pipeline step. It's only rarely used in more advanced cases where 
@@ -755,7 +789,7 @@ export declare namespace StreamUtil {
 
 	/**
 	 * Create a pipeline step that takes the events from the previous pipeline step and then writes them
-	 * to an RStreams bus queeu.
+	 * to an RStreams bus queue.
 	 * 
 	 * @param botId The bot to act as when writing.
 	 * @param config Options for writing
@@ -806,14 +840,15 @@ export declare namespace StreamUtil {
 	 * 
 	 * @typeParam T The type of the data event retrieved from the source queue
 	 * @typeParam U The type of the data event that is sent to the destination queue
-	 * @param opts TThe details of how to enrich and the function that does the work to enrich
+	 * @param opts The details of how to enrich and the function that does the work to enrich, either the batched or not batched version.
+	 *			   The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @param callback A function called when all events have been processed
 	 * @todo question why does enrich exist here and not elsewhere
 	 * @todo unclear don't understand the callback here
 	 * @todo example
 	 * @todo review
 	 */
-	function enrich<T, U>(opts: EnrichOptions<T, U>, callback: Callback): void;
+	function enrich<T, U>(opts: EnrichOptions<T, U> | EnrichBatchOptions<T, U>, callback: Callback): void;
 
 	/**
 	 * This is a callback-based version of [[`RStreamsSdk.offloadEvents`]].
@@ -827,9 +862,10 @@ export declare namespace StreamUtil {
 	 * 
 	 * @typeParam T The type of the data read from the RStreams bus queue
 	 * @param opts What queue to read from, the transform function and other options.
+     *             The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @callback callback A function called when all events have been processed
 	 */
-	function offload<T>(config: OffloadOptions<T>, callback: Callback): void;
+	function offload<T>(config: OffloadOptions<T> | OffloadBatchOptions<T>, callback: Callback): void;
 
 	/**
 	 * This creates a pipeline step that acts as the last step of the pipeline, the sink, writing events sent to the 
