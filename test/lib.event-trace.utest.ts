@@ -21,7 +21,7 @@ const STATS_TABLE = "MOCK_STATS_TABLE";
 describe('lib/event-trace.ts', function () {
 	let sandbox;
 	beforeEach(() => {
-		sandbox = sinon.createSandbox()
+		sandbox = sinon.createSandbox();
 	});
 	afterEach(() => {
 		sandbox.restore();
@@ -140,7 +140,7 @@ describe('lib/event-trace.ts', function () {
 					"kinesis_number": "z/2022/03/14/22/38/1647297513618-0000035"
 				},
 				"children": {}
-			})
+			});
 		});
 
 		it('Get Parent Events w/ Children', async function () {
@@ -395,7 +395,7 @@ describe('lib/event-trace.ts', function () {
 						"children": {}
 					}
 				}
-			})
+			});
 		});
 
 
@@ -752,7 +752,7 @@ describe('lib/event-trace.ts', function () {
 						"children": {}
 					}
 				}
-			})
+			});
 		});
 	});
 });

@@ -31,7 +31,7 @@ export async function trace(sdk: RStreamsSdk, statsTableName: string, options: E
 		let children = options.children;//.split(/,/);
 
 		let results = {};
-		logger.debug("With children", queue, prevId(id))
+		logger.debug("With children", queue, prevId(id));
 		return await new Promise((resolve, reject) => {
 			ls.pipe(
 				ls.fromLeo("test", queue, {
@@ -122,7 +122,7 @@ export async function trace(sdk: RStreamsSdk, statsTableName: string, options: E
 								bots[botId] = {
 									parents: [],
 									children: []
-								}
+								};
 							}
 							bots[botId].parents.push(queue);
 						});
@@ -132,14 +132,14 @@ export async function trace(sdk: RStreamsSdk, statsTableName: string, options: E
 								queues[queue] = {
 									parents: [],
 									children: []
-								}
+								};
 							}
 							queues[queue].parents.push(botId);
 							if (!(botId in bots)) {
 								bots[botId] = {
 									parents: [],
 									children: []
-								}
+								};
 							}
 							bots[botId].children.push(queue);
 						});
@@ -260,7 +260,7 @@ export async function trace(sdk: RStreamsSdk, statsTableName: string, options: E
 				});
 
 			}).catch(reject);
-		})
+		});
 	}
 }
 
@@ -273,7 +273,7 @@ function searchCorrelationId(sdk: RStreamsSdk, statsTableName: string, queue_id,
 	let dynamodb = sdk.aws.dynamodb;
 	let ls = sdk.streams;
 
-	logger.debug("Search Correlation Id:", bot_id.refId())
+	logger.debug("Search Correlation Id:", bot_id.refId());
 	dynamodb.docClient.query({
 		TableName: statsTableName,
 		KeyConditionExpression: "#id = :id and #bucket >= :bucket",
@@ -296,7 +296,7 @@ function searchCorrelationId(sdk: RStreamsSdk, statsTableName: string, queue_id,
 		let source = util.ref(correlation.source).queue().refId();
 		for (let i = 0; i < result.Items.length; i++) {
 			let stat = result.Items[i];
-			logger.debug(stat.bucket, stat.current.read[source] && stat.current.read[source].checkpoint, correlation.start)
+			logger.debug(stat.bucket, stat.current.read[source] && stat.current.read[source].checkpoint, correlation.start);
 			if (stat.current.read[source] && stat.current.read[source].checkpoint >= correlation.start) {
 				found = stat;
 				break;
@@ -326,7 +326,7 @@ function searchCorrelationId(sdk: RStreamsSdk, statsTableName: string, queue_id,
 			let found = null;
 			for (let i = 0; i < result.Items.length; i++) {
 				let stat = result.Items[i];
-				logger.debug(stat.bucket, stat.current.read[source] && stat.current.read[source].checkpoint, correlation.start)
+				logger.debug(stat.bucket, stat.current.read[source] && stat.current.read[source].checkpoint, correlation.start);
 				if (stat.current.read[source] && stat.current.read[source].checkpoint >= correlation.start) {
 					found = stat;
 					break;
@@ -342,7 +342,7 @@ function searchCorrelationId(sdk: RStreamsSdk, statsTableName: string, queue_id,
 			found = null;
 			let start = timestamp.format("[z/]YYYY/MM/DD/HH/mm/ss");
 			let shouldContinue = true;
-			logger.debug("Searching Events", queue_id.refId(), start)
+			logger.debug("Searching Events", queue_id.refId(), start);
 			ls.pipe(
 				ls.fromLeo("test", queue_id, {
 					start: start,
@@ -352,7 +352,7 @@ function searchCorrelationId(sdk: RStreamsSdk, statsTableName: string, queue_id,
 				ls.write(function (readEvent, done) {
 					let e = readEvent as TraceReadEvent;
 					if (!shouldContinue) {
-						logger.debug("Should stop")
+						logger.debug("Should stop");
 						return done();
 					}
 					e.kinesis_number = e.eid || e.kinesis_number;

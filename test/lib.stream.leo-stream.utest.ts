@@ -22,7 +22,7 @@ describe("leo-stream", function () {
 	let sandbox;
 	beforeEach(() => {
 		delete (process as any).__config;
-		sandbox = sinon.createSandbox()
+		sandbox = sinon.createSandbox();
 	});
 	afterEach(() => {
 		sandbox.restore();

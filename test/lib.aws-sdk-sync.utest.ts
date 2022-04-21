@@ -2,7 +2,7 @@ import child, { SpawnSyncReturns } from "child_process";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
 import sinon from "sinon";
-import awsSdkSync, { invoke as awsSdkSyncInvoke } from "../lib/aws-sdk-sync"
+import awsSdkSync, { invoke as awsSdkSyncInvoke } from "../lib/aws-sdk-sync";
 import AWS from "aws-sdk";
 chai.use(sinonchai);
 describe('lib/aws-sdk-sync', function () {
@@ -10,7 +10,7 @@ describe('lib/aws-sdk-sync', function () {
 	let sandbox;
 	beforeEach(() => {
 		delete (process as any).__config;
-		sandbox = sinon.createSandbox()
+		sandbox = sinon.createSandbox();
 	});
 	afterEach(() => {
 		sandbox.restore();
@@ -24,7 +24,7 @@ describe('lib/aws-sdk-sync', function () {
 			stderr: undefined,
 			status: 0,
 			signal: "SIGABRT",
-		}
+		};
 	}
 
 	it("S3 listBuckets - success", function () {
@@ -47,7 +47,7 @@ describe('lib/aws-sdk-sync', function () {
 				DisplayName: "XYZ",
 				ID: "123"
 			}
-		})
+		});
 	});
 
 	it("S3 listBuckets - error", function () {
@@ -59,8 +59,8 @@ describe('lib/aws-sdk-sync', function () {
 			new awsSdkSync.S3().listBuckets();
 			assert.fail("Should hvae thrown an error");
 		} catch (err) {
-			console.log(err)
-			assert.deepEqual(err.message, "Bad Request")
+			console.log(err);
+			assert.deepEqual(err.message, "Bad Request");
 		}
 
 	});
@@ -79,7 +79,7 @@ describe('lib/aws-sdk-sync', function () {
 			new awsSdkSync.S3().listBuckets();
 			assert.fail("Should hvae thrown an error");
 		} catch (err) {
-			assert.deepEqual(err.message, "Invalid Response: RESPONSE-::{}::-RESPONSE")
+			assert.deepEqual(err.message, "Invalid Response: RESPONSE-::{}::-RESPONSE");
 		}
 
 	});
@@ -99,7 +99,7 @@ describe('lib/aws-sdk-sync', function () {
 			new awsSdkSync.S3().listBuckets();
 			assert.fail("Should hvae thrown an error");
 		} catch (err) {
-			assert.deepEqual(err.message, "Some Process Error")
+			assert.deepEqual(err.message, "Some Process Error");
 		}
 	});
 
@@ -124,40 +124,40 @@ describe('lib/aws-sdk-sync', function () {
 		let log = sandbox.spy(console, "log");
 		sandbox.stub(AWS, "S3").returns({
 			someMethod: (params: any, cb) => {
-				cb(null, { SomeData: 1234 })
+				cb(null, { SomeData: 1234 });
 			}
 		});
 
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined)
+		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
 		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":null,"response":{"SomeData":1234}}::RESPONSE`]);
 	});
 
 	it("invoke - bad Service", function () {
 		let log = sandbox.spy(console, "log");
-		awsSdkSyncInvoke("S2", "someMethod", undefined, undefined)
+		awsSdkSyncInvoke("S2", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
-		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{\"error\":{\"message\":\"AWS.S2 is not a constructor\"}}::RESPONSE`]);
+		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"AWS.S2 is not a constructor"}}::RESPONSE`]);
 	});
 
 
 	it("invoke - bad method", function () {
 		let log = sandbox.spy(console, "log");
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined)
+		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
-		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{\"error\":{\"message\":\"AWS.S3.someMethod is not a function\"}}::RESPONSE`]);
+		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"AWS.S3.someMethod is not a function"}}::RESPONSE`]);
 	});
 
 	it("invoke - service error", function () {
 		let log = sandbox.spy(console, "log");
 		sandbox.stub(AWS, "S3").returns({
 			someMethod: (params: any, cb) => {
-				cb(Object.assign(new Error(), { message: "Some bad error" }))
+				cb(Object.assign(new Error(), { message: "Some bad error" }));
 			}
 		});
 
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined)
+		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
-		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{\"error\":{\"message\":\"Some bad error\"}}::RESPONSE`]);
+		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"Some bad error"}}::RESPONSE`]);
 	});
-})
+});
