@@ -1,11 +1,9 @@
-import pump from "pump";
 import splitLib from "split";
-import stream, { Stream } from 'stream';
-import Pumpify from "pumpify";
-import moment, { Moment } from "moment";
+import stream from 'stream';
+import moment from "moment";
 import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
-import Streams, { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
+import Streams, { BatchOptions, ProcessFunction, } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
 import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream } from "./types";
 import * as es from "event-stream";
@@ -458,7 +456,7 @@ export interface OffloadOptions<T> extends ReadOptions {
 	 * If this is a number, it's just the number of events to micro-batch up.
 	 * @todo review is this doc right?
 	 */
-	batch?: BatchOptions | Number;
+	batch?: BatchOptions | number;
 
 	/**
 	 * The SDK will invoke this function after reading events from the `inQueue` where you can do your processing.

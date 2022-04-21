@@ -91,7 +91,7 @@ function SDK(id, data) {
 	// Only make this a function if it is the default loader
 	// Otherwise use an {} as the base
 	return Object.assign(dataOrig === false ? function(id, data) {
-		return new SDK(id, data)
+		return new SDK(id, data);
 	} : {}, {
 		RStreamsSdk: SDK,
 		configuration: configuration,

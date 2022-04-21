@@ -48,7 +48,7 @@ export default class Configuration {
 
 	 */
 	constructor(config: any = {}) {
-		this.update(config)
+		this.update(config);
 	}
 
 	update(config: any = {}) {
@@ -86,8 +86,8 @@ export default class Configuration {
 	 *   logic.
 	 */
 	needsRefresh() {
-		var currentTime = util.date.getDate().getTime();
-		var adjustedTime = new Date(currentTime + this.expiryWindow * 1000);
+		let currentTime = util.date.getDate().getTime();
+		let adjustedTime = new Date(currentTime + this.expiryWindow * 1000);
 
 		if (this.expireTime && adjustedTime.valueOf() > this.expireTime) {
 			return true;
@@ -105,7 +105,7 @@ export default class Configuration {
 				return this[field] != null || field === "LeoSettings";
 			});
 
-			return this.expired || !valid
+			return this.expired || !valid;
 		}
 	}
 
@@ -150,5 +150,5 @@ export default class Configuration {
 	refreshSync() {
 		this.expired = false;
 	}
-};
+}
 

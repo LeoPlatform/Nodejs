@@ -489,7 +489,7 @@ export function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue:
  *   this is fine-grained control to ensure events keep flowing smoothly whether there are a few or many at a given moment.
  * @returns The pipeline step that is ready to be used in a pipeline
  */
-export function batch<T>(opts: BatchOptions | Number): TransformStream<T, ReadEvent<T[]>>;
+export function batch<T>(opts: BatchOptions | number): TransformStream<T, ReadEvent<T[]>>;
 
 export function passthrough<T, U>(opts?: stream.TransformOptions): TransformStream<T, U>;
 //export function through(transform?: through2.TransformFunction, flush?: through2.FlushCallback): stream.Transform;
@@ -720,14 +720,14 @@ export interface ToCsvOptions {
  */
 export interface BatchOptions {
 	/** The number of events to micro-batch before sending them to the next step in the pipeline */
-	count?: Number;
+	count?: number;
 
 	/**
 	 * The number of bytes of events to micro-batch up before sending them to the next step in the pipeline 
 	 * 
 	 * @see [[`BatchOptions.field`]]
 	 */
-	bytes?: Number;
+	bytes?: number;
 
 	/** 
 	 * The amount of time to wait, micro-batching events up before sending them to the next step in the pipeline 

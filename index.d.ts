@@ -1,6 +1,4 @@
-import Pumpify from "pumpify";
-import stream from "stream";
-import { Callback, EnrichOptions, OffloadOptions, ReadOptions, StreamUtil, ToCheckpointOptions, WriteOptions } from "./lib/lib";
+import { Callback, EnrichOptions, OffloadOptions,  StreamUtil } from "./lib/lib";
 import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
 import AWS, { Credentials } from "aws-sdk";
@@ -197,7 +195,7 @@ export declare class RStreamsSdk {
 
 		/** A refernce to the AWS CloudFormation library. */
 		cloudformation: AWS.CloudFormation
-	}
+	};
 
 	/**
 	 * @deprecated This is a legacy feature that is no longer used that remains for backward compatibility.

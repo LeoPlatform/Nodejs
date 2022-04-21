@@ -86,12 +86,11 @@ export class ConfigProviderChain extends Configuration {
 	 * @return [RStreams.Configuration] the provider, for chaining.
 	 */
 	resolveSync() {
-		let self = this;
-		if (self.providers.length === 0) {
+		if (this.providers.length === 0) {
 			throw new Error('No providers');
 		}
 
-		let providers = self.providers.slice(0);
+		let providers = this.providers.slice(0);
 
 		let value: any;
 		let error;
@@ -415,7 +414,7 @@ export class FileTreeConfiguration extends Configuration {
 
 		let values = null;
 
-		let currentDir = this.startingDirectory
+		let currentDir = this.startingDirectory;
 
 		let lastDir;
 		let dirs = [];
@@ -529,7 +528,7 @@ export class AWSSecretsConfiguration extends Configuration {
 	static valueCache: any = {};
 	public static clearCache() {
 		AWSSecretsConfiguration.valueCache = {};
-	};
+	}
 
 	/**
 	 * Creates a new ConfigProviderChain with a default set of providers
