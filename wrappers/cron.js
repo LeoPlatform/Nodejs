@@ -1,15 +1,13 @@
-"use strict";
 
 
-let cachedHandler;
 module.exports = function(configOverride, botHandler) {
-	process.resources = process.env.Resources && JSON.parse(process.env.Resources) || {};
+	process.resources = (process.env.Resources && JSON.parse(process.env.Resources)) || {};
 
 	let config = require("../leoConfigure.js");
-	//const async = require("async");
+	// const async = require("async");
 	const logger = require('leo-logger')('cron.wrapper');
 	const leosdk = require("../index.js");
-	//const kms = require("../lib/kms")(leosdk.configuration);
+	// const kms = require("../lib/kms")(leosdk.configuration);
 	const refUtil = require("../lib/reference.js");
 
 	process.__config = config;
@@ -18,15 +16,14 @@ module.exports = function(configOverride, botHandler) {
 	// require('source-map-support').install({
 	// 	environment: 'node',
 	// 	handleUncaughtExceptions: false
-	//});
+	// });
 
-	//const handler = "____HANDLER____";
-	//const pkg = require("____PACKAGEJSON____");
+	// const handler = "____HANDLER____";
+	// const pkg = require("____PACKAGEJSON____");
 	const botId = config.name;
-	const settings = config.cron && config.cron.settings || {};
+	const settings = (config.cron && config.cron.settings) || {};
 
-	const moment = require("moment");
-	let decrypted = false;
+	// let decrypted = false;
 	// let botHandler = function(event, context, callback) {
 	// 	let tasks = [];
 	// 	Object.keys(process.env).forEach(function(key) {
@@ -54,7 +51,7 @@ module.exports = function(configOverride, botHandler) {
 	const cron = leosdk.bot;
 	const dynamodb = leosdk.aws.dynamodb;
 
-	for (let x of process.listeners('uncaughtException')) { //remove lambdas default listener
+	for (let x of process.listeners('uncaughtException')) { // remove lambdas default listener
 		process.removeListener('uncaughtException', x);
 	}
 	let theCallback;
@@ -62,7 +59,7 @@ module.exports = function(configOverride, botHandler) {
 	let __theEvent = {};
 	process.on('uncaughtException', function(err) {
 		console.log(`[LEOCRON]:end:${config.name}:${theContext.awsRequestId}`);
-		logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);
+		logger.error((new Date()).toUTCString() + ' uncaughtException:', err.message);
 		logger.error(err.stack);
 		if (__theEvent.__cron) {
 			cron.reportComplete(__theEvent.__cron, theContext.awsRequestId, "error", {
@@ -110,7 +107,9 @@ module.exports = function(configOverride, botHandler) {
 					(event.__cron.checkpoints.read[queue] && event.__cron.checkpoints.read[queue].checkpoint) ||
 					(event.__cron.checkpoints.read[queue.id] && event.__cron.checkpoints.read[queue.id].checkpoint))
 			) || defaultIfNull;
-			if (callback) callback(null, c);
+			if (callback) {
+				callback(null, c); 
+			}
 			return c;
 		};
 
@@ -134,15 +133,15 @@ module.exports = function(configOverride, botHandler) {
 		// }
 
 		theCallback = callback;
-		//clear out the registry
+		// clear out the registry
 		empty(config.registry);
 		leosdk.configuration.registry = config.registry;
 		config.registry.context = context;
 		config.registry.__cron = event.__cron;
 		global.cron_run_again = false;
-		if (event.__cron && event.__cron.id) { //If it is in cron, use that regardless
+		if (event.__cron && event.__cron.id) { // If it is in cron, use that regardless
 			config.registry.id = event.__cron.id;
-		} else if (!config.registry.id) { //If they didn't specify it in their config, then let's get it from the function name
+		} else if (!config.registry.id) { // If they didn't specify it in their config, then let's get it from the function name
 			config.registry.id = process.env.AWS_LAMBDA_FUNCTION_NAME;
 		}
 		logger.log("Registry", JSON.stringify(config.registry, null, 2));
@@ -152,10 +151,9 @@ module.exports = function(configOverride, botHandler) {
 			let cronkey = event.__cron.id + ":" + event.__cron.iid + ":" + event.__cron.ts + ":" + context.awsRequestId;
 			console.log("[LEOCRON]:check:" + cronkey);
 			logger.log("Locking on  __cron", event.__cron);
-			let startTime = moment.now();
-			cron.checkLock(event.__cron, context.awsRequestId, context.getRemainingTimeInMillis(), function(err, data) {
+			cron.checkLock(event.__cron, context.awsRequestId, context.getRemainingTimeInMillis(), function(err) {
 				if (err) {
-					if (err && err.code == "ConditionalCheckFailedException") {
+					if (err && err.code === "ConditionalCheckFailedException") {
 						logger.log("LOCK EXISTS, cannot run");
 						callback(null, "already running");
 					} else {
@@ -165,10 +163,10 @@ module.exports = function(configOverride, botHandler) {
 				} else {
 					try {
 						console.log("[LEOCRON]:start:" + cronkey);
-						fill(event || {}, config, dynamodb.docClient).then(filledEvent => {
+						fill(event || {}, config, dynamodb.docClient).then((filledEvent) => {
 							let promise = botHandler(filledEvent, context, function(err, data) {
 								console.log("[LEOCRON]:complete:" + cronkey);
-								cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
+								cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2) {
 									if (err || err2) {
 										logger.log(err || err2);
 									}
@@ -176,9 +174,9 @@ module.exports = function(configOverride, botHandler) {
 								});
 							});
 							if (promise && typeof promise.then == "function" && botHandler.length < 3) {
-								promise.then(data => {
+								promise.then((data) => {
 									console.log("[LEOCRON]:complete:" + cronkey);
-									cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
+									cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2) {
 										if (err || err2) {
 											logger.log(err || err2);
 										}
@@ -187,18 +185,19 @@ module.exports = function(configOverride, botHandler) {
 								});
 							}
 							if (promise && typeof promise.catch == "function") {
-								promise.catch(err => {
+								promise.catch((err) => {
 									console.log("[LEOCRON]:complete:" + cronkey);
 									cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
 										callback(null, err);
 									});
 								});
 							}
-						}).catch(err => {
-							cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
-								callback(null, err);
+						})
+							.catch((err) => {
+								cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
+									callback(null, err);
+								});
 							});
-						});
 					} catch (e) {
 						logger.log("error", e);
 						cron.reportComplete(event.__cron, context.awsRequestId, "error", {
@@ -215,29 +214,30 @@ module.exports = function(configOverride, botHandler) {
 		} else {
 			console.log("Locking Settings");
 
-			cron.createLock(config.name, context.awsRequestId, context.getRemainingTimeInMillis() + 100, function(err, data) {
+			cron.createLock(config.name, context.awsRequestId, context.getRemainingTimeInMillis() + 100, function(err) {
 				if (err) {
 					logger.log("LOCK EXISTS, cannot run");
 					callback(null, "already running");
 				} else {
 					try {
 						logger.log("running");
-						fill(event || {}, config, dynamodb.docClient).then(filledEvent => {
+						fill(event || {}, config, dynamodb.docClient).then((filledEvent) => {
 							botHandler(filledEvent, context, function(err, data) {
 								logger.log("removing lock", config.name, context.awsRequestId);
-								cron.removeLock(config.name, context.awsRequestId, function(err2, data2) {
+								cron.removeLock(config.name, context.awsRequestId, function(err2) {
 									if (err || err2) {
 										logger.log(err || err2);
 									}
 									callback(null, err || data);
 								});
 							});
-						}).catch(err => {
-							logger.log("error");
-							cron.removeLock(config.name, context.awsRequestId, function() {
-								callback(null, err);
-							}, "error");
-						});
+						})
+							.catch((err) => {
+								logger.log("error");
+								cron.removeLock(config.name, context.awsRequestId, function() {
+									callback(null, err);
+								}, "error");
+							});
 					} catch (e) {
 						logger.log("error");
 						cron.removeLock(config.name, context.awsRequestId, function() {
@@ -248,5 +248,5 @@ module.exports = function(configOverride, botHandler) {
 				}
 			});
 		}
-	}
-}
+	};
+};

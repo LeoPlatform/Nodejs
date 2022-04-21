@@ -1,4 +1,4 @@
-"use strict";
+
 let leoconfig = require("leo-config");
 let ls = require("./lib/stream/leo-stream");
 let logging = require("./lib/logging.js");
@@ -91,7 +91,7 @@ function SDK(id, data) {
 	// Only make this a function if it is the default loader
 	// Otherwise use an {} as the base
 	return Object.assign(dataOrig === false ? function(id, data) {
-		return new SDK(id, data)
+		return new SDK(id, data);
 	} : {}, {
 		RStreamsSdk: SDK,
 		configuration: configuration,
@@ -200,7 +200,7 @@ function SDK(id, data) {
 
 
 			// Setup a timeout if requested
-			let timeout;
+			let timeout = null;
 			if (opts.milliseconds != null && opts.milliseconds > 0) {
 				timeout = setTimeout(() => {
 					if (!pass.isEnding) {
@@ -218,7 +218,9 @@ function SDK(id, data) {
 				log.debug('Pass.end Called');
 				if (!pass.isEnding) {
 					pass.isEnding = true;
-					timeout && clearTimeout(timeout);
+					if (timeout != null) {
+						clearTimeout(timeout); 
+					}
 					pass.orig_end();
 				}
 			};
@@ -248,7 +250,7 @@ function SDK(id, data) {
 				// 2) Time runs out
 				// 3) We have yielding the requested number of records
 				outerLoop:
-				while ((records != null && records.length > 0) && opts.records > totalRecords && !pass.isEnding) {
+				while (records != null && records.length > 0 && opts.records > totalRecords && !pass.isEnding) {
 					for (const hit of records) {
 						totalRecords++;
 
@@ -272,17 +274,17 @@ function SDK(id, data) {
 			}
 
 			// Async function to query and write data to the stream
-			let run = (async function() {
+			let run = async function() {
 				for await (const data of poller()) {
 					await pass.throttleWrite(data);
 				}
-			});
+			};
 
 			// Start running the async function with hooks to pass along errors
 			// and end the pass through
 			run()
 				.then(() => pass.end())
-				.catch(err => pass.emit('error', err));
+				.catch((err) => pass.emit('error', err));
 
 			return pass;
 		}

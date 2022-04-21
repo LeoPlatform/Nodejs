@@ -1,17 +1,91 @@
-import RStreamsSdk, { ReadEvent } from "../index";
+/* eslint-disable no-unused-expressions */
+import rstreamsSdk, { ReadEvent, RStreamsSdk } from "../index";
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
-import AWS, { Credentials, Kinesis } from "aws-sdk";
-import { gzipSync, gunzipSync } from "zlib";
-//import { StreamUtil } from "../lib/lib";
+import AWS, { Credentials } from "aws-sdk";
+import zlib, { gzipSync, gunzipSync } from "zlib";
+// import { StreamUtil } from "../lib/lib";
 import streams from "../lib/streams";
 import fs from "fs";
-import zlib from "zlib";
 import util from "../lib/aws-util";
 import awsSdkSync from "../lib/aws-sdk-sync";
 import { ReadableStream } from "../lib/types";
 chai.use(sinonchai);
+
+
+class BusStreamMockBuilder {
+	items = {};
+
+	addEvents(queue: string, data: unknown[], options: { now?: number } = {}, common: unknown = null) {
+
+		let now = options.now || Date.now();
+		data.forEach((event, index) => {
+			Object.assign(event, common, {
+				event: queue,
+				eid: index
+			});
+		});
+		let count = data.length;
+		let eid = streams.eventIdFromTimestamp(now) + "-";
+		let asString = data.map((a) => JSON.stringify(a)).join("\n") + "\n";
+		let gzip = gzipSync(asString);
+		if (!(queue in this.items)) {
+			this.items[queue] = [];
+		}
+		this.items[queue].push({
+			size: Buffer.byteLength(asString),
+			event: queue,
+			v: 2,
+			gzip: gzip,
+			gzipSize: Buffer.byteLength(gzip),
+			records: count,
+			start: eid + "0000000",
+			end: eid + (count - 1).toString().padStart(7, "0")
+		});
+	}
+
+	getAll(queue: string, chunksSize = 50) {
+		let items = (this.items[queue] || []);
+		let results = [];
+		while (items.length > 0) {
+			results.push(this.getNext(queue, chunksSize));
+		}
+		results.push({
+			Items: [],
+			Count: 0,
+			ScannedCount: 0,
+			ConsumedCapacity: {
+				TableName: "mock-LeoStream",
+				CapacityUnits: 1
+			}
+		});
+		return results;
+	}
+
+	getNext(queue: string, count: number) {
+		let items = (this.items[queue] || []).splice(0, count);
+		return {
+			Items: items,
+			Count: items.length,
+			ScannedCount: items.length,
+			LastEvaluatedKey: {
+				event: queue,
+				end: (items[items.length - 1] || {}).end
+			},
+			ConsumedCapacity: {
+				TableName: "mock-LeoStream",
+				CapacityUnits: 1
+			}
+		};
+	}
+}
+
+interface S3Ref {
+	event_source_timestamp: number;
+	timestamp: number; 
+	s3: { bucket: string, key: string } 
+}
 
 let mockSdkConfig = {
 	Region: "mock-Region",
@@ -39,19 +113,22 @@ let keys = [
 describe('RStreams', function () {
 	let sandbox: sinon.SinonSandbox;
 	beforeEach(() => {
-		envVars.forEach(field => {
+		envVars.forEach((field) => {
 			delete process.env[field];
 			delete process[field];
 			delete global[field];
-			keys.forEach(key => {
+			keys.forEach((key) => {
 				delete process.env[`${field}_${key}`];
 			});
 		});
 
 		delete process.env.LEO_ENVIRONMENT;
 		delete require("leo-config").leosdk;
-		delete (process as any).__config;
-		sandbox = sinon.createSandbox()
+		interface ProcessConfig {
+			__config: unknown
+		}
+		delete (process as unknown as ProcessConfig).__config;
+		sandbox = sinon.createSandbox();
 	});
 	afterEach(() => {
 		sandbox.restore();
@@ -62,8 +139,14 @@ describe('RStreams', function () {
 		it('AWS Mock Test', async function () {
 			let response1: AWS.S3.ListBucketsOutput = {
 				Buckets: [
-					{ Name: 'Some-Bucket', CreationDate: new Date("2021-03-01T23:34:09.000Z") },
-					{ Name: 'Some-Other-Bucket', CreationDate: new Date("2012-12-05T23:00:08.000Z") },
+					{
+						Name: 'Some-Bucket',
+						CreationDate: new Date("2021-03-01T23:34:09.000Z")
+					},
+					{
+						Name: 'Some-Other-Bucket',
+						CreationDate: new Date("2012-12-05T23:00:08.000Z")
+					},
 				],
 				Owner: {
 					DisplayName: 'DisplayName1',
@@ -72,7 +155,10 @@ describe('RStreams', function () {
 			};
 			let response2: AWS.S3.ListBucketsOutput = {
 				Buckets: [
-					{ Name: 'Different-Bucket', CreationDate: new Date("2021-03-01T23:34:09.000Z") },
+					{
+						Name: 'Different-Bucket',
+						CreationDate: new Date("2021-03-01T23:34:09.000Z")
+					},
 				],
 				Owner: {
 					DisplayName: 'DisplayName2',
@@ -80,14 +166,17 @@ describe('RStreams', function () {
 				}
 			};
 
-			function AWSRequest(response: AWS.S3.ListBucketsOutput) {
-				return { promise: async () => response };
+			function awsRequest(response: AWS.S3.ListBucketsOutput) {
+				return { promise: () => Promise.resolve(response) };
 			}
 
 			let listBuckets = sandbox.stub()
-				.onFirstCall().returns(AWSRequest(response1)) // Promise call 1
-				.onSecondCall().returns(AWSRequest(response2)) // Promise call 2
-				.onThirdCall().callsArgWith(0, null, response2); // Callback call 3
+				.onFirstCall()
+				.returns(awsRequest(response1)) // Promise call 1
+				.onSecondCall()
+				.returns(awsRequest(response2)) // Promise call 2
+				.onThirdCall()
+				.callsArgWith(0, null, response2); // Callback call 3
 
 			sandbox.stub(AWS, 'S3').returns({ listBuckets }); // Stub the S3 service
 
@@ -96,7 +185,9 @@ describe('RStreams', function () {
 			let s3 = new AWS.S3();
 			assert.deepEqual(await s3.listBuckets().promise(), response1);
 			assert.deepEqual(await s3.listBuckets().promise(), response2);
-			assert.deepEqual(await new Promise((resolve, reject) => { s3.listBuckets((err, data) => err ? reject(err) : resolve(data)) }), response2);
+			assert.deepEqual(await new Promise((resolve, reject) => {
+				s3.listBuckets((err, data) => (err ? reject(err) : resolve(data)));
+			}), response2);
 			expect(listBuckets).to.be.callCount(3);
 
 		});
@@ -122,7 +213,8 @@ describe('RStreams', function () {
 			};
 
 			let batchGet = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
 			builder.addEvents(
@@ -133,7 +225,7 @@ describe('RStreams', function () {
 					}, {
 						data: 2
 					}
-				].map(a => ({ payload: a })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+				].map((a) => ({ payload: a })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(queue);
 			let query = sandbox.stub();
@@ -141,16 +233,19 @@ describe('RStreams', function () {
 				query.onCall(index).callsArgWith(1, null, data);
 			});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({
+				batchGet,
+				query
+			});
 
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
 
 			let events = await new Promise((resolve, reject) => {
 				ls.pipe(
 					sdk.read(botId, queue, { start: ls.eventIdFromTimestamp(1647460979244) }),
-					ls.eventstream.writeArray((err: any, results: unknown) => {
-						err ? reject(err) : resolve(results)
+					ls.eventstream.writeArray((err: Error, results: unknown) => {
+						err ? reject(err) : resolve(results);
 					})
 				);
 			});
@@ -181,10 +276,12 @@ describe('RStreams', function () {
 			let botId = "mock-bot-id";
 
 			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
-				Records: [{
-					SequenceNumber: "0",
-					ShardId: "shard-0"
-				}]
+				Records: [
+					{
+						SequenceNumber: "0",
+						ShardId: "shard-0"
+					}
+				]
 			};
 			let kinesisPutRecords = sandbox.stub();
 			kinesisPutRecords
@@ -192,36 +289,38 @@ describe('RStreams', function () {
 
 			let firehosePutRecordBatch = sandbox.stub();
 
-			//sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+			// sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
 			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
 			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
 
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
 
 			//			{"id":"mock-bot-id","payload":{"hello":"world"},"event_source_timestamp":1647463353000,"timestamp":1647463353000,"event":"mock-out-queue","eid":0}
-			//{"id":"mock-bot-id","payload":{"good":"bye"},"event_source_timestamp":1647463353001,"timestamp":1647463353001,"event":"mock-out-queue","eid":1}
+			// {"id":"mock-bot-id","payload":{"good":"bye"},"event_source_timestamp":1647463353001,"timestamp":1647463353001,"event":"mock-out-queue","eid":1}
 			await new Promise((resolve, reject) => {
 				ls.pipe(
-					ls.eventstream.readArray([{
-						id: botId,
-						payload: { hello: "world" },
-						event_source_timestamp: 1647463353000,
-						timestamp: 1647463353000,
-					}, {
-						id: botId,
-						payload: { good: "bye" },
-						event_source_timestamp: 1647463353001,
-						timestamp: 1647463353001,
-					}]),
+					ls.eventstream.readArray([
+						{
+							id: botId,
+							payload: { hello: "world" },
+							event_source_timestamp: 1647463353000,
+							timestamp: 1647463353000,
+						}, {
+							id: botId,
+							payload: { good: "bye" },
+							event_source_timestamp: 1647463353001,
+							timestamp: 1647463353001,
+						}
+					]),
 					sdk.load(botId, queue, {}),
-					(err) => err ? reject(err) : resolve(undefined)
+					(err) => (err ? reject(err) : resolve(undefined))
 				);
 			});
 			expect(firehosePutRecordBatch).is.not.called;
 			expect(kinesisPutRecords).is.called;
 			let expectedData = "H4sIAAAAAAAACo3OwQqDMAwG4LuPkXMLLXUOfBmpGqasXZymDil991VhR3HH5A/5vwhjDzV46p6yJZZ5EjDZzZHN+wgDOkf54EOz6yEJwBVf3CwU5g4bHj0ubP0Eta7Ke1kZczNKKQHnyfHgV0mB5TtgwNyKu0SlIl6QHkR73m74r0efevSVR6fiC2oPrJkjAQAA";
-			kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: any; }) => {
+			kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: Buffer | string; }) => {
 				// convert buffers to strings
 				r.Data = zlib.gunzipSync(Buffer.from(r.Data.toString("base64"), "base64")).toString();
 			});
@@ -249,39 +348,43 @@ describe('RStreams', function () {
 
 			let firehosePutRecordBatchRespone: AWS.Firehose.Types.PutRecordBatchOutput = {
 				FailedPutCount: 0,
-				RequestResponses: [{
-					RecordId: "mock-record-id",
-					ErrorCode: undefined,
-					ErrorMessage: undefined,
-				}]
+				RequestResponses: [
+					{
+						RecordId: "mock-record-id",
+						ErrorCode: undefined,
+						ErrorMessage: undefined,
+					}
+				]
 			};
 			firehosePutRecordBatch
 				.callsArgWith(1, null, firehosePutRecordBatchRespone);
 
-			//sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+			// sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
 			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
 			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
 
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
 
 			//			{"id":"mock-bot-id","payload":{"hello":"world"},"event_source_timestamp":1647463353000,"timestamp":1647463353000,"event":"mock-out-queue","eid":0}
-			//{"id":"mock-bot-id","payload":{"good":"bye"},"event_source_timestamp":1647463353001,"timestamp":1647463353001,"event":"mock-out-queue","eid":1}
+			// {"id":"mock-bot-id","payload":{"good":"bye"},"event_source_timestamp":1647463353001,"timestamp":1647463353001,"event":"mock-out-queue","eid":1}
 			await new Promise((resolve, reject) => {
 				ls.pipe(
-					ls.eventstream.readArray([{
-						id: botId,
-						payload: { hello: "world" },
-						event_source_timestamp: 1647463353000,
-						timestamp: 1647463353000,
-					}, {
-						id: botId,
-						payload: { good: "bye" },
-						event_source_timestamp: 1647463353001,
-						timestamp: 1647463353001,
-					}]),
+					ls.eventstream.readArray([
+						{
+							id: botId,
+							payload: { hello: "world" },
+							event_source_timestamp: 1647463353000,
+							timestamp: 1647463353000,
+						}, {
+							id: botId,
+							payload: { good: "bye" },
+							event_source_timestamp: 1647463353001,
+							timestamp: 1647463353001,
+						}
+					]),
 					sdk.load(botId, queue, { firehose: true }),
-					(err) => err ? reject(err) : resolve(undefined)
+					(err) => (err ? reject(err) : resolve(undefined))
 				);
 			});
 			expect(firehosePutRecordBatch).is.called;
@@ -305,19 +408,22 @@ describe('RStreams', function () {
 			let queue = "mock-out-queue";
 			let botId = "mock-bot-id";
 
+
 			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
-				Records: [{
-					SequenceNumber: "0",
-					ShardId: "shard-0"
-				}]
+				Records: [
+					{
+						SequenceNumber: "0",
+						ShardId: "shard-0"
+					}
+				]
 			};
 			let kinesisPutRecords = sandbox.stub();
 			kinesisPutRecords
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
 			let firehosePutRecordBatch = sandbox.stub();
-
-			let s3Upload = (obj: { Body: ReadableStream<any>; }, callback: (arg0: Error) => void) => {
+			let ls;
+			let s3Upload = (obj: { Body: ReadableStream<unknown>; }, callback: (arg0: Error) => void) => {
 				ls.pipe(obj.Body, ls.devnull(), (e) => callback(e));
 			};
 
@@ -326,43 +432,46 @@ describe('RStreams', function () {
 			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
 			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
 
-			let sdk = RStreamsSdk(mockSdkConfig);
-			let ls = sdk.streams;
+			let sdk = rstreamsSdk(mockSdkConfig);
+			ls = sdk.streams;
 
 			await new Promise((resolve, reject) => {
 				ls.pipe(
-					ls.eventstream.readArray([{
-						id: botId,
-						payload: { hello: "world" },
-						event_source_timestamp: 1647463353000,
-						timestamp: 1647463353000,
-					}, {
-						id: botId,
-						payload: { good: "bye" },
-						event_source_timestamp: 1647463353001,
-						timestamp: 1647463353001,
-					}]),
+					ls.eventstream.readArray([
+						{
+							id: botId,
+							payload: { hello: "world" },
+							event_source_timestamp: 1647463353000,
+							timestamp: 1647463353000,
+						}, {
+							id: botId,
+							payload: { good: "bye" },
+							event_source_timestamp: 1647463353001,
+							timestamp: 1647463353001,
+						}
+					]),
 					sdk.load(botId, queue, { useS3: true }),
-					(err) => err ? reject(err) : resolve(undefined)
+					(err) => (err ? reject(err) : resolve(undefined))
 				);
 			});
 			expect(firehosePutRecordBatch).is.not.called;
 			expect(kinesisPutRecords).is.called;
-			kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: any; }) => {
+			kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: Buffer | S3Ref; }) => {
 				// convert buffers to strings
-				r.Data = JSON.parse(gunzipSync(r.Data).toString());
+				r.Data = JSON.parse(gunzipSync(r.Data as Buffer).toString());
 
+				let data = r.Data as S3Ref;
 				// Verify s3 field exists.  This has a uuid in it will be random
-				assert.exists(r.Data.s3);
-				assert.equal(r.Data.s3.bucket, "mock-leos3");
-				assert(r.Data.s3.key.match(/^bus\/mock-out-queue\/mock-bot-id\/z.*\.gz$/));
-				delete r.Data.s3;
+				assert.exists(data.s3);
+				assert.equal(data.s3.bucket, "mock-leos3");
+				assert(data.s3.key.match(/^bus\/mock-out-queue\/mock-bot-id\/z.*\.gz$/));
+				delete data.s3;
 
 				// TODO: Why are this not predictable or based on the data passed in
-				assert.exists(r.Data.timestamp);
-				assert.exists(r.Data.event_source_timestamp);
-				delete r.Data.event_source_timestamp;
-				delete r.Data.timestamp;
+				assert.exists(data.timestamp);
+				assert.exists(data.event_source_timestamp);
+				delete data.event_source_timestamp;
+				delete data.timestamp;
 
 			});
 			assert.deepEqual(kinesisPutRecords.getCall(0).args[0], {
@@ -371,9 +480,7 @@ describe('RStreams', function () {
 				"Records": [
 					{
 						"Data": {
-							"correlations": [
-								{}
-							],
+							"correlations": [{}],
 							"end": 1,
 							"event": "mock-out-queue",
 							"gzipSize": 147,
@@ -411,25 +518,15 @@ describe('RStreams', function () {
 	});
 
 	describe("sdk load config", function () {
-		function AWSRequest(response: any) {
-			return {
-				promise: async () => {
-					if (response instanceof Error) {
-						throw response;
-					}
-					return response;
-				}
-			};
-		}
 
 		it("default - ignore fail", function () {
-			RStreamsSdk(false as any);
+			(rstreamsSdk as unknown as (validat:boolean)=>RStreamsSdk)(false);
 		});
 
 		it("default - fail", function () {
 			try {
-				RStreamsSdk();
-				assert.fail("Should throw an error")
+				rstreamsSdk();
+				assert.fail("Should throw an error");
 			} catch (err) {
 				console.log(err);
 				assert.equal(err.code, "AWSSecretsConfigurationProviderFailure");
@@ -439,16 +536,16 @@ describe('RStreams', function () {
 
 		it("default - env", function () {
 			process.env.RSTREAMS_CONFIG = JSON.stringify(mockSdkConfig);
-			let sdk = RStreamsSdk();
-			Object.keys(mockSdkConfig).forEach(key => {
-				assert.equal(sdk.configuration.resources[key], mockSdkConfig[key])
-			})
+			let sdk = rstreamsSdk();
+			Object.keys(mockSdkConfig).forEach((key) => {
+				assert.equal(sdk.configuration.resources[key], mockSdkConfig[key]);
+			});
 		});
 
 		it("default - fail Secret not given", function () {
 			try {
-				RStreamsSdk();
-				assert.fail("Should throw an error")
+				rstreamsSdk();
+				assert.fail("Should throw an error");
 			} catch (err) {
 				assert.equal(err.message, "Secret not specified.  Use ENV var RSTREAMS_CONFIG_SECRET.");
 			}
@@ -456,43 +553,35 @@ describe('RStreams', function () {
 
 		it("default - fail Secret doesn't exist", function () {
 			try {
-				let getSecretValue = sandbox.stub().throws(
-					//AWSRequest(
-					util.error(
-						new Error("Secrets Manager can't find the specified secret."),
-						{
-							code: "ResourceNotFoundException"
-						}
-					)
-					//)
-				);
+				let getSecretValue = sandbox.stub().throws(util.error(
+					new Error("Secrets Manager can't find the specified secret."),
+					{
+						code: "ResourceNotFoundException"
+					}
+				));
 				sandbox.stub(awsSdkSync, 'SecretsManager').returns({ getSecretValue });
 
 				process.env.RSTREAMS_CONFIG_SECRET = "some-random-secret-should-not-exist";
-				RStreamsSdk();
-				assert.fail("Should throw an error")
+				rstreamsSdk();
+				assert.fail("Should throw an error");
 			} catch (err) {
 				assert.equal(err.message, "Secret 'some-random-secret-should-not-exist' not available. ResourceNotFoundException: Secrets Manager can't find the specified secret.");
 			}
 		});
 
-		it("default - fail Secret don't have access", async function () {
+		it("default - fail Secret don't have access", function () {
 			try {
-				let getSecretValue = sandbox.stub().throws(
-					//AWSRequest(
-					util.error(
-						new Error("User: xyz is not authorized to perform: secretsmanager:GetSecretValue on resource: some-random-secret"),
-						{
-							code: "AccessDeniedException"
-						}
-					)
-					//)
-				);
+				let getSecretValue = sandbox.stub().throws(util.error(
+					new Error("User: xyz is not authorized to perform: secretsmanager:GetSecretValue on resource: some-random-secret"),
+					{
+						code: "AccessDeniedException"
+					}
+				));
 				sandbox.stub(awsSdkSync, 'SecretsManager').returns({ getSecretValue });
 
 				process.env.RSTREAMS_CONFIG_SECRET = "some-random-secret";
-				RStreamsSdk();
-				assert.fail("Should throw an error")
+				rstreamsSdk();
+				assert.fail("Should throw an error");
 			} catch (err) {
 				assert.equal(err.message, "Secret 'some-random-secret' not available. AccessDeniedException: User: xyz is not authorized to perform: secretsmanager:GetSecretValue on resource: some-random-secret");
 			}
@@ -504,65 +593,67 @@ describe('RStreams', function () {
 		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
 			delete require("leo-config").leoaws;
-			sandbox = sinon.createSandbox()
+			sandbox = sinon.createSandbox();
 		});
 		afterEach(() => {
 			sandbox.restore();
 		});
 
-		it("should read an aws profile w/ STS", async function () {
+		it("should read an aws profile w/ STS", function () {
 
 			require("leo-config").leoaws = {
 				profile: "mock-profile"
 			};
 
 			sandbox.stub(fs, "existsSync").returns(true);
-			sandbox.stub(fs, "readFileSync").onFirstCall().callsFake(() =>
-				"[profile mock-profile]\n" +
-				"source_profile = mock-profile\n" +
-				"mfa_serial = arn:aws:iam::mock-account:mfa/mock-user\n" +
-				"role_arn = arn:aws:iam::mock-account:role/mock-role"
-			).onSecondCall().callsFake(() => JSON.stringify({
-				Credentials: {
-					Expiration: Date.now() + 100000
-				}
-			}));
+			sandbox.stub(fs, "readFileSync").onFirstCall()
+				.callsFake(() => "[profile mock-profile]\n" +
+					"source_profile = mock-profile\n" +
+					"mfa_serial = arn:aws:iam::mock-account:mfa/mock-user\n" +
+					"role_arn = arn:aws:iam::mock-account:role/mock-role")
+				.onSecondCall()
+				.callsFake(() => JSON.stringify({
+					Credentials: {
+						Expiration: Date.now() + 100000
+					}
+				}));
 
 			let fakeCredentials = {
 				fake: "values-1"
 			};
 			sandbox.stub(AWS, "STS").returns({
 				credentialsFrom: sandbox.stub().callsFake(() => fakeCredentials)
-			})
-			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
+			});
+			let sdk = rstreamsSdk(mockSdkConfig);
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
 		});
 
-		it("should read an aws profile w/ INI", async function () {
+		it("should read an aws profile w/ INI", function () {
 
 			require("leo-config").leoaws = {
 				profile: "mock-profile"
 			};
 
 			sandbox.stub(fs, "existsSync").returns(true);
-			sandbox.stub(fs, "readFileSync").onFirstCall().callsFake(() =>
-				"[profile mock-profile]\n" +
-				"source_profile = mock-profile"
-			).onSecondCall().callsFake(() => JSON.stringify({
-				Credentials: {
-					Expiration: Date.now() + 100000
-				}
-			}));
+			sandbox.stub(fs, "readFileSync").onFirstCall()
+				.callsFake(() => "[profile mock-profile]\n" +
+					"source_profile = mock-profile")
+				.onSecondCall()
+				.callsFake(() => JSON.stringify({
+					Credentials: {
+						Expiration: Date.now() + 100000
+					}
+				}));
 
 			let fakeCredentials = {
 				fake: "values-2"
 			};
 			sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
-			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
+			let sdk = rstreamsSdk(mockSdkConfig);
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
 		});
 
-		it("should read an aws profile w/ INI no file", async function () {
+		it("should read an aws profile w/ INI no file", function () {
 
 			require("leo-config").leoaws = {
 				profile: "mock-profile"
@@ -574,15 +665,15 @@ describe('RStreams', function () {
 				fake: "values-3"
 			};
 			sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
-			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
+			let sdk = rstreamsSdk(mockSdkConfig);
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
 		});
 	});
 
 	describe("sdk enrich", function () {
 		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
-			sandbox = sinon.createSandbox()
+			sandbox = sinon.createSandbox();
 		});
 		afterEach(() => {
 			sandbox.restore();
@@ -597,7 +688,7 @@ describe('RStreams', function () {
 
 			let inQueue = "mock-in";
 			let outQueue = "mock-out";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -609,21 +700,24 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 
 			let batchGet = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
 			builder.addEvents(
@@ -634,7 +728,11 @@ describe('RStreams', function () {
 					}, {
 						a: "2"
 					}
-				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+				].map((a) => ({
+					payload: a,
+					event_source_timestamp: 1647460979244,
+					timestamp: 1647460979244
+				})), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(inQueue);
 			let query = sandbox.stub();
@@ -645,15 +743,22 @@ describe('RStreams', function () {
 
 			let updateResponse = {};
 			let update = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, updateResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({
+				batchGet,
+				query,
+				update
+			});
 
 			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
-				Records: [{
-					SequenceNumber: "0",
-					ShardId: "shard-0"
-				}]
+				Records: [
+					{
+						SequenceNumber: "0",
+						ShardId: "shard-0"
+					}
+				]
 			};
 			let kinesisPutRecords = sandbox.stub();
 			kinesisPutRecords
@@ -661,7 +766,7 @@ describe('RStreams', function () {
 
 			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
 
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			sdk.enrich<InData, OutData>({
 				id: botId,
 				inQueue: inQueue,
@@ -675,7 +780,8 @@ describe('RStreams', function () {
 					let updateCallArgs = update.getCall(0).args[0];
 					delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
 					delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
-					assert.deepEqual(updateCallArgs,
+					assert.deepEqual(
+						updateCallArgs,
 						{
 							"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
 							"ExpressionAttributeNames": {
@@ -703,13 +809,38 @@ describe('RStreams', function () {
 
 					expect(kinesisPutRecords).is.called;
 					let expectedData = [
-						{ "id": "mock-bot", "event": "mock-out", "payload": { "b": "1" }, "event_source_timestamp": 1647460979244, "eid": 0, "correlation_id": { "source": "mock-in", "start": "z/2022/03/16/20/02/1647460979244-0000000", "units": 1 }, "timestamp": 1647460979244 },
-						{ "id": "mock-bot", "event": "mock-out", "payload": { "b": "2" }, "event_source_timestamp": 1647460979244, "eid": 1, "correlation_id": { "source": "mock-in", "start": "z/2022/03/16/20/02/1647460979244-0000001", "units": 1 }, "timestamp": 1647460979244 }
-					].map(d => JSON.stringify(d) + "\n").join("");
-					kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: any; }) => {
+						{
+							"id": "mock-bot",
+							"event": "mock-out",
+							"payload": { "b": "1" },
+							"event_source_timestamp": 1647460979244,
+							"eid": 0,
+							"correlation_id": {
+								"source": "mock-in",
+								"start": "z/2022/03/16/20/02/1647460979244-0000000",
+								"units": 1
+							},
+							"timestamp": 1647460979244
+						},
+						{
+							"id": "mock-bot",
+							"event": "mock-out",
+							"payload": { "b": "2" },
+							"event_source_timestamp": 1647460979244,
+							"eid": 1,
+							"correlation_id": {
+								"source": "mock-in",
+								"start": "z/2022/03/16/20/02/1647460979244-0000001",
+								"units": 1
+							},
+							"timestamp": 1647460979244
+						}
+					].map((d) => JSON.stringify(d) + "\n").join("");
+					kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: Buffer|string; }) => {
 						// convert buffers to strings
 						// timestamp is dynamic so replace it to be a known value
-						r.Data = zlib.gunzipSync(Buffer.from(r.Data.toString("base64"), "base64")).toString().replace(/"timestamp":\d+/g, '"timestamp":1647460979244');
+						r.Data = zlib.gunzipSync(Buffer.from(r.Data.toString("base64"), "base64")).toString()
+							.replace(/"timestamp":\d+/g, '"timestamp":1647460979244');
 					});
 					assert.deepEqual(kinesisPutRecords.getCall(0).args[0], {
 						"Records": [
@@ -733,7 +864,7 @@ describe('RStreams', function () {
 	describe("sdk offload", function () {
 		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
-			sandbox = sinon.createSandbox()
+			sandbox = sinon.createSandbox();
 		});
 		afterEach(() => {
 			sandbox.restore();
@@ -744,7 +875,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -756,21 +887,24 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 
 			let batchGet = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
 			builder.addEvents(
@@ -781,7 +915,11 @@ describe('RStreams', function () {
 					}, {
 						a: "2"
 					}
-				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+				].map((a) => ({
+					payload: a,
+					event_source_timestamp: 1647460979244,
+					timestamp: 1647460979244
+				})), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(inQueue);
 			let query = sandbox.stub();
@@ -800,25 +938,32 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 			let update = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, updateResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({
+				batchGet,
+				query,
+				update
+			});
 
 
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			sdk.offload<InData>({
 				id: botId,
 				inQueue: inQueue,
@@ -831,7 +976,8 @@ describe('RStreams', function () {
 					let updateCallArgs = update.getCall(0).args[0];
 					delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
 					delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
-					assert.deepEqual(updateCallArgs,
+					assert.deepEqual(
+						updateCallArgs,
 						{
 							"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
 							"ExpressionAttributeNames": {
@@ -870,7 +1016,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -882,21 +1028,24 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 
 			let batchGet = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
 			builder.addEvents(
@@ -907,7 +1056,11 @@ describe('RStreams', function () {
 					}, {
 						a: "2"
 					}
-				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+				].map((a) => ({
+					payload: a,
+					event_source_timestamp: 1647460979244,
+					timestamp: 1647460979244
+				})), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(inQueue);
 			let query = sandbox.stub();
@@ -926,25 +1079,32 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 			let update = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, updateResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({
+				batchGet,
+				query,
+				update
+			});
 
 
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			await sdk.offloadEvents<InData>({
 				id: botId,
 				inQueue: inQueue,
@@ -956,7 +1116,8 @@ describe('RStreams', function () {
 			let updateCallArgs = update.getCall(0).args[0];
 			delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
 			delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
-			assert.deepEqual(updateCallArgs,
+			assert.deepEqual(
+				updateCallArgs,
 				{
 					"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
 					"ExpressionAttributeNames": {
@@ -990,7 +1151,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1002,21 +1163,24 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 
 			let batchGet = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
 			builder.addEvents(
@@ -1027,7 +1191,11 @@ describe('RStreams', function () {
 					}, {
 						a: "2"
 					}
-				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+				].map((a) => ({
+					payload: a,
+					event_source_timestamp: 1647460979244,
+					timestamp: 1647460979244
+				})), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(inQueue);
 			let query = sandbox.stub();
@@ -1046,25 +1214,32 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 			let update = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, updateResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({
+				batchGet,
+				query,
+				update
+			});
 
 
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			sdk.offload<InData>({
 				id: botId,
 				inQueue: inQueue,
@@ -1116,7 +1291,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1128,21 +1303,24 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 
 			let batchGet = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
 			builder.addEvents(
@@ -1153,7 +1331,11 @@ describe('RStreams', function () {
 					}, {
 						a: "2"
 					}
-				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+				].map((a) => ({
+					payload: a,
+					event_source_timestamp: 1647460979244,
+					timestamp: 1647460979244
+				})), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(inQueue);
 			let query = sandbox.stub();
@@ -1172,26 +1354,33 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 			let update = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, updateResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({
+				batchGet,
+				query,
+				update
+			});
 
 
 			let i = 0;
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			sdk.offload<InData>({
 				id: botId,
 				inQueue: inQueue,
@@ -1204,7 +1393,8 @@ describe('RStreams', function () {
 					let updateCallArgs = update.getCall(0).args[0];
 					delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
 					delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
-					assert.deepEqual(updateCallArgs,
+					assert.deepEqual(
+						updateCallArgs,
 						{
 							"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
 							"ExpressionAttributeNames": {
@@ -1243,7 +1433,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1255,21 +1445,24 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 
 			let batchGet = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
 			builder.addEvents(
@@ -1280,7 +1473,11 @@ describe('RStreams', function () {
 					}, {
 						a: "2"
 					}
-				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+				].map((a) => ({
+					payload: a,
+					event_source_timestamp: 1647460979244,
+					timestamp: 1647460979244
+				})), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(inQueue);
 			let query = sandbox.stub();
@@ -1299,26 +1496,33 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 			let update = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, updateResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({
+				batchGet,
+				query,
+				update
+			});
 
 
 			let i = 0;
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			sdk.offload<InData>({
 				id: botId,
 				inQueue: inQueue,
@@ -1331,7 +1535,8 @@ describe('RStreams', function () {
 					let updateCallArgs = update.getCall(0).args[0];
 					delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
 					delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
-					assert.deepEqual(updateCallArgs,
+					assert.deepEqual(
+						updateCallArgs,
 						{
 							"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
 							"ExpressionAttributeNames": {
@@ -1370,7 +1575,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1382,21 +1587,24 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 
 			let batchGet = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, batchGetResponse);
 
 			let builder = new BusStreamMockBuilder();
 			builder.addEvents(
@@ -1407,7 +1615,11 @@ describe('RStreams', function () {
 					}, {
 						a: "2"
 					}
-				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+				].map((a) => ({
+					payload: a,
+					event_source_timestamp: 1647460979244,
+					timestamp: 1647460979244
+				})), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
 			);
 			let queryResponse = builder.getAll(inQueue);
 			let query = sandbox.stub();
@@ -1426,26 +1638,33 @@ describe('RStreams', function () {
 							timestamp: 1647460979245
 						}
 					],
-					"mock-LeoCron": [{
-						checkpoints: {
-							read: {
-								[`queue:${inQueue}`]: {
-									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+					"mock-LeoCron": [
+						{
+							checkpoints: {
+								read: {
+									[`queue:${inQueue}`]: {
+										checkpoint: streams.eventIdFromTimestamp(1647460979244)
+									}
 								}
 							}
 						}
-					}]
+					]
 				},
 				UnprocessedKeys: {}
 			};
 			let update = sandbox.stub()
-				.onFirstCall().callsArgWith(1, null, updateResponse);
+				.onFirstCall()
+				.callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({
+				batchGet,
+				query,
+				update
+			});
 
 
 			let batchSizes = [];
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 			sdk.offload<InData>({
 				id: botId,
 				inQueue: inQueue,
@@ -1461,7 +1680,8 @@ describe('RStreams', function () {
 					let updateCallArgs = update.getCall(0).args[0];
 					delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
 					delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
-					assert.deepEqual(updateCallArgs,
+					assert.deepEqual(
+						updateCallArgs,
 						{
 							"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
 							"ExpressionAttributeNames": {
@@ -1506,12 +1726,12 @@ describe('RStreams', function () {
 		}
 
 		it("no results", async function () {
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 
 			let output = [];
 			await sdk.streams.pipeAsync(
-				sdk.createSource<SourceData>(async () => {
-					return [];
+				sdk.createSource<SourceData>(() => {
+					return Promise.resolve([]);
 				}),
 				sdk.streams.write((data: SourceData, done) => {
 					output.push(data);
@@ -1523,12 +1743,18 @@ describe('RStreams', function () {
 		});
 
 		it("multiple queries", async function () {
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 
 			let output = [];
 			let dataSource: SourceData[][] = [
-				[1, 2, 3, 4, 5, 6].map(i => ({ data1: i, data2: i.toString() })),
-				[10, 20, 30, 40, 50, 60].map(i => ({ data1: i, data2: i.toString() }))
+				[1, 2, 3, 4, 5, 6].map((i) => ({
+					data1: i,
+					data2: i.toString()
+				})),
+				[10, 20, 30, 40, 50, 60].map((i) => ({
+					data1: i,
+					data2: i.toString()
+				}))
 			];
 			await sdk.streams.pipeAsync(
 				sdk.createSource<SourceData>(async () => {
@@ -1540,7 +1766,8 @@ describe('RStreams', function () {
 				})
 			);
 
-			assert.deepEqual(output,
+			assert.deepEqual(
+				output,
 				[
 					{
 						"data1": 1,
@@ -1596,7 +1823,7 @@ describe('RStreams', function () {
 
 
 		it("Error query", async function () {
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 
 			interface SourceData {
 				data1: number;
@@ -1626,7 +1853,7 @@ describe('RStreams', function () {
 
 
 		it("countdown", async function () {
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 
 			let output = [];
 			await sdk.streams.pipeAsync(
@@ -1635,9 +1862,14 @@ describe('RStreams', function () {
 					state.counter--;
 					if (number <= 0) {
 						return [];
-					} else {
-						return [{ data1: number, data2: number.toString() }];
 					}
+					return [
+						{
+							data1: number,
+							data2: number.toString()
+						}
+					];
+
 				}, {}, {
 					counter: 10
 				}),
@@ -1647,7 +1879,8 @@ describe('RStreams', function () {
 				})
 			);
 
-			assert.deepEqual(output,
+			assert.deepEqual(
+				output,
 				[
 					{
 						"data1": 10,
@@ -1694,7 +1927,7 @@ describe('RStreams', function () {
 		});
 
 		it("countdown limited", async function () {
-			let sdk = RStreamsSdk(mockSdkConfig);
+			let sdk = rstreamsSdk(mockSdkConfig);
 
 			let output = [];
 			await sdk.streams.pipeAsync(
@@ -1703,9 +1936,14 @@ describe('RStreams', function () {
 					state.counter--;
 					if (number <= 0) {
 						return [];
-					} else {
-						return [{ data1: number, data2: number.toString() }];
 					}
+					return [
+						{
+							data1: number,
+							data2: number.toString()
+						}
+					];
+
 				}, {
 					records: 5
 				}, {
@@ -1717,7 +1955,8 @@ describe('RStreams', function () {
 				})
 			);
 
-			assert.deepEqual(output,
+			assert.deepEqual(
+				output,
 				[
 					{
 						"data1": 10,
@@ -1744,8 +1983,7 @@ describe('RStreams', function () {
 		});
 
 		it("countdown time limited", async function () {
-			let sdk = RStreamsSdk(mockSdkConfig);
-
+			let sdk = rstreamsSdk(mockSdkConfig);
 
 
 			let output = [];
@@ -1755,10 +1993,17 @@ describe('RStreams', function () {
 					state.counter--;
 					if (number <= 0) {
 						return;
-					} else {
-						await new Promise(resovle => setTimeout(() => resovle(undefined), 40));
-						return [{ data1: number, data2: number.toString() }];
 					}
+					await new Promise((resovle) => {
+						setTimeout(() => resovle(undefined), 40);
+					});
+					return [
+						{
+							data1: number,
+							data2: number.toString()
+						}
+					];
+
 				}, {
 					milliseconds: 100
 				}, {
@@ -1770,7 +2015,8 @@ describe('RStreams', function () {
 				})
 			);
 
-			assert.deepEqual(output,
+			assert.deepEqual(
+				output,
 				[
 					{
 						"data1": 100,
@@ -1785,8 +2031,7 @@ describe('RStreams', function () {
 		});
 
 		it("countdown time limited but not hit", async function () {
-			let sdk = RStreamsSdk(mockSdkConfig);
-
+			let sdk = rstreamsSdk(mockSdkConfig);
 
 
 			let output = [];
@@ -1796,10 +2041,17 @@ describe('RStreams', function () {
 					state.counter--;
 					if (number <= 0) {
 						return;
-					} else {
-						await new Promise(resovle => setTimeout(() => resovle(undefined), 40));
-						return [{ data1: number, data2: number.toString() }];
 					}
+					await new Promise((resovle) => {
+						setTimeout(() => resovle(undefined), 40);
+					});
+					return [
+						{
+							data1: number,
+							data2: number.toString()
+						}
+					];
+
 				}, {
 					milliseconds: 10000
 				}, {
@@ -1811,7 +2063,8 @@ describe('RStreams', function () {
 				})
 			);
 
-			assert.deepEqual(output,
+			assert.deepEqual(
+				output,
 				[
 					{
 						"data1": 2,
@@ -1826,8 +2079,7 @@ describe('RStreams', function () {
 		});
 
 		it("countdown return undefined", async function () {
-			let sdk = RStreamsSdk(mockSdkConfig);
-
+			let sdk = rstreamsSdk(mockSdkConfig);
 
 
 			let output = [];
@@ -1837,9 +2089,14 @@ describe('RStreams', function () {
 					state.counter--;
 					if (number <= 0) {
 						return;
-					} else {
-						return [{ data1: number, data2: number.toString() }];
 					}
+					return [
+						{
+							data1: number,
+							data2: number.toString()
+						}
+					];
+
 				}, {}, {
 					counter: 2
 				}),
@@ -1849,7 +2106,8 @@ describe('RStreams', function () {
 				})
 			);
 
-			assert.deepEqual(output,
+			assert.deepEqual(
+				output,
 				[
 					{
 						"data1": 2,
@@ -1864,64 +2122,3 @@ describe('RStreams', function () {
 		});
 	});
 });
-
-class BusStreamMockBuilder {
-	items = {};
-	addEvents(queue: string, data: any[], options: any = {}, common: any = null) {
-
-		let now = options.now || Date.now()
-		data.forEach((event, index) => {
-			Object.assign(event, common, { event: queue, eid: index });
-		});
-		let count = data.length;
-		let eid = streams.eventIdFromTimestamp(now) + "-";
-		let asString = data.map(a => JSON.stringify(a)).join("\n") + "\n";
-		let gzip = gzipSync(asString);
-		if (!(queue in this.items)) {
-			this.items[queue] = [];
-		}
-		this.items[queue].push({
-			size: Buffer.byteLength(asString),
-			event: queue,
-			v: 2,
-			gzip: gzip,
-			gzipSize: Buffer.byteLength(gzip),
-			records: count,
-			start: eid + "0000000",
-			end: eid + (count - 1).toString().padStart(7, "0")
-		})
-	}
-	getAll(queue: string, chunksSize: number = 50) {
-		let items = (this.items[queue] || []);
-		let results = []
-		while (items.length > 0) {
-			results.push(this.getNext(queue, chunksSize));
-		}
-		results.push({
-			Items: [],
-			Count: 0,
-			ScannedCount: 0,
-			ConsumedCapacity: {
-				TableName: "mock-LeoStream",
-				CapacityUnits: 1
-			}
-		});
-		return results;
-	}
-	getNext(queue: string, count: number) {
-		let items = (this.items[queue] || []).splice(0, count)
-		return {
-			Items: items,
-			Count: items.length,
-			ScannedCount: items.length,
-			LastEvaluatedKey: {
-				event: queue,
-				end: (items[items.length - 1] || {}).end
-			},
-			ConsumedCapacity: {
-				TableName: "mock-LeoStream",
-				CapacityUnits: 1
-			}
-		}
-	}
-}

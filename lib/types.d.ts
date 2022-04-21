@@ -195,7 +195,7 @@ export interface TransformStream<T, U> extends stream.Duplex {
  * @param err If present, the operation failed and this is the error
  * @param data If present, this is the data to return from the operation
  */
-export declare type DataCallback<T = any, E = Error> = (err?: E | null, data?: T) => void;
+export declare type DataCallback<T = unknown, E = Error> = (err?: E | null, data?: T) => void;
 
 /**
  * A standard callback indicating the operation failed if error is present
@@ -207,7 +207,7 @@ export declare type ErrorCallback = (error: Error | null | undefined) => void;
 /**
  * @internal Don't use.
  */
-export declare type TransformFunction<T = any, E = Error> = (this: stream.Transform, chunk: T, encoding: BufferEncoding, callback: DataCallback<T, E>) => void;
+export declare type TransformFunction<T = unknown, E = Error> = (this: stream.Transform, chunk: T, encoding: BufferEncoding, callback: DataCallback<T, E>) => void;
 
 /**
  * Creates a `TransformStream` pipe step. The doc on [[`TransformStream`]] is very helpful.
@@ -233,7 +233,7 @@ export declare type RStreamsTransformFunction<T, U, E = Error> = (this: Transfor
  * @param flushCallback The function to call when the flush is complete
  * @todo question what is T here? is it some kind of flushevent or something?
  */
-export declare type FlushCallback<T = any, E = Error> = (this: stream.Transform, flushCallback: DataCallback<T, E>) => any;
+export declare type FlushCallback<T = unknown, E = Error> = (this: stream.Transform, flushCallback: DataCallback<T, E>) => unknown;
 
 /**
  * The standard RStreams event that is written to and read from RStreams bus queues and thus through Node pipes that work
@@ -271,6 +271,7 @@ export interface Event<T> {
 	correlation_id?: CorrelationId;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface WriteEvent<T> extends Event<T> {
 }
 
@@ -381,7 +382,7 @@ interface InternalCorrelationId {
  * @todo question how do you define stuff to get passed into your bot invocation
  * @todo example
  */
-export type BotInvocationEventTyped<T extends any = {}> = T & BotInvocationEvent
+export type BotInvocationEventTyped<T = unknown> = T & BotInvocationEvent
 
 /**
  * @todo unclear why is this here?
@@ -466,7 +467,7 @@ export interface Checkpoint {
 	started_timestamp?: number,
 }
 
-export interface RStreamsContext<R = any> extends Context {
+export interface RStreamsContext<R = unknown> extends Context {
 	//settings: S;
 	resources?: R;
 	botId: string;

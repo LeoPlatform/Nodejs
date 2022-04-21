@@ -1,12 +1,10 @@
-import Pumpify from "pumpify";
-import stream from "stream";
-import { Callback, EnrichOptions, OffloadOptions, ReadOptions, StreamUtil, ToCheckpointOptions, WriteOptions } from "./lib/lib";
+import { Callback, EnrichOptions, OffloadOptions, StreamUtil } from "./lib/lib";
 import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
 import AWS, { Credentials } from "aws-sdk";
-import { Event } from "./lib/types";
+import { Event, ReadableStream } from "./lib/types";
 import ConfigurationProvider from "./lib/rstreams-configuration";
-import { ReadableStream } from "./lib/types";
+// Import { ReadableStream } from "./lib/types";
 export * from "./lib/types";
 
 /**
@@ -62,24 +60,26 @@ export interface Configuration {
 	region: string,
 
 	/** @internal Allows different components of the SDK to internally share information. */
-	registry: any;
+	registry: unknown;
 
 	/** The AWS credentials to use. In most cases AWS will discover these.  Set if using STS or other scenarios where want to manually set them. */
 	credentials?: Credentials
 
-	// TODO: These exist but do we need to expose them
-	//onUpdate: [Function: onUpdate],
-	//update: [Function: update],
-	//validate: [Function: validate],
-	//setProfile: [Function: setProfile],
-	//bus: {
-	//	s3: 'leos3',
-	//	firehose: 'LeoFirehoseStream'
-	//},
-	//firehose: 'LeoFirehoseStream',
-	//kinesis: 'LeoKinesisStream',
-	//s3: 'leos3',
-	//stream: 'LeoKinesisStream',
+	/*
+	 *  TODO: These exist but do we need to expose them
+	 * onUpdate: [Function: onUpdate],
+	 * update: [Function: update],
+	 * validate: [Function: validate],
+	 * setProfile: [Function: setProfile],
+	 * bus: {
+	 *  s3: 'leos3',
+	 *  firehose: 'LeoFirehoseStream'
+	 * },
+	 * firehose: 'LeoFirehoseStream',
+	 * kinesis: 'LeoKinesisStream',
+	 * s3: 'leos3',
+	 * stream: 'LeoKinesisStream',
+	 */
 }
 
 /**
@@ -89,6 +89,7 @@ export interface Configuration {
  */
 export declare class RStreamsSdk {
 	constructor(config?: ConfigurationResources | typeof ConfigurationProvider);
+
 	/** 
 	 * Config used to communicate with AWS resources that comprise the RStreams Bus used by the SDK.
 	 * It is included here for information purposes and so you can access the AWS resources that 
@@ -106,14 +107,19 @@ export declare class RStreamsSdk {
 
 	/** @method */
 	load: typeof StreamUtil.load;
+
 	/** @method */
 	offload: typeof StreamUtil.offload;
+
 	/** @method */
 	enrich: typeof StreamUtil.enrich;
+
 	/** @method */
 	read: typeof StreamUtil.fromLeo;
+
 	/** @method */
 	write: typeof StreamUtil.toLeo;
+
 	/** @method */
 	checkpoint: typeof StreamUtil.toCheckpoint;
 
@@ -188,6 +194,7 @@ export declare class RStreamsSdk {
 
 	/** A library allowing one to manually create, update, checkpoint or retrieve information on a bot. */
 	bot: LeoCron;
+
 	aws: {
 		/** Helpful methods for interacting with RStreams' DynamoDB tables. */
 		dynamodb: LeoDynamodb,
@@ -197,13 +204,13 @@ export declare class RStreamsSdk {
 
 		/** A refernce to the AWS CloudFormation library. */
 		cloudformation: AWS.CloudFormation
-	}
+	};
 
 	/**
 	 * @deprecated This is a legacy feature that is no longer used that remains for backward compatibility.
 	 * @method
 	 */
-	destroy: (callback: (err: any) => void) => void;
+	destroy: (callback: (err: unknown) => void) => void;
 
 
 	/**
@@ -219,7 +226,7 @@ export declare class RStreamsSdk {
 	 * @returns A Stream of data type T
 	 * @method
 	 */
-	createSource: <T, R = any>(fn: CreateSourceFunction<T, R>, opt?: CreateSourceOptions, state?: R) => ReadableStream<T>;
+	createSource: <T, R = unknown>(fn: CreateSourceFunction<T, R>, opt?: CreateSourceOptions, state?: R) => ReadableStream<T>;
 }
 
 /**
@@ -231,10 +238,10 @@ export declare type CreateSourceFunction<T, R> = (state: R) => Promise<T[] | und
  * Options for the function [[`RStreamsSdk.createSource`]]
  */
 export interface CreateSourceOptions {
-	/** max number or records to emit before ending the stream */
+	/** Max number or records to emit before ending the stream */
 	records?: number;
 
-	/** max number of milliseconds to wait before closing the stream */
+	/** Max number of milliseconds to wait before closing the stream */
 	milliseconds?: number;
 }
 

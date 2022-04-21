@@ -1,11 +1,9 @@
-import pump from "pump";
 import splitLib from "split";
-import stream, { Stream } from 'stream';
-import Pumpify from "pumpify";
-import moment, { Moment } from "moment";
+import stream from 'stream';
+import moment from "moment";
 import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
-import Streams, { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
+import Streams, { BatchOptions, ProcessFunction} from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
 import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream } from "./types";
 import * as es from "event-stream";
@@ -22,7 +20,7 @@ import zlib from "zlib";
  * @param err If present, indicates the operation failed.
  * @param data If present and err is not present, the return value from the operation.
  */
-export declare type Callback = (err?: any, data?: any) => void;
+export declare type Callback = (err?: Error, data?: unknown) => void;
 
 /**
  * Defines an event used in through operations.
@@ -30,7 +28,7 @@ export declare type Callback = (err?: any, data?: any) => void;
  * @typeParam T The payload of the event.
  * @see [[`StreamUtil.through`]]
  */
-export declare type ThroughEvent<T> = Event<T> | any;
+export declare type ThroughEvent<T> = Event<T> | unknown;
 
 /**
  * Options when writing data to an instance of the RStreams bus.  The options in this
@@ -424,7 +422,7 @@ export interface EnrichOptions<T, U> {
 	 * @todo example
 	 * @todo review
 	 */
-	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
+	transform: ProcessFunction<T, U>;// (payload: any, event: any, callback: ProcessFunction) => any;
 }
 
 /**
@@ -458,7 +456,7 @@ export interface OffloadOptions<T> extends ReadOptions {
 	 * If this is a number, it's just the number of events to micro-batch up.
 	 * @todo review is this doc right?
 	 */
-	batch?: BatchOptions | Number;
+	batch?: BatchOptions | number;
 
 	/**
 	 * The SDK will invoke this function after reading events from the `inQueue` where you can do your processing.
@@ -543,7 +541,6 @@ export interface StatsStream extends stream.Transform {
  * @todo question We have StreamUtil and Streams which is streams.d.ts.  Why?
  */
 export declare namespace StreamUtil {
-
 	/**
 	 * Helper function to turn a timestamp into an RStreams event ID.
 	 * 
@@ -625,7 +622,7 @@ export declare namespace StreamUtil {
 	 * @param skipErrors If true and there's a parse error, the error and the JSON line that couldn't be parsed is skipped.  Defaults to false.
 	 * @returns The pipeline step that is ready to be used in a pipeline
 	 */
-	function parse<T>(skipErrors?: boolean): TransformStream<any, T>;
+	function parse<T>(skipErrors?: boolean): TransformStream<unknown, T>;
 
 	/**
 	 * This creates a callback based pipeline step that will take data in, possibly transform the data or do computation, and then
@@ -751,7 +748,7 @@ export declare namespace StreamUtil {
 	 * @todo question is the meant to be used in an ls.pipe? or all by itself?
 	 * @todo example
 	 */
-	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableStream<ReadEvent<T>>;
+	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableStream<ReadEvent<T>> & StatsStream;
 
 	/**
 	 * Create a pipeline step that takes the events from the previous pipeline step and then writes them

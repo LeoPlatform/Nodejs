@@ -29,16 +29,24 @@ import util from "./aws-util";
 
  */
 export default class Configuration {
-	expireTime: number = 0;
-	expired: boolean = false;
+	expireTime = 0;
+	
+	expired = false;
 
 	Region: string;
+
 	LeoStream: string;
+
 	LeoEvent: string;
+
 	LeoS3: string;
+
 	LeoKinesisStream: string;
+
 	LeoFirehoseStream: string;
+
 	LeoSettings: string;
+
 	LeoCron: string;
 
 	/**
@@ -47,10 +55,12 @@ export default class Configuration {
 	 *
 
 	 */
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	constructor(config: any = {}) {
-		this.update(config)
+		this.update(config);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	update(config: any = {}) {
 		this.expired = false;
 		this.expireTime = 0;
@@ -69,7 +79,7 @@ export default class Configuration {
 			"LeoKinesisStream",
 			"LeoFirehoseStream",
 			"LeoSettings"
-		].forEach(field => {
+		].forEach((field) => {
 			this[field] = config[field];
 		});
 	}
@@ -78,7 +88,7 @@ export default class Configuration {
 	 * @return [Integer] the number of seconds before {expireTime} during which
 	 *   the configuration will be considered expired.
 	 */
-	expiryWindow: number = 15;
+	expiryWindow = 15;
 
 	/**
 	 * @return [Boolean] whether the configuration object should call {refresh}
@@ -86,27 +96,27 @@ export default class Configuration {
 	 *   logic.
 	 */
 	needsRefresh() {
-		var currentTime = util.date.getDate().getTime();
-		var adjustedTime = new Date(currentTime + this.expiryWindow * 1000);
+		const currentTime = util.date.getDate().getTime();
+		const adjustedTime = new Date(currentTime + (this.expiryWindow * 1000));
 
 		if (this.expireTime && adjustedTime.valueOf() > this.expireTime) {
 			return true;
-		} else {
-			let valid = [
-				"Region",
-				"LeoStream",
-				"LeoCron",
-				"LeoEvent",
-				"LeoS3",
-				"LeoKinesisStream",
-				"LeoFirehoseStream",
-				"LeoSettings"
-			].every(field => {
-				return this[field] != null || field === "LeoSettings";
-			});
+		} 
+		const valid = [
+			"Region",
+			"LeoStream",
+			"LeoCron",
+			"LeoEvent",
+			"LeoS3",
+			"LeoKinesisStream",
+			"LeoFirehoseStream",
+			"LeoSettings"
+		].every((field) => {
+			return this[field] != null || field === "LeoSettings";
+		});
 
-			return this.expired || !valid
-		}
+		return this.expired || !valid;
+		
 	}
 
 	resolveSync() {
@@ -150,5 +160,5 @@ export default class Configuration {
 	refreshSync() {
 		this.expired = false;
 	}
-};
+}
 

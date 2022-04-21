@@ -2,9 +2,8 @@
 import moment from 'moment';
 import stream from 'stream';
 import through2 from 'through2';
-import pump from "pump";
 import { ParserOptionsArgs } from 'fast-csv';
-import { ErrorCallback, DataCallback, Event, FlushCallback, ReadEvent, TransformFunction, ReadableStream, WritableStream, TransformStream } from "./types";
+import { ErrorCallback, DataCallback, FlushCallback, ReadEvent, TransformFunction, ReadableStream, WritableStream, TransformStream } from "./types";
 import * as es from "event-stream";
 
 /**
@@ -21,7 +20,7 @@ import * as es from "event-stream";
  * @param opts This allows you to override the normal options used by the SDK for this one event that you are saying is now "done".
  * @todo question what is the default for result, to checkpoint or not checkpoint
  */
-declare type ProcessCallback<T> = (err?: any, result?: boolean | T, opts?: ProcessCallbackOptions) => void;
+declare type ProcessCallback<T> = (err?: Error, result?: boolean | T, opts?: ProcessCallbackOptions) => void;
 
 
 /**
@@ -50,7 +49,7 @@ declare type ProcessFunction<T, U> = (payload: T, wrapper: ReadEvent<T>, callbac
  * 
  * @todo unclear what is this used for? what's an example.
  */
-declare type CommandWrapFunction<T, U = any> = (
+declare type CommandWrapFunction<T, U = unknown> = (
 	/** The data to be processed. */
 	obj: T,
 
@@ -62,7 +61,7 @@ declare type CommandWrapFunction<T, U = any> = (
 	 *   here which will checkpoint for you for the event being processed.  If processing succeeded and you need to send a result
 	 *   of processing to another processing step, set this to be the data to send.
 	 */
-	done: (err?: any, result?: U) => void,
+	done: (err?: Error, result?: U) => void,
 
 	/**
 	 * A convenience method to push the resulting processed data to a queue.
@@ -489,7 +488,7 @@ export function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue:
  *   this is fine-grained control to ensure events keep flowing smoothly whether there are a few or many at a given moment.
  * @returns The pipeline step that is ready to be used in a pipeline
  */
-export function batch<T>(opts: BatchOptions | Number): TransformStream<T, ReadEvent<T[]>>;
+export function batch<T>(opts: BatchOptions | number): TransformStream<T, ReadEvent<T[]>>;
 
 export function passthrough<T, U>(opts?: stream.TransformOptions): TransformStream<T, U>;
 //export function through(transform?: through2.TransformFunction, flush?: through2.FlushCallback): stream.Transform;
@@ -557,7 +556,7 @@ export function throughAsync<T, U>(transform?: (this: TransformStream<T, U>, obj
  * @result todo
  * @todo unclear
  */
-export function writeWrapped<T>(opts: CommandWrapOptions | any, func: CommandWrapFunction<T, any>, flush?: through2.FlushCallback): WritableStream<T>;
+export function writeWrapped<T>(opts: CommandWrapOptions | unknown, func: CommandWrapFunction<T, unknown>, flush?: through2.FlushCallback): WritableStream<T>;
 
 /**
  * Wraps a command function as a WriteableStream.
@@ -568,7 +567,7 @@ export function writeWrapped<T>(opts: CommandWrapOptions | any, func: CommandWra
  * @result todo
  * @todo unclear
  */
-export function writeWrapped<T>(func: CommandWrapFunction<T, any>, flush?: through2.FlushCallback): WritableStream<T>;
+export function writeWrapped<T>(func: CommandWrapFunction<T, unknown>, flush?: through2.FlushCallback): WritableStream<T>;
 
 //cmd(watchCommands, singleFunc):stream.Transform;
 
@@ -592,7 +591,7 @@ export function buffer(opts, each, emit, flush): stream.Transform;
  * 
  * @returns The pipeline step that is ready to be used in a pipeline
  */
-export function stringify(): TransformStream<any, string>;
+export function stringify(): TransformStream<unknown, string>;
 
 /**
  * A pipeline step that will split and parse [JSON lines](https://jsonlines.org/), turning them into events.
@@ -614,7 +613,7 @@ export function parse(skipErrors?: boolean): stream.Transform;
  * @returns The pipeline step that is ready to be used in a pipeline
  * @todo unclear
  */
-export function toCSV(fieldList: boolean | string[], opts?: ToCsvOptions): TransformStream<any, any>;
+export function toCSV(fieldList: boolean | string[], opts?: ToCsvOptions): TransformStream<unknown, unknown>;
 
 /**
  * This creates a pipeline step that will parse events from a CSV file and send them to the next step.
@@ -626,7 +625,7 @@ export function toCSV(fieldList: boolean | string[], opts?: ToCsvOptions): Trans
  * 
  * @todo unclear
  */
-export function fromCSV(fieldList: boolean | string[], opts?: FromCsvOptions): TransformStream<any, any>;
+export function fromCSV(fieldList: boolean | string[], opts?: FromCsvOptions): TransformStream<unknown, unknown>;
 
 /**
  * This creates a pipeline step meant to be the last step in a pipeline, the sink, that writes events that flow into it
@@ -639,7 +638,7 @@ export function fromCSV(fieldList: boolean | string[], opts?: FromCsvOptions): T
  * @todo inconsistent Bucket I get that AWS caps these but nowhere else in the SDK do we.
  * @todo inconsistent File I get that AWS caps these but nowhere else in the SDK do we.
  */
-export function toS3(Bucket: string, File: string): WritableStream<any>;
+export function toS3(Bucket: string, File: string): WritableStream<unknown>;
 
 /**
  * This creates a pipeline step that can act as the first step in a pipeline, the source, which reads data
@@ -664,14 +663,14 @@ export function fromS3(file: {
 	 * @todo question Is this an exclusive read meaning it reads up to but doesn't actually read the endingByteOffset position?
 	 */
 	range?: string;
-}): WritableStream<any>;
+}): WritableStream<unknown>;
 //}
 
 /**
  * An interface that extends the [fastCSV libraries options](https://c2fo.github.io/fast-csv/docs/parsing/options)
  * in case we add our own.
  */
-export interface FromCsvOptions extends ParserOptionsArgs { }
+export type FromCsvOptions = ParserOptionsArgs
 
 /**
  * The subset of the options we support from [fastCSV libraries options](https://c2fo.github.io/fast-csv/docs/parsing/options).
@@ -704,7 +703,7 @@ export interface ToCsvOptions {
 	 * @default `null`
 	 * @todo review is this correct?
 	 */
-	nullValue?: any;
+	nullValue?: unknown;
 }
 
 /**
@@ -720,14 +719,14 @@ export interface ToCsvOptions {
  */
 export interface BatchOptions {
 	/** The number of events to micro-batch before sending them to the next step in the pipeline */
-	count?: Number;
+	count?: number;
 
 	/**
 	 * The number of bytes of events to micro-batch up before sending them to the next step in the pipeline 
 	 * 
 	 * @see [[`BatchOptions.field`]]
 	 */
-	bytes?: Number;
+	bytes?: number;
 
 	/** 
 	 * The amount of time to wait, micro-batching events up before sending them to the next step in the pipeline 
