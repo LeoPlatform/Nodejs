@@ -150,7 +150,7 @@ export declare class RStreamsSdk {
 	 * such as ElasticSearch or other databases that are off of the RStreams Bus.
 	 * 
 	 * @param opts What queue to read from, the transform function and other options.
-     *             The batched version will batch up requests to your transform function and pass it an array instead of a single object.
+		 *						 The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @see [[`RStreamsSdk.offload`]]
 	 * @method
 	 * @todo example

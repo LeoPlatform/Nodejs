@@ -28,17 +28,17 @@ declare type ProcessCallback<T> = (err?: any, result?: boolean | T, opts?: Proce
  * `push` method with the `enrich` and `batch` operations.
  */
 declare interface ProcessFunctionOptions extends ProcessCallbackOptions {
-    /** 
-     * When turning 1 event into many events you don't want to checkpoint this one
-     * event instead you want to wait until you've generated the many events and
-     * so this attribute tells the SDK not to checkpoint yet because
-     * 
-     * NOTE: in this case you are responsible for sending a non-partial event (one with no paylod perhaps)
-     * at the end with partial: false to cause the final checkpoint to occur.
-     * 
-     * @default false
-     */
-    partial?: boolean;
+		/** 
+		 * When turning 1 event into many events you don't want to checkpoint this one
+		 * event instead you want to wait until you've generated the many events and
+		 * so this attribute tells the SDK not to checkpoint yet because
+		 * 
+		 * NOTE: in this case you are responsible for sending a non-partial event (one with no paylod perhaps)
+		 * at the end with partial: false to cause the final checkpoint to occur.
+		 * 
+		 * @default false
+		 */
+		partial?: boolean;
 }
 
 /**
@@ -46,7 +46,7 @@ declare interface ProcessFunctionOptions extends ProcessCallbackOptions {
  * manual control in differents scenarios.
  */
 declare interface ProcessFunctionContext<T> {
-    push: (data: T, options?: string | ProcessFunctionOptions) => void;
+		push: (data: T, options?: string | ProcessFunctionOptions) => void;
 }
 
 /**
