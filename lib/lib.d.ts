@@ -7,7 +7,7 @@ import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
 import Streams, { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream } from "./types";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, ProcessFunctionAsync } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
 
@@ -431,17 +431,17 @@ export interface EnrichOptions<T, U> {
  * @todo review there was a callback param, I removed it since I think it was a cut/paste error.  Here's what it said: callback A function called when all events have been processed. (payload, metadata, done) => { }
  */
 export interface EnrichBatchOptions<T, U> extends EnrichOptions<ReadEvent<T>[], U> {
-   	/**
-	 * This governs micro-batching events that have been received from the source `inQueue` before they
-	 * are sent to your `transform` function, allowing that function to receive events in batches instead
-	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
-	 * resource such as a database.  Hitting a database for every single event that flows through a pipe can
-	 * be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
-	 * construct a single query to a database to read/write all data as a single DB operation.
-	 * 
-	 * If this is a number, it's just the number of events to micro-batch up.
-	 * @todo review is this doc right?
-	 */
+	/**
+* This governs micro-batching events that have been received from the source `inQueue` before they
+* are sent to your `transform` function, allowing that function to receive events in batches instead
+* of one at a time.  This can be useful when your transform function will reach out and hit an external
+* resource such as a database.  Hitting a database for every single event that flows through a pipe can
+* be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
+* construct a single query to a database to read/write all data as a single DB operation.
+* 
+* If this is a number, it's just the number of events to micro-batch up.
+* @todo review is this doc right?
+*/
 	batch: BatchOptions | number;
 }
 
@@ -489,20 +489,20 @@ export interface OffloadOptions<T> extends ReadOptions {
  * @see [[`RStreamsSdk.offload`]]
  * @see [[`RStreamsSdk.offloadEvents`]]
  */
- export interface OffloadBatchOptions<T> extends OffloadOptions<T[]> {
-   	/**
-	 * This governs micro-batching events that have been received from the source `inQueue` before they
-	 * are sent to your `transform` function, allowing that function to receive events in batches instead
-	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
-	 * resource such as a database.  Hitting a database for every single event that flows through a pipe can
-	 * be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
-	 * construct a single query to a database to read/write all data as a single DB operation.
-	 * 
-	 * If this is a number, it's just the number of events to micro-batch up.
-	 * @todo review is this doc right?
-	 */
+export interface OffloadBatchOptions<T> extends OffloadOptions<T[]> {
+	/**
+* This governs micro-batching events that have been received from the source `inQueue` before they
+* are sent to your `transform` function, allowing that function to receive events in batches instead
+* of one at a time.  This can be useful when your transform function will reach out and hit an external
+* resource such as a database.  Hitting a database for every single event that flows through a pipe can
+* be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
+* construct a single query to a database to read/write all data as a single DB operation.
+* 
+* If this is a number, it's just the number of events to micro-batch up.
+* @todo review is this doc right?
+*/
 	batch: BatchOptions | Number;
- }
+}
 
 /**
  * Used to manually checkpoint in a pipeline step. It's only rarely used in more advanced cases where 
@@ -1059,4 +1059,23 @@ export declare namespace StreamUtil {
 	 * @todo unclear
 	 */
 	const fromCSV: typeof Streams.fromCSV;
+
+
+	/**
+	 * This creates a pipeline step that takes events in of type T, allows your code to process it and then
+	 * you send an event of type U to the the next pipeline step.
+	 * 
+	 * @typeParam T The type of the data sent into the function to be processed
+	 * @typeParam U The type of the data you send on after being processed
+	 * 
+	 * @param id The name of the bot act as
+	 * @param func The function to process data, getting data of type T and returning data of type U
+	 * @param outQueue The queue to send the resulting data to
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * @todo question Couldn't find any references to this.
+	 * @todo question don't we already have other ways to do this?  do we need this?
+	 * @todo unclear This is a transform stream which means it can't be the sink and yet it takes an outQueue as though it's sending to another queue.  Don't get it.
+	 */
+	function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
+	function process<T, U>(id: string, func: ProcessFunctionAsync<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
 }
