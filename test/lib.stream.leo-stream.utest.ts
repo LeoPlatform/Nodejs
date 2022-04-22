@@ -1573,7 +1573,7 @@ describe("leo-stream", function () {
 				let result = [];
 				await ls.pipeAsync(
 					ls.eventstream.readArray(sourceData),
-					ls.process<MyInData, MyOutData>(botId, async function (data, wrapper, done) {
+					ls.process<MyInData, MyOutData>(botId, async function (data, wrapper) {
 						this.push({
 							b: data.a.toString()
 						});
@@ -1677,7 +1677,7 @@ describe("leo-stream", function () {
 				let result = [];
 				await ls.pipeAsync(
 					ls.eventstream.readArray(sourceData),
-					ls.process<MyInData, MyOutData>(botId, async function (data, wrapper, done) {
+					ls.process<MyInData, MyOutData>(botId, async function (data, wrapper) {
 						this.push({
 							b: data.a.toString()
 						}, { partial: true });
@@ -2248,7 +2248,7 @@ describe("leo-stream", function () {
 				let result = [];
 				await ls.pipeAsync(
 					ls.eventstream.readArray(sourceData),
-					ls.process<MyInData, MyOutData>(botId, async function (data, wrapper, done) {
+					ls.process<MyInData, MyOutData>(botId, async function (data, wrapper) {
 						this.push({
 							b: (data.a * 100).toString()
 						}, {
