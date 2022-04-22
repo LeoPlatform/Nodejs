@@ -54,7 +54,7 @@ export interface WriteOptions {
 	 * is negligible for most use cases.  However, waiting to batch up a sufficient number of events
 	 * can cause a delay getting events into Kinesis for ingestion.  The rule of thumb is files
 	 * around 2mb or larger are fine.  It's OK if an occasional file is small.  However, creating many small
-	 * files smaller should be avoided as it could cause read latency.  For example, if requesting 1000 events
+	 * files should be avoided as it could cause read latency.  For example, if requesting 1000 events
 	 * from a queue if every two events are in an S3 file, the SDK will have to retrieve 500 files to read just
 	 * 1000 events.  Use the other settings to tune the amount of data saved to the file: `records`, `size`, `time`.
 	 * 
