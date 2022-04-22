@@ -11,5 +11,5 @@ module.exports = function (configure) {
 		elasticsearch: {
 			write: require("./elasticsearch/toES.js")(configure).stream
 		}
-	}
+	};
 };

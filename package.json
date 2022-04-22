@@ -15,7 +15,8 @@
 		"compile": "tsc",
 		"watch": "tsc -w",
 		"publish-beta": "npm publish --tag beta",
-		"build-docs": "cd docs && ts-node build-docs.ts"
+		"build-docs": "cd docs && ts-node build-docs.ts",
+		"lint": "eslint ."
 	},
 	"dependencies": {
 		"async": "2.6.4",
