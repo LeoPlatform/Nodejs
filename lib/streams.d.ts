@@ -23,6 +23,31 @@ import * as es from "event-stream";
  */
 declare type ProcessCallback<T> = (err?: any, result?: boolean | T, opts?: ProcessCallbackOptions) => void;
 
+/**
+ * Overrides for controlling what the SDK does when you `push` data to the next stream step when using the
+ * `push` method with the `enrich` and `batch` operations.
+ */
+declare interface ProcessFunctionOptions extends ProcessCallbackOptions {
+    /** 
+     * When turning 1 event into many events you don't want to checkpoint this one
+     * event instead you want to wait until you've generated the many events and
+     * so this attribute tells the SDK not to checkpoint yet because
+     * 
+     * NOTE: in this case you are responsible for sending a non-partial event (one with no paylod perhaps)
+     * at the end with partial: false to cause the final checkpoint to occur.
+     * 
+     * @default false
+     */
+    partial?: boolean;
+}
+
+/**
+ * The `this` context for your process function so you can have a `push` event to take
+ * manual control in differents scenarios.
+ */
+declare interface ProcessFunctionContext<T> {
+    push: (data: T, options?: string | ProcessFunctionOptions) => void;
+}
 
 /**
  * A function that takes the payload of the event (T) and the wrapper of the entire event (ReadEvent<T>) and then a callback
@@ -36,7 +61,7 @@ declare type ProcessCallback<T> = (err?: any, result?: boolean | T, opts?: Proce
  * @todo unclear I don't understand what wrapper is and how it would be used.
  * @todo docbug Missing that this can be either callback or promise based in the type definition
  */
-declare type ProcessFunction<T, U> = (payload: T, wrapper: ReadEvent<T>, callback: ProcessCallback<U>) => void;
+declare type ProcessFunction<T, U> = (this: ProcessFunctionContext<U>, payload: T, wrapper: ReadEvent<T>, callback: ProcessCallback<U>) => void;
 
 /**
  * A function that takes the data to be processed, the callback done function and a push function
@@ -80,7 +105,7 @@ declare type CommandWrapFunction<T, U = any> = (
  * to the dead letter queue instead of the queue it would go to normally.
  */
 export interface ProcessCallbackOptions {
-	/** The name of the queue this event should be written to */
+	/** An override for which queue this event will go to (doesn't work when using `useS3: true`) */
 	queue?: string;
 
 	/** 
