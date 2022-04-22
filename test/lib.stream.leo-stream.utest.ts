@@ -1420,10 +1420,11 @@ describe("leo-stream", function () {
 				let result = [];
 				await ls.pipeAsync(
 					ls.eventstream.readArray(sourceData),
-					ls.process<MyInData, MyOutData>(botId, async function (data, wrapper) {
+					ls.process<MyInData, MyOutData>(botId, async function (data) {
 						this.push({
 							b: data.a.toString()
 						});
+						return true;
 					}, queue),
 					ls.write((data, done) => {
 						result.push(data);
@@ -1988,6 +1989,7 @@ describe("leo-stream", function () {
 							units: data.a * 2,
 							event_source_timestamp: est_override
 						});
+						return true;
 					}, queue),
 					ls.write((data, done) => {
 						result.push(data);
