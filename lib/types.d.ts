@@ -290,6 +290,9 @@ export interface WriteEvent<T> extends Event<T> {
 export interface ReadEvent<T> extends Event<T> {
     /** The ID of the bot that wrote this event to the queue (a dup of id for legacy purposes) */
 	eid: string;
+
+    /** The RStreams queue-specific data that this event exists to wrap */
+	payload: T;
 }
 
 /**
