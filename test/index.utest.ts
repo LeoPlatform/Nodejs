@@ -728,6 +728,151 @@ describe('RStreams', function () {
 				done(err);
 			});
 		});
+
+		it("enriches Async", function (done) {
+			interface InData {
+				a: string;
+			}
+			interface OutData {
+				b: string;
+			}
+
+			let inQueue = "mock-in";
+			let outQueue = "mock-out";
+			let botId = "mock-bot"
+
+			let batchGetResponse = {
+				Responses: {
+					"mock-LeoEvent": [
+						{
+							event: inQueue,
+							max_eid: streams.eventIdFromTimestamp(1647460979245),
+							v: 2,
+							timestamp: 1647460979245
+						}
+					],
+					"mock-LeoCron": [{
+						checkpoints: {
+							read: {
+								[`queue:${inQueue}`]: {
+									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+								}
+							}
+						}
+					}]
+				},
+				UnprocessedKeys: {}
+			};
+
+			let batchGet = sandbox.stub()
+				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+
+			let builder = new BusStreamMockBuilder();
+			builder.addEvents(
+				inQueue,
+				[
+					{
+						a: "1"
+					}, {
+						a: "2"
+					}
+				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+			);
+			let queryResponse = builder.getAll(inQueue);
+			let query = sandbox.stub();
+			queryResponse.forEach((data, index) => {
+				query.onCall(index).callsArgWith(1, null, data);
+			});
+
+
+			let updateResponse = {};
+			let update = sandbox.stub()
+				.onFirstCall().callsArgWith(1, null, updateResponse);
+
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+
+			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+				Records: [{
+					SequenceNumber: "0",
+					ShardId: "shard-0"
+				}]
+			};
+			let kinesisPutRecords = sandbox.stub();
+			kinesisPutRecords
+				.callsArgWith(1, null, kinesisPutRecordsRespone);
+
+			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+
+			let sdk = RStreamsSdk(mockSdkConfig);
+			sdk.enrich<InData, OutData>({
+				id: botId,
+				inQueue: inQueue,
+				outQueue: outQueue,
+				transform: async function (payload) {
+					return { b: payload.a };
+				}
+			}, (err) => {
+				try {
+					expect(update).is.called;
+					let updateCallArgs = update.getCall(0).args[0];
+					delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
+					delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
+					assert.deepEqual(updateCallArgs,
+						{
+							"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
+							"ExpressionAttributeNames": {
+								"#checkpoint": "checkpoint",
+								"#checkpoints": "checkpoints",
+								"#event": "queue:mock-in",
+								"#type": "read"
+							},
+							"ExpressionAttributeValues": {
+								":expected": "z/2022/03/16/20/02/1647460979244",
+								":value": {
+									"checkpoint": "z/2022/03/16/20/02/1647460979244-0000001",
+									"records": 2,
+									"source_timestamp": 1647460979244,
+								}
+							},
+							"Key": {
+								"id": "mock-bot"
+							},
+							"ReturnConsumedCapacity": "TOTAL",
+							"TableName": "mock-LeoCron",
+							"UpdateExpression": "set #checkpoints.#type.#event = :value"
+						}
+					);
+
+					expect(kinesisPutRecords).is.called;
+					let expectedData = [
+						{ "event": "mock-out", "payload": { "b": "1" }, "id": "mock-bot", "event_source_timestamp": 1647460979244, "eid": 0, "correlation_id": { "source": "mock-in", "start": "z/2022/03/16/20/02/1647460979244-0000000", "units": 1 }, "timestamp": 1647460979244 },
+						{ "event": "mock-out", "payload": { "b": "2" }, "id": "mock-bot", "event_source_timestamp": 1647460979244, "eid": 1, "correlation_id": { "source": "mock-in", "start": "z/2022/03/16/20/02/1647460979244-0000001", "units": 1 }, "timestamp": 1647460979244 }
+					].map(d => JSON.stringify(d) + "\n").join("");
+					kinesisPutRecords.getCall(0).args[0].Records.forEach((r: { Data: any; }) => {
+						// convert buffers to strings
+						// timestamp is dynamic so replace it to be a known value
+						r.Data = zlib.gunzipSync(Buffer.from(r.Data.toString("base64"), "base64")).toString().replace(/"timestamp":\d+/g, '"timestamp":1647460979244');
+					});
+					assert.deepEqual(kinesisPutRecords.getCall(0).args[0], {
+						"Records": [
+							{
+								"Data": expectedData,
+								"ExplicitHashKey": "0",
+								"PartitionKey": "0"
+							}
+						],
+						"StreamName": "mock-LeoKinesisStream"
+					});
+
+				} catch (assertError) {
+					err = err || assertError;
+				}
+				done(err);
+
+				//-      "Data": "{\"event\":\"mock-out\",\"payload\":{\"b\":\"1\"},\"id\":\"mock-bot\",\"event_source_timestamp\":1647460979244,\"eid\":0,\"correlation_id\":{\"source\":\"mock-in\",\"start\":\"z/2022/03/16/20/02/1647460979244-0000000\",\"units\":1},\"timestamp\":1647460979244}\n{\"event\":\"mock-out\",\"payload\":{\"b\":\"2\"},\"id\":\"mock-bot\",\"event_source_timestamp\":1647460979244,\"eid\":1,\"correlation_id\":{\"source\":\"mock-in\",\"start\":\"z/2022/03/16/20/02/1647460979244-0000001\",\"units\":1},\"timestamp\":1647460979244}\n"
+				//+      "Data": "{\"id\":\"mock-bot\",\"event\":\"mock-out\",\"payload\":{\"b\":\"1\"},\"event_source_timestamp\":1647460979244,\"eid\":0,\"correlation_id\":{\"source\":\"mock-in\",\"start\":\"z/2022/03/16/20/02/1647460979244-0000000\",\"units\":1},\"timestamp\":1647460979244}\n{\"id\":\"mock-bot\",\"event\":\"mock-out\",\"payload\":{\"b\":\"2\"},\"event_source_timestamp\":1647460979244,\"eid\":1,\"correlation_id\":{\"source\":\"mock-in\",\"start\":\"z/2022/03/16/20/02/1647460979244-0000001\",\"units\":1},\"timestamp\":1647460979244}\n"
+			});
+		});
 	});
 
 	describe("sdk offload", function () {
@@ -1446,52 +1591,57 @@ describe('RStreams', function () {
 
 			let batchSizes = [];
 			let sdk = RStreamsSdk(mockSdkConfig);
-			sdk.offload<InData>({
-				id: botId,
-				inQueue: inQueue,
-				batch: 10,
-				transform: function (payload, _wrapper, callback): void {
-					batchSizes.push((payload as unknown as ReadEvent<InData>[]).length);
-					callback(null, true);
-				}
-			}, (err) => {
-				try {
-					assert.deepEqual(batchSizes, [2]);
-					expect(update).is.called;
-					let updateCallArgs = update.getCall(0).args[0];
-					delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
-					delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
-					assert.deepEqual(updateCallArgs,
-						{
-							"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
-							"ExpressionAttributeNames": {
-								"#checkpoint": "checkpoint",
-								"#checkpoints": "checkpoints",
-								"#event": "queue:mock-in",
-								"#type": "read"
-							},
-							"ExpressionAttributeValues": {
-								":expected": "z/2022/03/16/20/02/1647460979244",
-								":value": {
-									"checkpoint": "z/2022/03/16/20/02/1647460979244-0000001",
-									"records": 2,
-									"source_timestamp": 1647460979244,
-								}
-							},
-							"Key": {
-								"id": "mock-bot"
-							},
-							"ReturnConsumedCapacity": "TOTAL",
-							"TableName": "mock-LeoCron",
-							"UpdateExpression": "set #checkpoints.#type.#event = :value"
-						}
-					);
 
-				} catch (assertError) {
-					err = err || assertError;
-				}
-				done(err);
-			});
+			sdk.offload(
+				{
+					id: botId,
+					inQueue: inQueue,
+					batch: {
+						count: 10
+					},
+					transform: function (payload: ReadEvent<InData>[], _wrapper, callback): void {
+						batchSizes.push(payload.length);
+						callback(null, true);
+					}
+				},
+				(err) => {
+					try {
+						assert.deepEqual(batchSizes, [2]);
+						expect(update).is.called;
+						let updateCallArgs = update.getCall(0).args[0];
+						delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
+						delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
+						assert.deepEqual(updateCallArgs,
+							{
+								"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
+								"ExpressionAttributeNames": {
+									"#checkpoint": "checkpoint",
+									"#checkpoints": "checkpoints",
+									"#event": "queue:mock-in",
+									"#type": "read"
+								},
+								"ExpressionAttributeValues": {
+									":expected": "z/2022/03/16/20/02/1647460979244",
+									":value": {
+										"checkpoint": "z/2022/03/16/20/02/1647460979244-0000001",
+										"records": 2,
+										"source_timestamp": 1647460979244,
+									}
+								},
+								"Key": {
+									"id": "mock-bot"
+								},
+								"ReturnConsumedCapacity": "TOTAL",
+								"TableName": "mock-LeoCron",
+								"UpdateExpression": "set #checkpoints.#type.#event = :value"
+							}
+						);
+
+					} catch (assertError) {
+						err = err || assertError;
+					}
+					done(err);
+				});
 		});
 	});
 

@@ -62,12 +62,13 @@ declare interface ProcessFunctionContext<T> {
  * @todo docbug Missing that this can be either callback or promise based in the type definition
  */
 declare type ProcessFunction<T, U> = (this: ProcessFunctionContext<U>, payload: T, wrapper: ReadEvent<T>, callback: ProcessCallback<U>) => void;
+declare type ProcessFunctionAsync<T, U> = (this: ProcessFunctionContext<U>, payload: T, wrapper: ReadEvent<T>) => Promise<ProcessFunctionAsyncReturn<U> | ProcessFunctionAsyncReturnOptions<U>>;
+
 declare type ProcessFunctionAsyncReturn<T> = T | T[] | boolean;
 interface ProcessFunctionAsyncReturnOptions<T> {
 	data: ProcessFunctionAsyncReturn<T>,
 	options: ProcessCallbackOptions
 }
-declare type ProcessFunctionAsync<T, U> = (this: ProcessFunctionContext<U>, payload: T, wrapper: ReadEvent<T>) => Promise<ProcessFunctionAsyncReturn<U> | ProcessFunctionAsyncReturnOptions<U>>;
 
 /**
  * A function that takes the data to be processed, the callback done function and a push function
