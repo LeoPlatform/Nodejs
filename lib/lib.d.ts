@@ -7,7 +7,7 @@ import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
 import Streams, { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions } from "./types";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
 
@@ -372,7 +372,7 @@ export interface ToCheckpointOptions {
  * @see [[`RStreamsSdk.enrichEvents`]]
  * @todo review there was a callback param, I removed it since I think it was a cut/paste error.  Here's what it said: callback A function called when all events have been processed. (payload, metadata, done) => { }
  */
-export interface EnrichOptions<T, U> {
+export interface EnrichOptions<T, U> extends WriteOptions {
 	/** 
 	 * The name of the bot that this code is acting as.  The SDK will use it to query to the bot Dynamo DB 
 	 * table to pull checkpoints and to checkpoint for you. 
@@ -567,6 +567,13 @@ export interface StatsStream extends stream.Transform {
 	get: {
 		(): CheckpointData;
 	};
+}
+
+/**
+ * @todo document: options for createCorrelation function
+ */
+export interface CreateCorrelationOptions {
+	partial: boolean;
 }
 
 /**
@@ -1080,4 +1087,14 @@ export declare namespace StreamUtil {
 	 */
 	function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
 	function process<T, U>(id: string, func: ProcessFunctionAsync<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
+
+  /**
+	 * todo document: what this functon does.  Creates Correlation form read events
+	 * @param event 
+	 * @param opts 
+	 */
+	function createCorrelation<T>(event: ReadEvent<T>, opts?: CreateCorrelationOptions): CorrelationId;
+	function createCorrelation<T>(startEvent: ReadEvent<T>, endEvent: ReadEvent<T>, units: number, opts?: CreateCorrelationOptions): CorrelationId;
+	function createCorrelation<T>(events: ReadEvent<T>[], opts?: CreateCorrelationOptions): CorrelationId;
+
 }

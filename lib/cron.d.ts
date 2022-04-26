@@ -1,5 +1,5 @@
 import { AWSError } from "aws-sdk";
-import { Moment } from "moment";
+import moment, { Moment } from "moment";
 
 /**
  * Defines a callback function that takes an error object.
@@ -144,7 +144,7 @@ export interface LeoCron {
 	 * @param id The name of the bot to invoke
 	 * @param duration When to invoke it
 	 */
-	schedule: (id: string, duration: Milliseconds | Date | Moment) => Promise<void>;
+	schedule: (id: string, duration: Milliseconds | Date | Moment | moment.DurationInputArg1) => Promise<void>;
 
 	/**
 	 * Check if a bot is currently locked, meaning running right now.
@@ -307,3 +307,5 @@ export interface LeoCron {
 	 */
 	createBot: (id: string, bot, opts) => void;
 }
+
+export default function (config: any): LeoCron;
