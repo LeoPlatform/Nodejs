@@ -60,7 +60,7 @@
 					"target": 2050
 				},
 				{
-					"id": 3517,
+					"id": 3544,
 					"name": "CommandWrapFunction",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -68,7 +68,7 @@
 					"target": 718
 				},
 				{
-					"id": 3519,
+					"id": 3546,
 					"name": "CommandWrapOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -147,7 +147,7 @@
 					"target": 743
 				},
 				{
-					"id": 3514,
+					"id": 3541,
 					"name": "ProcessCallback",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -155,7 +155,7 @@
 					"target": 689
 				},
 				{
-					"id": 3518,
+					"id": 3545,
 					"name": "ProcessCallbackOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -178,7 +178,7 @@
 					"target": 709
 				},
 				{
-					"id": 3516,
+					"id": 3543,
 					"name": "ProcessFunctionContext",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -186,7 +186,7 @@
 					"target": 703
 				},
 				{
-					"id": 3515,
+					"id": 3542,
 					"name": "ProcessFunctionOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -273,7 +273,7 @@
 					"target": 2014
 				},
 				{
-					"id": 3502,
+					"id": 3529,
 					"name": "batch",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -281,7 +281,7 @@
 					"target": 616
 				},
 				{
-					"id": 3507,
+					"id": 3534,
 					"name": "buffer",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -289,7 +289,7 @@
 					"target": 659
 				},
 				{
-					"id": 3497,
+					"id": 3524,
 					"name": "bufferBackoff",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -297,7 +297,7 @@
 					"target": 585
 				},
 				{
-					"id": 3496,
+					"id": 3523,
 					"name": "commandWrap",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -305,7 +305,7 @@
 					"target": 579
 				},
 				{
-					"id": 3500,
+					"id": 3527,
 					"name": "counter",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -313,7 +313,7 @@
 					"target": 601
 				},
 				{
-					"id": 3499,
+					"id": 3526,
 					"name": "devnull",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -321,7 +321,7 @@
 					"target": 597
 				},
 				{
-					"id": 3494,
+					"id": 3521,
 					"name": "eventIdFromTimestamp",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -329,7 +329,7 @@
 					"target": 571
 				},
 				{
-					"id": 3495,
+					"id": 3522,
 					"name": "eventIdToTimestamp",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -337,7 +337,7 @@
 					"target": 576
 				},
 				{
-					"id": 3520,
+					"id": 3547,
 					"name": "eventstream",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -345,7 +345,7 @@
 					"target": 742
 				},
 				{
-					"id": 3511,
+					"id": 3538,
 					"name": "fromCSV",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -353,7 +353,7 @@
 					"target": 674
 				},
 				{
-					"id": 3513,
+					"id": 3540,
 					"name": "fromS3",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -361,7 +361,7 @@
 					"target": 682
 				},
 				{
-					"id": 3498,
+					"id": 3525,
 					"name": "log",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -369,7 +369,7 @@
 					"target": 593
 				},
 				{
-					"id": 3509,
+					"id": 3536,
 					"name": "parse",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -377,7 +377,7 @@
 					"target": 667
 				},
 				{
-					"id": 3503,
+					"id": 3530,
 					"name": "passthrough",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -385,7 +385,7 @@
 					"target": 620
 				},
 				{
-					"id": 3491,
+					"id": 3518,
 					"name": "pipe",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -393,7 +393,7 @@
 					"target": 274
 				},
 				{
-					"id": 3492,
+					"id": 3519,
 					"name": "pipeAsync",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -401,7 +401,7 @@
 					"target": 335
 				},
 				{
-					"id": 3493,
+					"id": 3520,
 					"name": "pipeline",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -409,7 +409,7 @@
 					"target": 390
 				},
 				{
-					"id": 3501,
+					"id": 3528,
 					"name": "process",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -417,7 +417,7 @@
 					"target": 609
 				},
 				{
-					"id": 3508,
+					"id": 3535,
 					"name": "stringify",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -425,7 +425,7 @@
 					"target": 665
 				},
 				{
-					"id": 3504,
+					"id": 3531,
 					"name": "through",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -433,7 +433,7 @@
 					"target": 625
 				},
 				{
-					"id": 3505,
+					"id": 3532,
 					"name": "throughAsync",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -441,7 +441,7 @@
 					"target": 636
 				},
 				{
-					"id": 3510,
+					"id": 3537,
 					"name": "toCSV",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -449,7 +449,7 @@
 					"target": 670
 				},
 				{
-					"id": 3512,
+					"id": 3539,
 					"name": "toS3",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -457,7 +457,7 @@
 					"target": 678
 				},
 				{
-					"id": 3506,
+					"id": 3533,
 					"name": "writeWrapped",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -465,7 +465,7 @@
 					"target": 649
 				},
 				{
-					"id": 3038,
+					"id": 3050,
 					"name": "StreamUtil",
 					"kind": 4,
 					"kindString": "Namespace",
@@ -475,7 +475,7 @@
 					},
 					"children": [
 						{
-							"id": 3121,
+							"id": 3148,
 							"name": "cron",
 							"kind": 32,
 							"kindString": "Variable",
@@ -488,7 +488,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 605,
+									"line": 612,
 									"character": 7
 								}
 							],
@@ -499,7 +499,7 @@
 							}
 						},
 						{
-							"id": 3122,
+							"id": 3149,
 							"name": "dynamodb",
 							"kind": 32,
 							"kindString": "Variable",
@@ -512,7 +512,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 608,
+									"line": 615,
 									"character": 7
 								}
 							],
@@ -523,7 +523,7 @@
 							}
 						},
 						{
-							"id": 3120,
+							"id": 3147,
 							"name": "eventstream",
 							"kind": 32,
 							"kindString": "Variable",
@@ -536,7 +536,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 602,
+									"line": 609,
 									"character": 7
 								}
 							],
@@ -551,7 +551,7 @@
 							}
 						},
 						{
-							"id": 3239,
+							"id": 3266,
 							"name": "split",
 							"kind": 32,
 							"kindString": "Variable",
@@ -565,7 +565,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 653,
+									"line": 660,
 									"character": 7
 								}
 							],
@@ -578,7 +578,7 @@
 							}
 						},
 						{
-							"id": 3479,
+							"id": 3506,
 							"name": "batch",
 							"kind": 64,
 							"kindString": "Function",
@@ -586,13 +586,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1037,
+									"line": 1044,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3480,
+									"id": 3507,
 									"name": "batch",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -603,7 +603,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3481,
+											"id": 3508,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -615,7 +615,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3482,
+											"id": 3509,
 											"name": "opts",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -672,7 +672,7 @@
 							]
 						},
 						{
-							"id": 3065,
+							"id": 3077,
 							"name": "checkpoint",
 							"kind": 64,
 							"kindString": "Function",
@@ -680,13 +680,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 813,
+									"line": 820,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3066,
+									"id": 3078,
 									"name": "checkpoint",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -697,7 +697,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3067,
+											"id": 3079,
 											"name": "config",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -710,14 +710,14 @@
 											"type": {
 												"type": "reflection",
 												"declaration": {
-													"id": 3068,
+													"id": 3080,
 													"name": "__type",
 													"kind": 65536,
 													"kindString": "Type literal",
 													"flags": {},
 													"children": [
 														{
-															"id": 3069,
+															"id": 3081,
 															"name": "records",
 															"kind": 1024,
 															"kindString": "Property",
@@ -728,7 +728,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 817,
+																	"line": 824,
 																	"character": 2
 																}
 															],
@@ -738,7 +738,7 @@
 															}
 														},
 														{
-															"id": 3070,
+															"id": 3082,
 															"name": "time",
 															"kind": 1024,
 															"kindString": "Property",
@@ -749,7 +749,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 824,
+																	"line": 831,
 																	"character": 2
 																}
 															],
@@ -766,8 +766,8 @@
 															"title": "Properties",
 															"kind": 1024,
 															"children": [
-																3069,
-																3070
+																3081,
+																3082
 															]
 														}
 													]
@@ -785,7 +785,7 @@
 							]
 						},
 						{
-							"id": 3290,
+							"id": 3317,
 							"name": "counter",
 							"kind": 64,
 							"kindString": "Function",
@@ -793,13 +793,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 938,
+									"line": 945,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3291,
+									"id": 3318,
 									"name": "counter",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -810,7 +810,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3292,
+											"id": 3319,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -822,7 +822,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3293,
+											"id": 3320,
 											"name": "label",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -836,7 +836,7 @@
 											}
 										},
 										{
-											"id": 3294,
+											"id": 3321,
 											"name": "records",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -871,7 +871,7 @@
 									}
 								},
 								{
-									"id": 3295,
+									"id": 3322,
 									"name": "counter",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -882,7 +882,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3296,
+											"id": 3323,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -894,7 +894,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3297,
+											"id": 3324,
 											"name": "records",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -931,7 +931,231 @@
 							]
 						},
 						{
-							"id": 3278,
+							"id": 3124,
+							"name": "createCorrelation",
+							"kind": 64,
+							"kindString": "Function",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 1076,
+									"character": 10
+								}
+							],
+							"signatures": [
+								{
+									"id": 3125,
+									"name": "createCorrelation",
+									"kind": 4096,
+									"kindString": "Call signature",
+									"flags": {},
+									"comment": {
+										"shortText": "todo document: what this functon does.  Creates Correlation form read events"
+									},
+									"typeParameter": [
+										{
+											"id": 3126,
+											"name": "T",
+											"kind": 131072,
+											"kindString": "Type parameter",
+											"flags": {}
+										}
+									],
+									"parameters": [
+										{
+											"id": 3127,
+											"name": "event",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {},
+											"comment": {},
+											"type": {
+												"type": "reference",
+												"id": 2022,
+												"typeArguments": [
+													{
+														"type": "reference",
+														"id": 3126,
+														"name": "T"
+													}
+												],
+												"name": "ReadEvent"
+											}
+										},
+										{
+											"id": 3128,
+											"name": "opts",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {
+												"isOptional": true
+											},
+											"comment": {
+												"shortText": "\n"
+											},
+											"type": {
+												"type": "reference",
+												"id": 3048,
+												"name": "CreateCorrelationOptions"
+											}
+										}
+									],
+									"type": {
+										"type": "reference",
+										"id": 2031,
+										"name": "CorrelationId"
+									}
+								},
+								{
+									"id": 3129,
+									"name": "createCorrelation",
+									"kind": 4096,
+									"kindString": "Call signature",
+									"flags": {},
+									"typeParameter": [
+										{
+											"id": 3130,
+											"name": "T",
+											"kind": 131072,
+											"kindString": "Type parameter",
+											"flags": {}
+										}
+									],
+									"parameters": [
+										{
+											"id": 3131,
+											"name": "startEvent",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {},
+											"type": {
+												"type": "reference",
+												"id": 2022,
+												"typeArguments": [
+													{
+														"type": "reference",
+														"id": 3130,
+														"name": "T"
+													}
+												],
+												"name": "ReadEvent"
+											}
+										},
+										{
+											"id": 3132,
+											"name": "endEvent",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {},
+											"type": {
+												"type": "reference",
+												"id": 2022,
+												"typeArguments": [
+													{
+														"type": "reference",
+														"id": 3130,
+														"name": "T"
+													}
+												],
+												"name": "ReadEvent"
+											}
+										},
+										{
+											"id": 3133,
+											"name": "units",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {},
+											"type": {
+												"type": "intrinsic",
+												"name": "number"
+											}
+										},
+										{
+											"id": 3134,
+											"name": "opts",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {
+												"isOptional": true
+											},
+											"type": {
+												"type": "reference",
+												"id": 3048,
+												"name": "CreateCorrelationOptions"
+											}
+										}
+									],
+									"type": {
+										"type": "reference",
+										"id": 2031,
+										"name": "CorrelationId"
+									}
+								},
+								{
+									"id": 3135,
+									"name": "createCorrelation",
+									"kind": 4096,
+									"kindString": "Call signature",
+									"flags": {},
+									"typeParameter": [
+										{
+											"id": 3136,
+											"name": "T",
+											"kind": 131072,
+											"kindString": "Type parameter",
+											"flags": {}
+										}
+									],
+									"parameters": [
+										{
+											"id": 3137,
+											"name": "events",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {},
+											"type": {
+												"type": "array",
+												"elementType": {
+													"type": "reference",
+													"id": 2022,
+													"typeArguments": [
+														{
+															"type": "reference",
+															"id": 3136,
+															"name": "T"
+														}
+													],
+													"name": "ReadEvent"
+												}
+											}
+										},
+										{
+											"id": 3138,
+											"name": "opts",
+											"kind": 32768,
+											"kindString": "Parameter",
+											"flags": {
+												"isOptional": true
+											},
+											"type": {
+												"type": "reference",
+												"id": 3048,
+												"name": "CreateCorrelationOptions"
+											}
+										}
+									],
+									"type": {
+										"type": "reference",
+										"id": 2031,
+										"name": "CorrelationId"
+									}
+								}
+							]
+						},
+						{
+							"id": 3305,
 							"name": "devnull",
 							"kind": 64,
 							"kindString": "Function",
@@ -939,13 +1163,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 897,
+									"line": 904,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3279,
+									"id": 3306,
 									"name": "devnull",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -957,7 +1181,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3280,
+											"id": 3307,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -969,7 +1193,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3281,
+											"id": 3308,
 											"name": "shouldLog",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1010,7 +1234,7 @@
 							]
 						},
 						{
-							"id": 3071,
+							"id": 3083,
 							"name": "enrich",
 							"kind": 64,
 							"kindString": "Function",
@@ -1018,13 +1242,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 851,
+									"line": 858,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3072,
+									"id": 3084,
 									"name": "enrich",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1035,7 +1259,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3073,
+											"id": 3085,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -1045,7 +1269,7 @@
 											}
 										},
 										{
-											"id": 3074,
+											"id": 3086,
 											"name": "U",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -1057,7 +1281,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3075,
+											"id": 3087,
 											"name": "opts",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1087,7 +1311,7 @@
 													},
 													{
 														"type": "reference",
-														"id": 2524,
+														"id": 2529,
 														"typeArguments": [
 															{
 																"type": "reference",
@@ -1106,7 +1330,7 @@
 											}
 										},
 										{
-											"id": 3076,
+											"id": 3088,
 											"name": "callback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1129,7 +1353,7 @@
 							]
 						},
 						{
-							"id": 3112,
+							"id": 3139,
 							"name": "eventIdFromTimestamp",
 							"kind": 64,
 							"kindString": "Function",
@@ -1137,13 +1361,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 590,
+									"line": 597,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3113,
+									"id": 3140,
 									"name": "eventIdFromTimestamp",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1154,7 +1378,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3114,
+											"id": 3141,
 											"name": "timestamp",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1170,7 +1394,7 @@
 											}
 										},
 										{
-											"id": 3115,
+											"id": 3142,
 											"name": "granularity",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1186,7 +1410,7 @@
 											}
 										},
 										{
-											"id": 3116,
+											"id": 3143,
 											"name": "record",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1207,7 +1431,7 @@
 							]
 						},
 						{
-							"id": 3117,
+							"id": 3144,
 							"name": "eventIdToTimestamp",
 							"kind": 64,
 							"kindString": "Function",
@@ -1215,13 +1439,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 599,
+									"line": 606,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3118,
+									"id": 3145,
 									"name": "eventIdToTimestamp",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1232,7 +1456,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3119,
+											"id": 3146,
 											"name": "eid",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1254,7 +1478,7 @@
 							]
 						},
 						{
-							"id": 3487,
+							"id": 3514,
 							"name": "fromCSV",
 							"kind": 64,
 							"kindString": "Function",
@@ -1262,13 +1486,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1061,
+									"line": 1068,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3488,
+									"id": 3515,
 									"name": "fromCSV",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1279,7 +1503,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3489,
+											"id": 3516,
 											"name": "fieldList",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1305,7 +1529,7 @@
 											}
 										},
 										{
-											"id": 3490,
+											"id": 3517,
 											"name": "opts",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1341,7 +1565,7 @@
 							]
 						},
 						{
-							"id": 3054,
+							"id": 3066,
 							"name": "fromLeo",
 							"kind": 64,
 							"kindString": "Function",
@@ -1349,13 +1573,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 788,
+									"line": 795,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3055,
+									"id": 3067,
 									"name": "fromLeo",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1366,7 +1590,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3056,
+											"id": 3068,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -1378,7 +1602,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3057,
+											"id": 3069,
 											"name": "botId",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1392,7 +1616,7 @@
 											}
 										},
 										{
-											"id": 3058,
+											"id": 3070,
 											"name": "inQueue",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1406,7 +1630,7 @@
 											}
 										},
 										{
-											"id": 3059,
+											"id": 3071,
 											"name": "config",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1446,7 +1670,7 @@
 							]
 						},
 						{
-							"id": 3095,
+							"id": 3107,
 							"name": "fromS3",
 							"kind": 64,
 							"kindString": "Function",
@@ -1454,13 +1678,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 988,
+									"line": 995,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3096,
+									"id": 3108,
 									"name": "fromS3",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1471,7 +1695,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3097,
+											"id": 3109,
 											"name": "file",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1482,14 +1706,14 @@
 											"type": {
 												"type": "reflection",
 												"declaration": {
-													"id": 3098,
+													"id": 3110,
 													"name": "__type",
 													"kind": 65536,
 													"kindString": "Type literal",
 													"flags": {},
 													"children": [
 														{
-															"id": 3099,
+															"id": 3111,
 															"name": "bucket",
 															"kind": 1024,
 															"kindString": "Property",
@@ -1500,7 +1724,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 990,
+																	"line": 997,
 																	"character": 2
 																}
 															],
@@ -1510,7 +1734,7 @@
 															}
 														},
 														{
-															"id": 3100,
+															"id": 3112,
 															"name": "key",
 															"kind": 1024,
 															"kindString": "Property",
@@ -1521,7 +1745,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 993,
+																	"line": 1000,
 																	"character": 2
 																}
 															],
@@ -1531,7 +1755,7 @@
 															}
 														},
 														{
-															"id": 3101,
+															"id": 3113,
 															"name": "range",
 															"kind": 1024,
 															"kindString": "Property",
@@ -1544,7 +1768,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1002,
+																	"line": 1009,
 																	"character": 2
 																}
 															],
@@ -1559,9 +1783,9 @@
 															"title": "Properties",
 															"kind": 1024,
 															"children": [
-																3099,
-																3100,
-																3101
+																3111,
+																3112,
+																3113
 															]
 														}
 													]
@@ -1579,7 +1803,7 @@
 							]
 						},
 						{
-							"id": 3287,
+							"id": 3314,
 							"name": "gunzip",
 							"kind": 64,
 							"kindString": "Function",
@@ -1587,13 +1811,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 925,
+									"line": 932,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3288,
+									"id": 3315,
 									"name": "gunzip",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1605,7 +1829,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3289,
+											"id": 3316,
 											"name": "options",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1630,7 +1854,7 @@
 							]
 						},
 						{
-							"id": 3284,
+							"id": 3311,
 							"name": "gzip",
 							"kind": 64,
 							"kindString": "Function",
@@ -1638,13 +1862,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 915,
+									"line": 922,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3285,
+									"id": 3312,
 									"name": "gzip",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1656,7 +1880,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3286,
+											"id": 3313,
 											"name": "options",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1681,7 +1905,7 @@
 							]
 						},
 						{
-							"id": 3082,
+							"id": 3094,
 							"name": "load",
 							"kind": 64,
 							"kindString": "Function",
@@ -1689,13 +1913,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 880,
+									"line": 887,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3083,
+									"id": 3095,
 									"name": "load",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1705,7 +1929,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3084,
+											"id": 3096,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -1717,7 +1941,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3085,
+											"id": 3097,
 											"name": "botId",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1731,7 +1955,7 @@
 											}
 										},
 										{
-											"id": 3086,
+											"id": 3098,
 											"name": "outQueue",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1745,7 +1969,7 @@
 											}
 										},
 										{
-											"id": 3087,
+											"id": 3099,
 											"name": "config",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1795,7 +2019,7 @@
 							]
 						},
 						{
-							"id": 3274,
+							"id": 3301,
 							"name": "log",
 							"kind": 64,
 							"kindString": "Function",
@@ -1803,13 +2027,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 735,
+									"line": 742,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3275,
+									"id": 3302,
 									"name": "log",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1820,7 +2044,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3276,
+											"id": 3303,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -1832,7 +2056,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3277,
+											"id": 3304,
 											"name": "prefix",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1869,7 +2093,7 @@
 							]
 						},
 						{
-							"id": 3077,
+							"id": 3089,
 							"name": "offload",
 							"kind": 64,
 							"kindString": "Function",
@@ -1877,13 +2101,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 868,
+									"line": 875,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3078,
+									"id": 3090,
 									"name": "offload",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1894,7 +2118,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3079,
+											"id": 3091,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -1906,7 +2130,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3080,
+											"id": 3092,
 											"name": "config",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1916,7 +2140,7 @@
 												"types": [
 													{
 														"type": "reference",
-														"id": 2534,
+														"id": 2544,
 														"typeArguments": [
 															{
 																"type": "reference",
@@ -1928,7 +2152,7 @@
 													},
 													{
 														"type": "reference",
-														"id": 2551,
+														"id": 2561,
 														"typeArguments": [
 															{
 																"type": "reference",
@@ -1942,7 +2166,7 @@
 											}
 										},
 										{
-											"id": 3081,
+											"id": 3093,
 											"name": "callback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -1962,7 +2186,7 @@
 							]
 						},
 						{
-							"id": 3039,
+							"id": 3051,
 							"name": "parse",
 							"kind": 64,
 							"kindString": "Function",
@@ -1970,13 +2194,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 662,
+									"line": 669,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3040,
+									"id": 3052,
 									"name": "parse",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -1987,7 +2211,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3041,
+											"id": 3053,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -1999,7 +2223,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3042,
+											"id": 3054,
 											"name": "skipErrors",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2025,7 +2249,7 @@
 											},
 											{
 												"type": "reference",
-												"id": 3041,
+												"id": 3053,
 												"name": "T"
 											}
 										],
@@ -2035,7 +2259,7 @@
 							]
 						},
 						{
-							"id": 3088,
+							"id": 3100,
 							"name": "passThrough",
 							"kind": 64,
 							"kindString": "Function",
@@ -2043,13 +2267,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 955,
+									"line": 962,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3089,
+									"id": 3101,
 									"name": "passThrough",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -2061,7 +2285,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3090,
+											"id": 3102,
 											"name": "opts",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2089,7 +2313,7 @@
 							]
 						},
 						{
-							"id": 3123,
+							"id": 3150,
 							"name": "pipe",
 							"kind": 64,
 							"kindString": "Function",
@@ -2097,13 +2321,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 637,
+									"line": 644,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3124,
+									"id": 3151,
 									"name": "pipe",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -2114,7 +2338,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3125,
+											"id": 3152,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -2123,7 +2347,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3126,
+											"id": 3153,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2153,7 +2377,7 @@
 											}
 										},
 										{
-											"id": 3127,
+											"id": 3154,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2183,7 +2407,7 @@
 											}
 										},
 										{
-											"id": 3128,
+											"id": 3155,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2222,7 +2446,7 @@
 									}
 								},
 								{
-									"id": 3129,
+									"id": 3156,
 									"name": "pipe",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -2233,14 +2457,14 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3130,
+											"id": 3157,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3131,
+											"id": 3158,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -2249,7 +2473,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3132,
+											"id": 3159,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2279,7 +2503,7 @@
 											}
 										},
 										{
-											"id": 3133,
+											"id": 3160,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2303,7 +2527,7 @@
 											}
 										},
 										{
-											"id": 3134,
+											"id": 3161,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2333,7 +2557,7 @@
 											}
 										},
 										{
-											"id": 3135,
+											"id": 3162,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2372,7 +2596,7 @@
 									}
 								},
 								{
-									"id": 3136,
+									"id": 3163,
 									"name": "pipe",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -2383,21 +2607,21 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3137,
+											"id": 3164,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3138,
+											"id": 3165,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3139,
+											"id": 3166,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -2406,7 +2630,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3140,
+											"id": 3167,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2436,7 +2660,7 @@
 											}
 										},
 										{
-											"id": 3141,
+											"id": 3168,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2460,7 +2684,7 @@
 											}
 										},
 										{
-											"id": 3142,
+											"id": 3169,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2484,7 +2708,7 @@
 											}
 										},
 										{
-											"id": 3143,
+											"id": 3170,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2514,7 +2738,7 @@
 											}
 										},
 										{
-											"id": 3144,
+											"id": 3171,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2553,7 +2777,7 @@
 									}
 								},
 								{
-									"id": 3145,
+									"id": 3172,
 									"name": "pipe",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -2564,28 +2788,28 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3146,
+											"id": 3173,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3147,
+											"id": 3174,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3148,
+											"id": 3175,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3149,
+											"id": 3176,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -2594,7 +2818,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3150,
+											"id": 3177,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2624,7 +2848,7 @@
 											}
 										},
 										{
-											"id": 3151,
+											"id": 3178,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2648,7 +2872,7 @@
 											}
 										},
 										{
-											"id": 3152,
+											"id": 3179,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2672,7 +2896,7 @@
 											}
 										},
 										{
-											"id": 3153,
+											"id": 3180,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2696,7 +2920,7 @@
 											}
 										},
 										{
-											"id": 3154,
+											"id": 3181,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2726,7 +2950,7 @@
 											}
 										},
 										{
-											"id": 3155,
+											"id": 3182,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2765,7 +2989,7 @@
 									}
 								},
 								{
-									"id": 3156,
+									"id": 3183,
 									"name": "pipe",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -2776,35 +3000,35 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3157,
+											"id": 3184,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3158,
+											"id": 3185,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3159,
+											"id": 3186,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3160,
+											"id": 3187,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3161,
+											"id": 3188,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -2813,7 +3037,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3162,
+											"id": 3189,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2843,7 +3067,7 @@
 											}
 										},
 										{
-											"id": 3163,
+											"id": 3190,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2867,7 +3091,7 @@
 											}
 										},
 										{
-											"id": 3164,
+											"id": 3191,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2891,7 +3115,7 @@
 											}
 										},
 										{
-											"id": 3165,
+											"id": 3192,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2915,7 +3139,7 @@
 											}
 										},
 										{
-											"id": 3166,
+											"id": 3193,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2939,7 +3163,7 @@
 											}
 										},
 										{
-											"id": 3167,
+											"id": 3194,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -2969,7 +3193,7 @@
 											}
 										},
 										{
-											"id": 3168,
+											"id": 3195,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3008,7 +3232,7 @@
 									}
 								},
 								{
-									"id": 3169,
+									"id": 3196,
 									"name": "pipe",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -3019,42 +3243,42 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3170,
+											"id": 3197,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3171,
+											"id": 3198,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3172,
+											"id": 3199,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3173,
+											"id": 3200,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3174,
+											"id": 3201,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3175,
+											"id": 3202,
 											"name": "T6",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -3063,7 +3287,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3176,
+											"id": 3203,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3093,7 +3317,7 @@
 											}
 										},
 										{
-											"id": 3177,
+											"id": 3204,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3117,7 +3341,7 @@
 											}
 										},
 										{
-											"id": 3178,
+											"id": 3205,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3141,7 +3365,7 @@
 											}
 										},
 										{
-											"id": 3179,
+											"id": 3206,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3165,7 +3389,7 @@
 											}
 										},
 										{
-											"id": 3180,
+											"id": 3207,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3189,7 +3413,7 @@
 											}
 										},
 										{
-											"id": 3181,
+											"id": 3208,
 											"name": "t5",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3213,7 +3437,7 @@
 											}
 										},
 										{
-											"id": 3182,
+											"id": 3209,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3243,7 +3467,7 @@
 											}
 										},
 										{
-											"id": 3183,
+											"id": 3210,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3284,7 +3508,7 @@
 							]
 						},
 						{
-							"id": 3184,
+							"id": 3211,
 							"name": "pipeAsync",
 							"kind": 64,
 							"kindString": "Function",
@@ -3292,13 +3516,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 644,
+									"line": 651,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3185,
+									"id": 3212,
 									"name": "pipeAsync",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -3314,7 +3538,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3186,
+											"id": 3213,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -3323,7 +3547,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3187,
+											"id": 3214,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3353,7 +3577,7 @@
 											}
 										},
 										{
-											"id": 3188,
+											"id": 3215,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3386,7 +3610,7 @@
 									}
 								},
 								{
-									"id": 3189,
+									"id": 3216,
 									"name": "pipeAsync",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -3402,14 +3626,14 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3190,
+											"id": 3217,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3191,
+											"id": 3218,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -3418,7 +3642,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3192,
+											"id": 3219,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3448,7 +3672,7 @@
 											}
 										},
 										{
-											"id": 3193,
+											"id": 3220,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3472,7 +3696,7 @@
 											}
 										},
 										{
-											"id": 3194,
+											"id": 3221,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3505,7 +3729,7 @@
 									}
 								},
 								{
-									"id": 3195,
+									"id": 3222,
 									"name": "pipeAsync",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -3521,21 +3745,21 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3196,
+											"id": 3223,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3197,
+											"id": 3224,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3198,
+											"id": 3225,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -3544,7 +3768,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3199,
+											"id": 3226,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3574,7 +3798,7 @@
 											}
 										},
 										{
-											"id": 3200,
+											"id": 3227,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3598,7 +3822,7 @@
 											}
 										},
 										{
-											"id": 3201,
+											"id": 3228,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3622,7 +3846,7 @@
 											}
 										},
 										{
-											"id": 3202,
+											"id": 3229,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3655,7 +3879,7 @@
 									}
 								},
 								{
-									"id": 3203,
+									"id": 3230,
 									"name": "pipeAsync",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -3671,28 +3895,28 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3204,
+											"id": 3231,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3205,
+											"id": 3232,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3206,
+											"id": 3233,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3207,
+											"id": 3234,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -3701,7 +3925,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3208,
+											"id": 3235,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3731,7 +3955,7 @@
 											}
 										},
 										{
-											"id": 3209,
+											"id": 3236,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3755,7 +3979,7 @@
 											}
 										},
 										{
-											"id": 3210,
+											"id": 3237,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3779,7 +4003,7 @@
 											}
 										},
 										{
-											"id": 3211,
+											"id": 3238,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3803,7 +4027,7 @@
 											}
 										},
 										{
-											"id": 3212,
+											"id": 3239,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3836,7 +4060,7 @@
 									}
 								},
 								{
-									"id": 3213,
+									"id": 3240,
 									"name": "pipeAsync",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -3852,35 +4076,35 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3214,
+											"id": 3241,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3215,
+											"id": 3242,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3216,
+											"id": 3243,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3217,
+											"id": 3244,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3218,
+											"id": 3245,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -3889,7 +4113,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3219,
+											"id": 3246,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3919,7 +4143,7 @@
 											}
 										},
 										{
-											"id": 3220,
+											"id": 3247,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3943,7 +4167,7 @@
 											}
 										},
 										{
-											"id": 3221,
+											"id": 3248,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3967,7 +4191,7 @@
 											}
 										},
 										{
-											"id": 3222,
+											"id": 3249,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -3991,7 +4215,7 @@
 											}
 										},
 										{
-											"id": 3223,
+											"id": 3250,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4015,7 +4239,7 @@
 											}
 										},
 										{
-											"id": 3224,
+											"id": 3251,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4048,7 +4272,7 @@
 									}
 								},
 								{
-									"id": 3225,
+									"id": 3252,
 									"name": "pipeAsync",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -4064,42 +4288,42 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3226,
+											"id": 3253,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3227,
+											"id": 3254,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3228,
+											"id": 3255,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3229,
+											"id": 3256,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3230,
+											"id": 3257,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3231,
+											"id": 3258,
 											"name": "T6",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -4108,7 +4332,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3232,
+											"id": 3259,
 											"name": "read",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4138,7 +4362,7 @@
 											}
 										},
 										{
-											"id": 3233,
+											"id": 3260,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4162,7 +4386,7 @@
 											}
 										},
 										{
-											"id": 3234,
+											"id": 3261,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4186,7 +4410,7 @@
 											}
 										},
 										{
-											"id": 3235,
+											"id": 3262,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4210,7 +4434,7 @@
 											}
 										},
 										{
-											"id": 3236,
+											"id": 3263,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4234,7 +4458,7 @@
 											}
 										},
 										{
-											"id": 3237,
+											"id": 3264,
 											"name": "t5",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4258,7 +4482,7 @@
 											}
 										},
 										{
-											"id": 3238,
+											"id": 3265,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4293,7 +4517,7 @@
 							]
 						},
 						{
-							"id": 3298,
+							"id": 3325,
 							"name": "pipeline",
 							"kind": 64,
 							"kindString": "Function",
@@ -4301,13 +4525,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 966,
+									"line": 973,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3299,
+									"id": 3326,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -4317,21 +4541,21 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3300,
+											"id": 3327,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3301,
+											"id": 3328,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3302,
+											"id": 3329,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -4357,7 +4581,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3303,
+											"id": 3330,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4376,7 +4600,7 @@
 											}
 										},
 										{
-											"id": 3304,
+											"id": 3331,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4400,7 +4624,7 @@
 											}
 										},
 										{
-											"id": 3305,
+											"id": 3332,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4414,7 +4638,7 @@
 											}
 										},
 										{
-											"id": 3306,
+											"id": 3333,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4477,7 +4701,7 @@
 									}
 								},
 								{
-									"id": 3307,
+									"id": 3334,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -4487,28 +4711,28 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3308,
+											"id": 3335,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3309,
+											"id": 3336,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3310,
+											"id": 3337,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3311,
+											"id": 3338,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -4534,7 +4758,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3312,
+											"id": 3339,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4553,7 +4777,7 @@
 											}
 										},
 										{
-											"id": 3313,
+											"id": 3340,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4577,7 +4801,7 @@
 											}
 										},
 										{
-											"id": 3314,
+											"id": 3341,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4601,7 +4825,7 @@
 											}
 										},
 										{
-											"id": 3315,
+											"id": 3342,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4615,7 +4839,7 @@
 											}
 										},
 										{
-											"id": 3316,
+											"id": 3343,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4678,7 +4902,7 @@
 									}
 								},
 								{
-									"id": 3317,
+									"id": 3344,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -4688,35 +4912,35 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3318,
+											"id": 3345,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3319,
+											"id": 3346,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3320,
+											"id": 3347,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3321,
+											"id": 3348,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3322,
+											"id": 3349,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -4742,7 +4966,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3323,
+											"id": 3350,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4761,7 +4985,7 @@
 											}
 										},
 										{
-											"id": 3324,
+											"id": 3351,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4785,7 +5009,7 @@
 											}
 										},
 										{
-											"id": 3325,
+											"id": 3352,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4809,7 +5033,7 @@
 											}
 										},
 										{
-											"id": 3326,
+											"id": 3353,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4833,7 +5057,7 @@
 											}
 										},
 										{
-											"id": 3327,
+											"id": 3354,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4847,7 +5071,7 @@
 											}
 										},
 										{
-											"id": 3328,
+											"id": 3355,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -4910,7 +5134,7 @@
 									}
 								},
 								{
-									"id": 3329,
+									"id": 3356,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -4920,42 +5144,42 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3330,
+											"id": 3357,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3331,
+											"id": 3358,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3332,
+											"id": 3359,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3333,
+											"id": 3360,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3334,
+											"id": 3361,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3335,
+											"id": 3362,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -4981,7 +5205,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3336,
+											"id": 3363,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5000,7 +5224,7 @@
 											}
 										},
 										{
-											"id": 3337,
+											"id": 3364,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5024,7 +5248,7 @@
 											}
 										},
 										{
-											"id": 3338,
+											"id": 3365,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5048,7 +5272,7 @@
 											}
 										},
 										{
-											"id": 3339,
+											"id": 3366,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5072,7 +5296,7 @@
 											}
 										},
 										{
-											"id": 3340,
+											"id": 3367,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5096,7 +5320,7 @@
 											}
 										},
 										{
-											"id": 3341,
+											"id": 3368,
 											"name": "t5",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5110,7 +5334,7 @@
 											}
 										},
 										{
-											"id": 3342,
+											"id": 3369,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5173,7 +5397,7 @@
 									}
 								},
 								{
-									"id": 3343,
+									"id": 3370,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -5183,49 +5407,49 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3344,
+											"id": 3371,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3345,
+											"id": 3372,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3346,
+											"id": 3373,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3347,
+											"id": 3374,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3348,
+											"id": 3375,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3349,
+											"id": 3376,
 											"name": "T6",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3350,
+											"id": 3377,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -5251,7 +5475,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3351,
+											"id": 3378,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5270,7 +5494,7 @@
 											}
 										},
 										{
-											"id": 3352,
+											"id": 3379,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5294,7 +5518,7 @@
 											}
 										},
 										{
-											"id": 3353,
+											"id": 3380,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5318,7 +5542,7 @@
 											}
 										},
 										{
-											"id": 3354,
+											"id": 3381,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5342,7 +5566,7 @@
 											}
 										},
 										{
-											"id": 3355,
+											"id": 3382,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5366,7 +5590,7 @@
 											}
 										},
 										{
-											"id": 3356,
+											"id": 3383,
 											"name": "t5",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5390,7 +5614,7 @@
 											}
 										},
 										{
-											"id": 3357,
+											"id": 3384,
 											"name": "t6",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5404,7 +5628,7 @@
 											}
 										},
 										{
-											"id": 3358,
+											"id": 3385,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5467,7 +5691,7 @@
 									}
 								},
 								{
-									"id": 3359,
+									"id": 3386,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -5477,21 +5701,21 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3360,
+											"id": 3387,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3361,
+											"id": 3388,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3362,
+											"id": 3389,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -5517,7 +5741,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3363,
+											"id": 3390,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5536,7 +5760,7 @@
 											}
 										},
 										{
-											"id": 3364,
+											"id": 3391,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5560,7 +5784,7 @@
 											}
 										},
 										{
-											"id": 3365,
+											"id": 3392,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5574,7 +5798,7 @@
 											}
 										},
 										{
-											"id": 3366,
+											"id": 3393,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5637,7 +5861,7 @@
 									}
 								},
 								{
-									"id": 3367,
+									"id": 3394,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -5647,28 +5871,28 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3368,
+											"id": 3395,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3369,
+											"id": 3396,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3370,
+											"id": 3397,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3371,
+											"id": 3398,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -5694,7 +5918,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3372,
+											"id": 3399,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5713,7 +5937,7 @@
 											}
 										},
 										{
-											"id": 3373,
+											"id": 3400,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5737,7 +5961,7 @@
 											}
 										},
 										{
-											"id": 3374,
+											"id": 3401,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5761,7 +5985,7 @@
 											}
 										},
 										{
-											"id": 3375,
+											"id": 3402,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5775,7 +5999,7 @@
 											}
 										},
 										{
-											"id": 3376,
+											"id": 3403,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5838,7 +6062,7 @@
 									}
 								},
 								{
-									"id": 3377,
+									"id": 3404,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -5848,35 +6072,35 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3378,
+											"id": 3405,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3379,
+											"id": 3406,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3380,
+											"id": 3407,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3381,
+											"id": 3408,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3382,
+											"id": 3409,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -5902,7 +6126,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3383,
+											"id": 3410,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5921,7 +6145,7 @@
 											}
 										},
 										{
-											"id": 3384,
+											"id": 3411,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5945,7 +6169,7 @@
 											}
 										},
 										{
-											"id": 3385,
+											"id": 3412,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5969,7 +6193,7 @@
 											}
 										},
 										{
-											"id": 3386,
+											"id": 3413,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -5993,7 +6217,7 @@
 											}
 										},
 										{
-											"id": 3387,
+											"id": 3414,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6007,7 +6231,7 @@
 											}
 										},
 										{
-											"id": 3388,
+											"id": 3415,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6070,7 +6294,7 @@
 									}
 								},
 								{
-									"id": 3389,
+									"id": 3416,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -6080,42 +6304,42 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3390,
+											"id": 3417,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3391,
+											"id": 3418,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3392,
+											"id": 3419,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3393,
+											"id": 3420,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3394,
+											"id": 3421,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3395,
+											"id": 3422,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -6141,7 +6365,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3396,
+											"id": 3423,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6160,7 +6384,7 @@
 											}
 										},
 										{
-											"id": 3397,
+											"id": 3424,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6184,7 +6408,7 @@
 											}
 										},
 										{
-											"id": 3398,
+											"id": 3425,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6208,7 +6432,7 @@
 											}
 										},
 										{
-											"id": 3399,
+											"id": 3426,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6232,7 +6456,7 @@
 											}
 										},
 										{
-											"id": 3400,
+											"id": 3427,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6256,7 +6480,7 @@
 											}
 										},
 										{
-											"id": 3401,
+											"id": 3428,
 											"name": "t5",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6270,7 +6494,7 @@
 											}
 										},
 										{
-											"id": 3402,
+											"id": 3429,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6333,7 +6557,7 @@
 									}
 								},
 								{
-									"id": 3403,
+									"id": 3430,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -6343,49 +6567,49 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3404,
+											"id": 3431,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3405,
+											"id": 3432,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3406,
+											"id": 3433,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3407,
+											"id": 3434,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3408,
+											"id": 3435,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3409,
+											"id": 3436,
 											"name": "T6",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3410,
+											"id": 3437,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -6411,7 +6635,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3411,
+											"id": 3438,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6430,7 +6654,7 @@
 											}
 										},
 										{
-											"id": 3412,
+											"id": 3439,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6454,7 +6678,7 @@
 											}
 										},
 										{
-											"id": 3413,
+											"id": 3440,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6478,7 +6702,7 @@
 											}
 										},
 										{
-											"id": 3414,
+											"id": 3441,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6502,7 +6726,7 @@
 											}
 										},
 										{
-											"id": 3415,
+											"id": 3442,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6526,7 +6750,7 @@
 											}
 										},
 										{
-											"id": 3416,
+											"id": 3443,
 											"name": "t5",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6550,7 +6774,7 @@
 											}
 										},
 										{
-											"id": 3417,
+											"id": 3444,
 											"name": "t6",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6564,7 +6788,7 @@
 											}
 										},
 										{
-											"id": 3418,
+											"id": 3445,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6627,7 +6851,7 @@
 									}
 								},
 								{
-									"id": 3419,
+									"id": 3446,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -6637,21 +6861,21 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3420,
+											"id": 3447,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3421,
+											"id": 3448,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3422,
+											"id": 3449,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -6677,7 +6901,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3423,
+											"id": 3450,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6690,7 +6914,7 @@
 											}
 										},
 										{
-											"id": 3424,
+											"id": 3451,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6714,7 +6938,7 @@
 											}
 										},
 										{
-											"id": 3425,
+											"id": 3452,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6728,7 +6952,7 @@
 											}
 										},
 										{
-											"id": 3426,
+											"id": 3453,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6791,7 +7015,7 @@
 									}
 								},
 								{
-									"id": 3427,
+									"id": 3454,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -6801,28 +7025,28 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3428,
+											"id": 3455,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3429,
+											"id": 3456,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3430,
+											"id": 3457,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3431,
+											"id": 3458,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -6848,7 +7072,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3432,
+											"id": 3459,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6861,7 +7085,7 @@
 											}
 										},
 										{
-											"id": 3433,
+											"id": 3460,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6885,7 +7109,7 @@
 											}
 										},
 										{
-											"id": 3434,
+											"id": 3461,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6909,7 +7133,7 @@
 											}
 										},
 										{
-											"id": 3435,
+											"id": 3462,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6923,7 +7147,7 @@
 											}
 										},
 										{
-											"id": 3436,
+											"id": 3463,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -6986,7 +7210,7 @@
 									}
 								},
 								{
-									"id": 3437,
+									"id": 3464,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -6996,35 +7220,35 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3438,
+											"id": 3465,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3439,
+											"id": 3466,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3440,
+											"id": 3467,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3441,
+											"id": 3468,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3442,
+											"id": 3469,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -7050,7 +7274,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3443,
+											"id": 3470,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7063,7 +7287,7 @@
 											}
 										},
 										{
-											"id": 3444,
+											"id": 3471,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7087,7 +7311,7 @@
 											}
 										},
 										{
-											"id": 3445,
+											"id": 3472,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7111,7 +7335,7 @@
 											}
 										},
 										{
-											"id": 3446,
+											"id": 3473,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7135,7 +7359,7 @@
 											}
 										},
 										{
-											"id": 3447,
+											"id": 3474,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7149,7 +7373,7 @@
 											}
 										},
 										{
-											"id": 3448,
+											"id": 3475,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7212,7 +7436,7 @@
 									}
 								},
 								{
-									"id": 3449,
+									"id": 3476,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -7222,42 +7446,42 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3450,
+											"id": 3477,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3451,
+											"id": 3478,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3452,
+											"id": 3479,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3453,
+											"id": 3480,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3454,
+											"id": 3481,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3455,
+											"id": 3482,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -7283,7 +7507,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3456,
+											"id": 3483,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7296,7 +7520,7 @@
 											}
 										},
 										{
-											"id": 3457,
+											"id": 3484,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7320,7 +7544,7 @@
 											}
 										},
 										{
-											"id": 3458,
+											"id": 3485,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7344,7 +7568,7 @@
 											}
 										},
 										{
-											"id": 3459,
+											"id": 3486,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7368,7 +7592,7 @@
 											}
 										},
 										{
-											"id": 3460,
+											"id": 3487,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7392,7 +7616,7 @@
 											}
 										},
 										{
-											"id": 3461,
+											"id": 3488,
 											"name": "t5",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7406,7 +7630,7 @@
 											}
 										},
 										{
-											"id": 3462,
+											"id": 3489,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7469,7 +7693,7 @@
 									}
 								},
 								{
-									"id": 3463,
+									"id": 3490,
 									"name": "pipeline",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -7479,49 +7703,49 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3464,
+											"id": 3491,
 											"name": "T1",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3465,
+											"id": 3492,
 											"name": "T2",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3466,
+											"id": 3493,
 											"name": "T3",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3467,
+											"id": 3494,
 											"name": "T4",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3468,
+											"id": 3495,
 											"name": "T5",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3469,
+											"id": 3496,
 											"name": "T6",
 											"kind": 131072,
 											"kindString": "Type parameter",
 											"flags": {}
 										},
 										{
-											"id": 3470,
+											"id": 3497,
 											"name": "D",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -7547,7 +7771,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3471,
+											"id": 3498,
 											"name": "write",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7560,7 +7784,7 @@
 											}
 										},
 										{
-											"id": 3472,
+											"id": 3499,
 											"name": "t1",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7584,7 +7808,7 @@
 											}
 										},
 										{
-											"id": 3473,
+											"id": 3500,
 											"name": "t2",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7608,7 +7832,7 @@
 											}
 										},
 										{
-											"id": 3474,
+											"id": 3501,
 											"name": "t3",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7632,7 +7856,7 @@
 											}
 										},
 										{
-											"id": 3475,
+											"id": 3502,
 											"name": "t4",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7656,7 +7880,7 @@
 											}
 										},
 										{
-											"id": 3476,
+											"id": 3503,
 											"name": "t5",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7680,7 +7904,7 @@
 											}
 										},
 										{
-											"id": 3477,
+											"id": 3504,
 											"name": "t6",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7694,7 +7918,7 @@
 											}
 										},
 										{
-											"id": 3478,
+											"id": 3505,
 											"name": "errorCallback",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7759,7 +7983,7 @@
 							]
 						},
 						{
-							"id": 3043,
+							"id": 3055,
 							"name": "stats",
 							"kind": 64,
 							"kindString": "Function",
@@ -7767,13 +7991,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 749,
+									"line": 756,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3044,
+									"id": 3056,
 									"name": "stats",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -7784,7 +8008,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3045,
+											"id": 3057,
 											"name": "botId",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7798,7 +8022,7 @@
 											}
 										},
 										{
-											"id": 3046,
+											"id": 3058,
 											"name": "queue",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7812,7 +8036,7 @@
 											}
 										},
 										{
-											"id": 3047,
+											"id": 3059,
 											"name": "opts",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -7825,14 +8049,14 @@
 											"type": {
 												"type": "reflection",
 												"declaration": {
-													"id": 3048,
+													"id": 3060,
 													"name": "__type",
 													"kind": 65536,
 													"kindString": "Type literal",
 													"flags": {},
 													"children": [
 														{
-															"id": 3049,
+															"id": 3061,
 															"name": "records",
 															"kind": 1024,
 															"kindString": "Property",
@@ -7843,7 +8067,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 753,
+																	"line": 760,
 																	"character": 2
 																}
 															],
@@ -7853,7 +8077,7 @@
 															}
 														},
 														{
-															"id": 3050,
+															"id": 3062,
 															"name": "time",
 															"kind": 1024,
 															"kindString": "Property",
@@ -7864,7 +8088,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 760,
+																	"line": 767,
 																	"character": 2
 																}
 															],
@@ -7881,8 +8105,8 @@
 															"title": "Properties",
 															"kind": 1024,
 															"children": [
-																3049,
-																3050
+																3061,
+																3062
 															]
 														}
 													]
@@ -7892,14 +8116,14 @@
 									],
 									"type": {
 										"type": "reference",
-										"id": 2576,
+										"id": 2586,
 										"name": "StatsStream"
 									}
 								}
 							]
 						},
 						{
-							"id": 3282,
+							"id": 3309,
 							"name": "stringify",
 							"kind": 64,
 							"kindString": "Function",
@@ -7907,13 +8131,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 905,
+									"line": 912,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3283,
+									"id": 3310,
 									"name": "stringify",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -7941,7 +8165,7 @@
 							]
 						},
 						{
-							"id": 3240,
+							"id": 3267,
 							"name": "through",
 							"kind": 64,
 							"kindString": "Function",
@@ -7949,13 +8173,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 690,
+									"line": 697,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3241,
+									"id": 3268,
 									"name": "through",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -7972,7 +8196,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3242,
+											"id": 3269,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -7982,7 +8206,7 @@
 											}
 										},
 										{
-											"id": 3243,
+											"id": 3270,
 											"name": "U",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -7994,7 +8218,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3244,
+											"id": 3271,
 											"name": "transform",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8007,21 +8231,21 @@
 											"type": {
 												"type": "reflection",
 												"declaration": {
-													"id": 3245,
+													"id": 3272,
 													"name": "__type",
 													"kind": 65536,
 													"kindString": "Type literal",
 													"flags": {},
 													"signatures": [
 														{
-															"id": 3246,
+															"id": 3273,
 															"name": "__type",
 															"kind": 4096,
 															"kindString": "Call signature",
 															"flags": {},
 															"parameters": [
 																{
-																	"id": 3247,
+																	"id": 3274,
 																	"name": "this",
 																	"kind": 32768,
 																	"kindString": "Parameter",
@@ -8045,7 +8269,7 @@
 																	}
 																},
 																{
-																	"id": 3248,
+																	"id": 3275,
 																	"name": "obj",
 																	"kind": 32768,
 																	"kindString": "Parameter",
@@ -8057,7 +8281,7 @@
 																	}
 																},
 																{
-																	"id": 3249,
+																	"id": 3276,
 																	"name": "done",
 																	"kind": 32768,
 																	"kindString": "Parameter",
@@ -8092,7 +8316,7 @@
 											}
 										},
 										{
-											"id": 3250,
+											"id": 3277,
 											"name": "flush",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8143,7 +8367,7 @@
 							]
 						},
 						{
-							"id": 3251,
+							"id": 3278,
 							"name": "throughAsync",
 							"kind": 64,
 							"kindString": "Function",
@@ -8151,13 +8375,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 716,
+									"line": 723,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3252,
+									"id": 3279,
 									"name": "throughAsync",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -8174,7 +8398,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3253,
+											"id": 3280,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -8184,7 +8408,7 @@
 											}
 										},
 										{
-											"id": 3254,
+											"id": 3281,
 											"name": "U",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -8196,7 +8420,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3255,
+											"id": 3282,
 											"name": "transform",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8209,21 +8433,21 @@
 											"type": {
 												"type": "reflection",
 												"declaration": {
-													"id": 3256,
+													"id": 3283,
 													"name": "__type",
 													"kind": 65536,
 													"kindString": "Type literal",
 													"flags": {},
 													"signatures": [
 														{
-															"id": 3257,
+															"id": 3284,
 															"name": "__type",
 															"kind": 4096,
 															"kindString": "Call signature",
 															"flags": {},
 															"parameters": [
 																{
-																	"id": 3258,
+																	"id": 3285,
 																	"name": "this",
 																	"kind": 32768,
 																	"kindString": "Parameter",
@@ -8247,7 +8471,7 @@
 																	}
 																},
 																{
-																	"id": 3259,
+																	"id": 3286,
 																	"name": "obj",
 																	"kind": 32768,
 																	"kindString": "Parameter",
@@ -8288,7 +8512,7 @@
 											}
 										},
 										{
-											"id": 3260,
+											"id": 3287,
 											"name": "flush",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8301,21 +8525,21 @@
 											"type": {
 												"type": "reflection",
 												"declaration": {
-													"id": 3261,
+													"id": 3288,
 													"name": "__type",
 													"kind": 65536,
 													"kindString": "Type literal",
 													"flags": {},
 													"signatures": [
 														{
-															"id": 3262,
+															"id": 3289,
 															"name": "__type",
 															"kind": 4096,
 															"kindString": "Call signature",
 															"flags": {},
 															"parameters": [
 																{
-																	"id": 3263,
+																	"id": 3290,
 																	"name": "this",
 																	"kind": 32768,
 																	"kindString": "Parameter",
@@ -8389,7 +8613,7 @@
 							]
 						},
 						{
-							"id": 3483,
+							"id": 3510,
 							"name": "toCSV",
 							"kind": 64,
 							"kindString": "Function",
@@ -8397,13 +8621,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1049,
+									"line": 1056,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3484,
+									"id": 3511,
 									"name": "toCSV",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -8414,7 +8638,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3485,
+											"id": 3512,
 											"name": "fieldList",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8440,7 +8664,7 @@
 											}
 										},
 										{
-											"id": 3486,
+											"id": 3513,
 											"name": "opts",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8476,7 +8700,7 @@
 							]
 						},
 						{
-							"id": 3051,
+							"id": 3063,
 							"name": "toCheckpoint",
 							"kind": 64,
 							"kindString": "Function",
@@ -8484,13 +8708,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 772,
+									"line": 779,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3052,
+									"id": 3064,
 									"name": "toCheckpoint",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -8501,7 +8725,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3053,
+											"id": 3065,
 											"name": "config",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8533,7 +8757,7 @@
 							]
 						},
 						{
-							"id": 3102,
+							"id": 3114,
 							"name": "toDynamoDB",
 							"kind": 64,
 							"kindString": "Function",
@@ -8541,13 +8765,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1016,
+									"line": 1023,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3103,
+									"id": 3115,
 									"name": "toDynamoDB",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -8558,7 +8782,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3104,
+											"id": 3116,
 											"name": "table",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8572,7 +8796,7 @@
 											}
 										},
 										{
-											"id": 3105,
+											"id": 3117,
 											"name": "opts",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8583,14 +8807,14 @@
 											"type": {
 												"type": "reflection",
 												"declaration": {
-													"id": 3106,
+													"id": 3118,
 													"name": "__type",
 													"kind": 65536,
 													"kindString": "Type literal",
 													"flags": {},
 													"children": [
 														{
-															"id": 3107,
+															"id": 3119,
 															"name": "hash",
 															"kind": 1024,
 															"kindString": "Property",
@@ -8598,7 +8822,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1017,
+																	"line": 1024,
 																	"character": 2
 																}
 															],
@@ -8608,7 +8832,7 @@
 															}
 														},
 														{
-															"id": 3108,
+															"id": 3120,
 															"name": "range",
 															"kind": 1024,
 															"kindString": "Property",
@@ -8616,7 +8840,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1018,
+																	"line": 1025,
 																	"character": 2
 																}
 															],
@@ -8626,7 +8850,7 @@
 															}
 														},
 														{
-															"id": 3109,
+															"id": 3121,
 															"name": "records",
 															"kind": 1024,
 															"kindString": "Property",
@@ -8636,7 +8860,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1019,
+																	"line": 1026,
 																	"character": 2
 																}
 															],
@@ -8646,7 +8870,7 @@
 															}
 														},
 														{
-															"id": 3110,
+															"id": 3122,
 															"name": "size",
 															"kind": 1024,
 															"kindString": "Property",
@@ -8656,7 +8880,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1020,
+																	"line": 1027,
 																	"character": 2
 																}
 															],
@@ -8666,7 +8890,7 @@
 															}
 														},
 														{
-															"id": 3111,
+															"id": 3123,
 															"name": "time",
 															"kind": 1024,
 															"kindString": "Property",
@@ -8676,7 +8900,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1021,
+																	"line": 1028,
 																	"character": 2
 																}
 															],
@@ -8693,11 +8917,11 @@
 															"title": "Properties",
 															"kind": 1024,
 															"children": [
-																3107,
-																3108,
-																3109,
-																3110,
-																3111
+																3119,
+																3120,
+																3121,
+																3122,
+																3123
 															]
 														}
 													]
@@ -8715,7 +8939,7 @@
 							]
 						},
 						{
-							"id": 3060,
+							"id": 3072,
 							"name": "toLeo",
 							"kind": 64,
 							"kindString": "Function",
@@ -8723,13 +8947,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 802,
+									"line": 809,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3061,
+									"id": 3073,
 									"name": "toLeo",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -8740,7 +8964,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3062,
+											"id": 3074,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -8749,7 +8973,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3063,
+											"id": 3075,
 											"name": "botId",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8763,7 +8987,7 @@
 											}
 										},
 										{
-											"id": 3064,
+											"id": 3076,
 											"name": "config",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8807,7 +9031,7 @@
 							]
 						},
 						{
-							"id": 3091,
+							"id": 3103,
 							"name": "toS3",
 							"kind": 64,
 							"kindString": "Function",
@@ -8815,13 +9039,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 979,
+									"line": 986,
 									"character": 10
 								}
 							],
 							"signatures": [
 								{
-									"id": 3092,
+									"id": 3104,
 									"name": "toS3",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -8832,7 +9056,7 @@
 									},
 									"parameters": [
 										{
-											"id": 3093,
+											"id": 3105,
 											"name": "Bucket",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8846,7 +9070,7 @@
 											}
 										},
 										{
-											"id": 3094,
+											"id": 3106,
 											"name": "File",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8870,7 +9094,7 @@
 							]
 						},
 						{
-							"id": 3264,
+							"id": 3291,
 							"name": "write",
 							"kind": 64,
 							"kindString": "Function",
@@ -8878,13 +9102,13 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 725,
+									"line": 732,
 									"character": 7
 								}
 							],
 							"signatures": [
 								{
-									"id": 3265,
+									"id": 3292,
 									"name": "write",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -8894,7 +9118,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3266,
+											"id": 3293,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -8903,7 +9127,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3267,
+											"id": 3294,
 											"name": "opts",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8914,7 +9138,7 @@
 											}
 										},
 										{
-											"id": 3268,
+											"id": 3295,
 											"name": "func",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8937,7 +9161,7 @@
 											}
 										},
 										{
-											"id": 3269,
+											"id": 3296,
 											"name": "flush",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -8964,7 +9188,7 @@
 									}
 								},
 								{
-									"id": 3270,
+									"id": 3297,
 									"name": "write",
 									"kind": 4096,
 									"kindString": "Call signature",
@@ -8974,7 +9198,7 @@
 									},
 									"typeParameter": [
 										{
-											"id": 3271,
+											"id": 3298,
 											"name": "T",
 											"kind": 131072,
 											"kindString": "Type parameter",
@@ -8983,7 +9207,7 @@
 									],
 									"parameters": [
 										{
-											"id": 3272,
+											"id": 3299,
 											"name": "func",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -9006,7 +9230,7 @@
 											}
 										},
 										{
-											"id": 3273,
+											"id": 3300,
 											"name": "flush",
 											"kind": 32768,
 											"kindString": "Parameter",
@@ -9040,53 +9264,54 @@
 							"title": "Variables",
 							"kind": 32,
 							"children": [
-								3121,
-								3122,
-								3120,
-								3239
+								3148,
+								3149,
+								3147,
+								3266
 							]
 						},
 						{
 							"title": "Functions",
 							"kind": 64,
 							"children": [
-								3479,
-								3065,
-								3290,
-								3278,
-								3071,
-								3112,
-								3117,
-								3487,
-								3054,
-								3095,
-								3287,
-								3284,
-								3082,
-								3274,
+								3506,
 								3077,
-								3039,
-								3088,
-								3123,
-								3184,
-								3298,
-								3043,
-								3282,
-								3240,
-								3251,
-								3483,
+								3317,
+								3124,
+								3305,
+								3083,
+								3139,
+								3144,
+								3514,
+								3066,
+								3107,
+								3314,
+								3311,
+								3094,
+								3301,
+								3089,
 								3051,
-								3102,
-								3060,
-								3091,
-								3264
+								3100,
+								3150,
+								3211,
+								3325,
+								3055,
+								3309,
+								3267,
+								3278,
+								3510,
+								3063,
+								3114,
+								3072,
+								3103,
+								3291
 							]
 						}
 					],
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 579,
+							"line": 586,
 							"character": 25
 						}
 					]
@@ -9338,7 +9563,7 @@
 								"type": "query",
 								"queryType": {
 									"type": "reference",
-									"id": 3038,
+									"id": 3050,
 									"name": "StreamUtil"
 								}
 							}
@@ -9722,7 +9947,7 @@
 															},
 															{
 																"type": "reference",
-																"id": 2524,
+																"id": 2529,
 																"typeArguments": [
 																	{
 																		"type": "reference",
@@ -9857,7 +10082,7 @@
 															},
 															{
 																"type": "reference",
-																"id": 2524,
+																"id": 2529,
 																"typeArguments": [
 																	{
 																		"type": "reference",
@@ -10073,7 +10298,7 @@
 														"types": [
 															{
 																"type": "reference",
-																"id": 2534,
+																"id": 2544,
 																"typeArguments": [
 																	{
 																		"type": "reference",
@@ -10085,7 +10310,7 @@
 															},
 															{
 																"type": "reference",
-																"id": 2551,
+																"id": 2561,
 																"typeArguments": [
 																	{
 																		"type": "reference",
@@ -10179,7 +10404,7 @@
 														"types": [
 															{
 																"type": "reference",
-																"id": 2534,
+																"id": 2544,
 																"typeArguments": [
 																	{
 																		"type": "reference",
@@ -10191,7 +10416,7 @@
 															},
 															{
 																"type": "reference",
-																"id": 2551,
+																"id": 2561,
 																"typeArguments": [
 																	{
 																		"type": "reference",
@@ -10955,7 +11180,7 @@
 					]
 				},
 				{
-					"id": 2569,
+					"id": 2579,
 					"name": "CheckpointData",
 					"kind": 256,
 					"kindString": "Interface",
@@ -10976,7 +11201,7 @@
 					},
 					"children": [
 						{
-							"id": 2570,
+							"id": 2580,
 							"name": "eid",
 							"kind": 1024,
 							"kindString": "Property",
@@ -10997,7 +11222,7 @@
 							}
 						},
 						{
-							"id": 2574,
+							"id": 2584,
 							"name": "ended_timestamp",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11020,7 +11245,7 @@
 							}
 						},
 						{
-							"id": 2572,
+							"id": 2582,
 							"name": "source_timestamp",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11043,7 +11268,7 @@
 							}
 						},
 						{
-							"id": 2575,
+							"id": 2585,
 							"name": "start_eid",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11066,7 +11291,7 @@
 							}
 						},
 						{
-							"id": 2573,
+							"id": 2583,
 							"name": "started_timestamp",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11089,7 +11314,7 @@
 							}
 						},
 						{
-							"id": 2571,
+							"id": 2581,
 							"name": "units",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11117,12 +11342,12 @@
 							"title": "Properties",
 							"kind": 1024,
 							"children": [
-								2570,
-								2574,
-								2572,
-								2575,
-								2573,
-								2571
+								2580,
+								2584,
+								2582,
+								2585,
+								2583,
+								2581
 							]
 						}
 					],
@@ -11589,6 +11814,50 @@
 					]
 				},
 				{
+					"id": 3048,
+					"name": "CreateCorrelationOptions",
+					"kind": 256,
+					"kindString": "Interface",
+					"flags": {},
+					"comment": {},
+					"children": [
+						{
+							"id": 3049,
+							"name": "partial",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 576,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							}
+						}
+					],
+					"groups": [
+						{
+							"title": "Properties",
+							"kind": 1024,
+							"children": [
+								3049
+							]
+						}
+					],
+					"sources": [
+						{
+							"fileName": "lib/lib.d.ts",
+							"line": 575,
+							"character": 17
+						}
+					]
+				},
+				{
 					"id": 118,
 					"name": "CreateSourceOptions",
 					"kind": 256,
@@ -11664,7 +11933,7 @@
 					]
 				},
 				{
-					"id": 2524,
+					"id": 2529,
 					"name": "EnrichBatchOptions",
 					"kind": 256,
 					"kindString": "Interface",
@@ -11685,7 +11954,7 @@
 					},
 					"children": [
 						{
-							"id": 2525,
+							"id": 2530,
 							"name": "batch",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11717,7 +11986,7 @@
 							}
 						},
 						{
-							"id": 2530,
+							"id": 2535,
 							"name": "config",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11746,7 +12015,42 @@
 							}
 						},
 						{
-							"id": 2526,
+							"id": 2538,
+							"name": "firehose",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "If true, firehose will be used.  Firehose batches events sent to it to an S3 file in 1 minute\nincrements, which of course adds at least a one minute latency. However, firehose can take a vast number\nof concurrent writes compared to kinesis.  So, use this when you have a giant number of concurrent events\nyou wish to write, where a giant number is X events per X amount of time.",
+								"text": "An RStreams Bus system bot reads the 1 minute batched S3 files written to firehose, separates the events\nin the file into separate S3 files by queue and then sends a single event to kinesis for each resulting\nqueue-specific S3 file. From there, processing continues as if events were sent to kinesis using s3.\n\nIf this and `s3` are present, firehose will be used.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "false"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 87,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2523,
+								"name": "EnrichOptions.firehose"
+							}
+						},
+						{
+							"id": 2531,
 							"name": "id",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11772,7 +12076,7 @@
 							}
 						},
 						{
-							"id": 2527,
+							"id": 2532,
 							"name": "inQueue",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11798,7 +12102,7 @@
 							}
 						},
 						{
-							"id": 2528,
+							"id": 2533,
 							"name": "outQueue",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11824,7 +12128,93 @@
 							}
 						},
 						{
-							"id": 2529,
+							"id": 2539,
+							"name": "records",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "The number of records, where each record is an event, to micro-batch locally in the SDK before writing\nthem to either kinesis, firehose or S3.  See the other options in this object to understand how this\nmight be useful.",
+								"text": "The SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "kinesis 100 records (events)"
+									},
+									{
+										"tag": "default",
+										"text": "S3 1 file"
+									},
+									{
+										"tag": "default",
+										"text": "firehose 10,000 records (events)\n"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 100,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2524,
+								"name": "EnrichOptions.records"
+							}
+						},
+						{
+							"id": 2540,
+							"name": "size",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "The number of bytes to micro-batch locally in the SDK before writing them to either kinesis, firehose or S3.\nSee the other options in this object to understand how this might be useful.",
+								"text": "The SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "kinesis 200k"
+									},
+									{
+										"tag": "default",
+										"text": "S3 unbounded"
+									},
+									{
+										"tag": "default",
+										"text": "firehose 900k\n"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 112,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2525,
+								"name": "EnrichOptions.size"
+							}
+						},
+						{
+							"id": 2534,
 							"name": "start",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11859,7 +12249,52 @@
 							}
 						},
 						{
-							"id": 2531,
+							"id": 2541,
+							"name": "time",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "The amount of time to micro-batch locally in the SDK before writing events to either kinesis, firehose or S3.\nSee the other options in this object to understand how this might be useful.",
+								"text": "Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)\ncan take: Duration | number | string | FromTo | DurationInputObject.\n\nThe SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "kinesis 200ms"
+									},
+									{
+										"tag": "default",
+										"text": "S3 unbounded"
+									},
+									{
+										"tag": "default",
+										"text": "firehose 900k"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 128,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "reference",
+								"qualifiedName": "moment.DurationInputArg1",
+								"package": "moment",
+								"name": "DurationInputArg1"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2526,
+								"name": "EnrichOptions.time"
+							}
+						},
+						{
+							"id": 2536,
 							"name": "transform",
 							"kind": 1024,
 							"kindString": "Property",
@@ -11886,7 +12321,7 @@
 											"typeArguments": [
 												{
 													"type": "reference",
-													"id": 2532,
+													"id": 2542,
 													"name": "T"
 												}
 											],
@@ -11895,7 +12330,7 @@
 									},
 									{
 										"type": "reference",
-										"id": 2533,
+										"id": 2543,
 										"name": "U"
 									}
 								],
@@ -11906,6 +12341,41 @@
 								"id": 2521,
 								"name": "EnrichOptions.transform"
 							}
+						},
+						{
+							"id": 2537,
+							"name": "useS3",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "If true, the SDK will write events to S3 and then pass a single event to kinesis whose payload\nreferences the S3 file.  Thus, one actual event flows through Kinesis and that one event is eventually\nwritten to the RStreams bus' events DynamoDB table, still referencing the S3 file full of events.\nWhen reading events, the SDK will detect it has received an event in a queue that is really a reference\nto S3 and retrieve the portion of the S3 file needed to fulfill the SDK read request made.",
+								"text": "This can be useful when a very large number of events need to be written all at once or if the\nevents are large.  However, there is some additional ingestion latency incurred by this approach\nand also on reading.  If the size of the S3 files is large, the latency penalty for reading\nis negligible for most use cases.  However, waiting to batch up a sufficient number of events\ncan cause a delay getting events into Kinesis for ingestion.  The rule of thumb is files\naround 2mb or larger are fine.  It's OK if an occasional file is small.  However, creating many small\nfiles should be avoided as it could cause read latency.  For example, if requesting 1000 events\nfrom a queue if every two events are in an S3 file, the SDK will have to retrieve 500 files to read just\n1000 events.  Use the other settings to tune the amount of data saved to the file: `records`, `size`, `time`.\n\nNOTE! A new feature, [[`ReadOptions.fast_s3_read`]], largely solves the problem\nof having lots of small S3 files by enabling the SDK to concurrently read from multiple S3 files.\n\nIf this and `firehose` are present, firehose will be used.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "false"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 69,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2522,
+								"name": "EnrichOptions.useS3"
+							}
 						}
 					],
 					"groups": [
@@ -11913,13 +12383,18 @@
 							"title": "Properties",
 							"kind": 1024,
 							"children": [
-								2525,
 								2530,
-								2526,
-								2527,
-								2528,
-								2529,
-								2531
+								2535,
+								2538,
+								2531,
+								2532,
+								2533,
+								2539,
+								2540,
+								2534,
+								2541,
+								2536,
+								2537
 							]
 						}
 					],
@@ -11932,7 +12407,7 @@
 					],
 					"typeParameter": [
 						{
-							"id": 2532,
+							"id": 2542,
 							"name": "T",
 							"kind": 131072,
 							"kindString": "Type parameter",
@@ -11942,7 +12417,7 @@
 							}
 						},
 						{
-							"id": 2533,
+							"id": 2543,
 							"name": "U",
 							"kind": 131072,
 							"kindString": "Type parameter",
@@ -11965,7 +12440,7 @@
 										"typeArguments": [
 											{
 												"type": "reference",
-												"id": 2532,
+												"id": 2542,
 												"name": "T"
 											}
 										],
@@ -11974,7 +12449,7 @@
 								},
 								{
 									"type": "reference",
-									"id": 2533,
+									"id": 2543,
 									"name": "U"
 								}
 							],
@@ -12024,6 +12499,41 @@
 								"type": "reference",
 								"id": 2489,
 								"name": "ReadOptions"
+							}
+						},
+						{
+							"id": 2523,
+							"name": "firehose",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "If true, firehose will be used.  Firehose batches events sent to it to an S3 file in 1 minute\nincrements, which of course adds at least a one minute latency. However, firehose can take a vast number\nof concurrent writes compared to kinesis.  So, use this when you have a giant number of concurrent events\nyou wish to write, where a giant number is X events per X amount of time.",
+								"text": "An RStreams Bus system bot reads the 1 minute batched S3 files written to firehose, separates the events\nin the file into separate S3 files by queue and then sends a single event to kinesis for each resulting\nqueue-specific S3 file. From there, processing continues as if events were sent to kinesis using s3.\n\nIf this and `s3` are present, firehose will be used.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "false"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 87,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2485,
+								"name": "WriteOptions.firehose"
 							}
 						},
 						{
@@ -12090,6 +12600,92 @@
 							}
 						},
 						{
+							"id": 2524,
+							"name": "records",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "The number of records, where each record is an event, to micro-batch locally in the SDK before writing\nthem to either kinesis, firehose or S3.  See the other options in this object to understand how this\nmight be useful.",
+								"text": "The SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "kinesis 100 records (events)"
+									},
+									{
+										"tag": "default",
+										"text": "S3 1 file"
+									},
+									{
+										"tag": "default",
+										"text": "firehose 10,000 records (events)\n"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 100,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2486,
+								"name": "WriteOptions.records"
+							}
+						},
+						{
+							"id": 2525,
+							"name": "size",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "The number of bytes to micro-batch locally in the SDK before writing them to either kinesis, firehose or S3.\nSee the other options in this object to understand how this might be useful.",
+								"text": "The SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "kinesis 200k"
+									},
+									{
+										"tag": "default",
+										"text": "S3 unbounded"
+									},
+									{
+										"tag": "default",
+										"text": "firehose 900k\n"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 112,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "number"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2487,
+								"name": "WriteOptions.size"
+							}
+						},
+						{
 							"id": 2519,
 							"name": "start",
 							"kind": 1024,
@@ -12120,6 +12716,51 @@
 							}
 						},
 						{
+							"id": 2526,
+							"name": "time",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "The amount of time to micro-batch locally in the SDK before writing events to either kinesis, firehose or S3.\nSee the other options in this object to understand how this might be useful.",
+								"text": "Note, this type is any one of the [valid durations the Moment JS library](https://momentjs.com/docs/#/durations/)\ncan take: Duration | number | string | FromTo | DurationInputObject.\n\nThe SDK will write events as soon as one of the `records`, `size` or `time` conditions are met.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "kinesis 200ms"
+									},
+									{
+										"tag": "default",
+										"text": "S3 unbounded"
+									},
+									{
+										"tag": "default",
+										"text": "firehose 900k"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 128,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "reference",
+								"qualifiedName": "moment.DurationInputArg1",
+								"package": "moment",
+								"name": "DurationInputArg1"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2488,
+								"name": "WriteOptions.time"
+							}
+						},
+						{
 							"id": 2521,
 							"name": "transform",
 							"kind": 1024,
@@ -12141,16 +12782,51 @@
 								"typeArguments": [
 									{
 										"type": "reference",
-										"id": 2522,
+										"id": 2527,
 										"name": "T"
 									},
 									{
 										"type": "reference",
-										"id": 2523,
+										"id": 2528,
 										"name": "U"
 									}
 								],
 								"name": "ProcessFunction"
+							}
+						},
+						{
+							"id": 2522,
+							"name": "useS3",
+							"kind": 1024,
+							"kindString": "Property",
+							"flags": {
+								"isOptional": true
+							},
+							"comment": {
+								"shortText": "If true, the SDK will write events to S3 and then pass a single event to kinesis whose payload\nreferences the S3 file.  Thus, one actual event flows through Kinesis and that one event is eventually\nwritten to the RStreams bus' events DynamoDB table, still referencing the S3 file full of events.\nWhen reading events, the SDK will detect it has received an event in a queue that is really a reference\nto S3 and retrieve the portion of the S3 file needed to fulfill the SDK read request made.",
+								"text": "This can be useful when a very large number of events need to be written all at once or if the\nevents are large.  However, there is some additional ingestion latency incurred by this approach\nand also on reading.  If the size of the S3 files is large, the latency penalty for reading\nis negligible for most use cases.  However, waiting to batch up a sufficient number of events\ncan cause a delay getting events into Kinesis for ingestion.  The rule of thumb is files\naround 2mb or larger are fine.  It's OK if an occasional file is small.  However, creating many small\nfiles should be avoided as it could cause read latency.  For example, if requesting 1000 events\nfrom a queue if every two events are in an S3 file, the SDK will have to retrieve 500 files to read just\n1000 events.  Use the other settings to tune the amount of data saved to the file: `records`, `size`, `time`.\n\nNOTE! A new feature, [[`ReadOptions.fast_s3_read`]], largely solves the problem\nof having lots of small S3 files by enabling the SDK to concurrently read from multiple S3 files.\n\nIf this and `firehose` are present, firehose will be used.\n",
+								"tags": [
+									{
+										"tag": "default",
+										"text": "false"
+									}
+								]
+							},
+							"sources": [
+								{
+									"fileName": "lib/lib.d.ts",
+									"line": 69,
+									"character": 1
+								}
+							],
+							"type": {
+								"type": "intrinsic",
+								"name": "boolean"
+							},
+							"inheritedFrom": {
+								"type": "reference",
+								"id": 2484,
+								"name": "WriteOptions.useS3"
 							}
 						}
 					],
@@ -12160,11 +12836,16 @@
 							"kind": 1024,
 							"children": [
 								2520,
+								2523,
 								2516,
 								2517,
 								2518,
+								2524,
+								2525,
 								2519,
-								2521
+								2526,
+								2521,
+								2522
 							]
 						}
 					],
@@ -12177,7 +12858,7 @@
 					],
 					"typeParameter": [
 						{
-							"id": 2522,
+							"id": 2527,
 							"name": "T",
 							"kind": 131072,
 							"kindString": "Type parameter",
@@ -12187,7 +12868,7 @@
 							}
 						},
 						{
-							"id": 2523,
+							"id": 2528,
 							"name": "U",
 							"kind": 131072,
 							"kindString": "Type parameter",
@@ -12197,16 +12878,23 @@
 							}
 						}
 					],
+					"extendedTypes": [
+						{
+							"type": "reference",
+							"id": 2483,
+							"name": "WriteOptions"
+						}
+					],
 					"extendedBy": [
 						{
 							"type": "reference",
-							"id": 2524,
+							"id": 2529,
 							"name": "EnrichBatchOptions"
 						}
 					]
 				},
 				{
-					"id": 2551,
+					"id": 2561,
 					"name": "OffloadBatchOptions",
 					"kind": 256,
 					"kindString": "Interface",
@@ -12227,7 +12915,7 @@
 					},
 					"children": [
 						{
-							"id": 2552,
+							"id": 2562,
 							"name": "batch",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12261,7 +12949,7 @@
 							}
 						},
 						{
-							"id": 2562,
+							"id": 2572,
 							"name": "debug",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12289,12 +12977,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2544,
+								"id": 2554,
 								"name": "OffloadOptions.debug"
 							}
 						},
 						{
-							"id": 2565,
+							"id": 2575,
 							"name": "fast_s3_read",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12327,12 +13015,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2547,
+								"id": 2557,
 								"name": "OffloadOptions.fast_s3_read"
 							}
 						},
 						{
-							"id": 2566,
+							"id": 2576,
 							"name": "fast_s3_read_parallel_fetch_max_bytes",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12361,12 +13049,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2548,
+								"id": 2558,
 								"name": "OffloadOptions.fast_s3_read_parallel_fetch_max_bytes"
 							}
 						},
 						{
-							"id": 2553,
+							"id": 2563,
 							"name": "id",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12387,12 +13075,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2535,
+								"id": 2545,
 								"name": "OffloadOptions.id"
 							}
 						},
 						{
-							"id": 2554,
+							"id": 2564,
 							"name": "inQueue",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12413,12 +13101,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2536,
+								"id": 2546,
 								"name": "OffloadOptions.inQueue"
 							}
 						},
 						{
-							"id": 2560,
+							"id": 2570,
 							"name": "limit",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12447,12 +13135,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2542,
+								"id": 2552,
 								"name": "OffloadOptions.limit"
 							}
 						},
 						{
-							"id": 2558,
+							"id": 2568,
 							"name": "loops",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12482,12 +13170,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2540,
+								"id": 2550,
 								"name": "OffloadOptions.loops"
 							}
 						},
 						{
-							"id": 2564,
+							"id": 2574,
 							"name": "maxOverride",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12520,12 +13208,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2546,
+								"id": 2556,
 								"name": "OffloadOptions.maxOverride"
 							}
 						},
 						{
-							"id": 2557,
+							"id": 2567,
 							"name": "runTime",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12551,12 +13239,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2539,
+								"id": 2549,
 								"name": "OffloadOptions.runTime"
 							}
 						},
 						{
-							"id": 2561,
+							"id": 2571,
 							"name": "size",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12585,12 +13273,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2543,
+								"id": 2553,
 								"name": "OffloadOptions.size"
 							}
 						},
 						{
-							"id": 2559,
+							"id": 2569,
 							"name": "start",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12620,12 +13308,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2541,
+								"id": 2551,
 								"name": "OffloadOptions.start"
 							}
 						},
 						{
-							"id": 2563,
+							"id": 2573,
 							"name": "stopTime",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12648,12 +13336,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2545,
+								"id": 2555,
 								"name": "OffloadOptions.stopTime"
 							}
 						},
 						{
-							"id": 2567,
+							"id": 2577,
 							"name": "stream_query_limit",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12686,12 +13374,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2549,
+								"id": 2559,
 								"name": "OffloadOptions.stream_query_limit"
 							}
 						},
 						{
-							"id": 2556,
+							"id": 2566,
 							"name": "subqueue",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12719,12 +13407,12 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2538,
+								"id": 2548,
 								"name": "OffloadOptions.subqueue"
 							}
 						},
 						{
-							"id": 2555,
+							"id": 2565,
 							"name": "transform",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12747,7 +13435,7 @@
 										"type": "array",
 										"elementType": {
 											"type": "reference",
-											"id": 2568,
+											"id": 2578,
 											"name": "T"
 										}
 									},
@@ -12760,7 +13448,7 @@
 							},
 							"inheritedFrom": {
 								"type": "reference",
-								"id": 2537,
+								"id": 2547,
 								"name": "OffloadOptions.transform"
 							}
 						}
@@ -12770,22 +13458,22 @@
 							"title": "Properties",
 							"kind": 1024,
 							"children": [
-								2552,
 								2562,
-								2565,
-								2566,
-								2553,
-								2554,
-								2560,
-								2558,
-								2564,
-								2557,
-								2561,
-								2559,
+								2572,
+								2575,
+								2576,
 								2563,
+								2564,
+								2570,
+								2568,
+								2574,
 								2567,
-								2556,
-								2555
+								2571,
+								2569,
+								2573,
+								2577,
+								2566,
+								2565
 							]
 						}
 					],
@@ -12793,12 +13481,12 @@
 						{
 							"fileName": "lib/lib.d.ts",
 							"line": 492,
-							"character": 18
+							"character": 17
 						}
 					],
 					"typeParameter": [
 						{
-							"id": 2568,
+							"id": 2578,
 							"name": "T",
 							"kind": 131072,
 							"kindString": "Type parameter",
@@ -12811,13 +13499,13 @@
 					"extendedTypes": [
 						{
 							"type": "reference",
-							"id": 2534,
+							"id": 2544,
 							"typeArguments": [
 								{
 									"type": "array",
 									"elementType": {
 										"type": "reference",
-										"id": 2568,
+										"id": 2578,
 										"name": "T"
 									}
 								}
@@ -12827,7 +13515,7 @@
 					]
 				},
 				{
-					"id": 2534,
+					"id": 2544,
 					"name": "OffloadOptions",
 					"kind": 256,
 					"kindString": "Interface",
@@ -12847,7 +13535,7 @@
 					},
 					"children": [
 						{
-							"id": 2544,
+							"id": 2554,
 							"name": "debug",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12880,7 +13568,7 @@
 							}
 						},
 						{
-							"id": 2547,
+							"id": 2557,
 							"name": "fast_s3_read",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12918,7 +13606,7 @@
 							}
 						},
 						{
-							"id": 2548,
+							"id": 2558,
 							"name": "fast_s3_read_parallel_fetch_max_bytes",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12952,7 +13640,7 @@
 							}
 						},
 						{
-							"id": 2535,
+							"id": 2545,
 							"name": "id",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12973,7 +13661,7 @@
 							}
 						},
 						{
-							"id": 2536,
+							"id": 2546,
 							"name": "inQueue",
 							"kind": 1024,
 							"kindString": "Property",
@@ -12994,7 +13682,7 @@
 							}
 						},
 						{
-							"id": 2542,
+							"id": 2552,
 							"name": "limit",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13028,7 +13716,7 @@
 							}
 						},
 						{
-							"id": 2540,
+							"id": 2550,
 							"name": "loops",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13063,7 +13751,7 @@
 							}
 						},
 						{
-							"id": 2546,
+							"id": 2556,
 							"name": "maxOverride",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13101,7 +13789,7 @@
 							}
 						},
 						{
-							"id": 2539,
+							"id": 2549,
 							"name": "runTime",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13132,7 +13820,7 @@
 							}
 						},
 						{
-							"id": 2543,
+							"id": 2553,
 							"name": "size",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13166,7 +13854,7 @@
 							}
 						},
 						{
-							"id": 2541,
+							"id": 2551,
 							"name": "start",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13201,7 +13889,7 @@
 							}
 						},
 						{
-							"id": 2545,
+							"id": 2555,
 							"name": "stopTime",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13229,7 +13917,7 @@
 							}
 						},
 						{
-							"id": 2549,
+							"id": 2559,
 							"name": "stream_query_limit",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13267,7 +13955,7 @@
 							}
 						},
 						{
-							"id": 2538,
+							"id": 2548,
 							"name": "subqueue",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13300,7 +13988,7 @@
 							}
 						},
 						{
-							"id": 2537,
+							"id": 2547,
 							"name": "transform",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13321,7 +14009,7 @@
 								"typeArguments": [
 									{
 										"type": "reference",
-										"id": 2550,
+										"id": 2560,
 										"name": "T"
 									},
 									{
@@ -13338,21 +14026,21 @@
 							"title": "Properties",
 							"kind": 1024,
 							"children": [
-								2544,
-								2547,
-								2548,
-								2535,
-								2536,
-								2542,
-								2540,
-								2546,
-								2539,
-								2543,
-								2541,
+								2554,
+								2557,
+								2558,
 								2545,
+								2546,
+								2552,
+								2550,
+								2556,
 								2549,
-								2538,
-								2537
+								2553,
+								2551,
+								2555,
+								2559,
+								2548,
+								2547
 							]
 						}
 					],
@@ -13365,7 +14053,7 @@
 					],
 					"typeParameter": [
 						{
-							"id": 2550,
+							"id": 2560,
 							"name": "T",
 							"kind": 131072,
 							"kindString": "Type parameter",
@@ -13385,7 +14073,7 @@
 					"extendedBy": [
 						{
 							"type": "reference",
-							"id": 2551,
+							"id": 2561,
 							"name": "OffloadBatchOptions"
 						}
 					]
@@ -13783,13 +14471,13 @@
 					"extendedBy": [
 						{
 							"type": "reference",
-							"id": 2534,
+							"id": 2544,
 							"name": "OffloadOptions"
 						}
 					]
 				},
 				{
-					"id": 2576,
+					"id": 2586,
 					"name": "StatsStream",
 					"kind": 256,
 					"kindString": "Interface",
@@ -13800,7 +14488,7 @@
 					},
 					"children": [
 						{
-							"id": 2577,
+							"id": 2587,
 							"name": "checkpoint",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13815,14 +14503,14 @@
 							"type": {
 								"type": "reflection",
 								"declaration": {
-									"id": 2578,
+									"id": 2588,
 									"name": "__type",
 									"kind": 65536,
 									"kindString": "Type literal",
 									"flags": {},
 									"signatures": [
 										{
-											"id": 2579,
+											"id": 2589,
 											"name": "__type",
 											"kind": 4096,
 											"kindString": "Call signature",
@@ -13832,7 +14520,7 @@
 											},
 											"parameters": [
 												{
-													"id": 2580,
+													"id": 2590,
 													"name": "callback",
 													"kind": 32768,
 													"kindString": "Parameter",
@@ -13840,28 +14528,28 @@
 													"type": {
 														"type": "reflection",
 														"declaration": {
-															"id": 2581,
+															"id": 2591,
 															"name": "__type",
 															"kind": 65536,
 															"kindString": "Type literal",
 															"flags": {},
 															"signatures": [
 																{
-																	"id": 2582,
+																	"id": 2592,
 																	"name": "__type",
 																	"kind": 4096,
 																	"kindString": "Call signature",
 																	"flags": {},
 																	"parameters": [
 																		{
-																			"id": 2583,
+																			"id": 2593,
 																			"name": "err",
 																			"kind": 32768,
 																			"kindString": "Parameter",
 																			"flags": {},
 																			"type": {
 																				"type": "reference",
-																				"id": 2569,
+																				"id": 2579,
 																				"name": "CheckpointData"
 																			}
 																		}
@@ -13886,7 +14574,7 @@
 							}
 						},
 						{
-							"id": 2584,
+							"id": 2594,
 							"name": "get",
 							"kind": 1024,
 							"kindString": "Property",
@@ -13901,14 +14589,14 @@
 							"type": {
 								"type": "reflection",
 								"declaration": {
-									"id": 2585,
+									"id": 2595,
 									"name": "__type",
 									"kind": 65536,
 									"kindString": "Type literal",
 									"flags": {},
 									"signatures": [
 										{
-											"id": 2586,
+											"id": 2596,
 											"name": "__type",
 											"kind": 4096,
 											"kindString": "Call signature",
@@ -13918,7 +14606,7 @@
 											},
 											"type": {
 												"type": "reference",
-												"id": 2569,
+												"id": 2579,
 												"name": "CheckpointData"
 											}
 										}
@@ -13932,8 +14620,8 @@
 							"title": "Properties",
 							"kind": 1024,
 							"children": [
-								2577,
-								2584
+								2587,
+								2594
 							]
 						}
 					],
@@ -14275,6 +14963,13 @@
 							"line": 43,
 							"character": 17
 						}
+					],
+					"extendedBy": [
+						{
+							"type": "reference",
+							"id": 2515,
+							"name": "EnrichOptions"
+						}
 					]
 				},
 				{
@@ -14587,8 +15282,8 @@
 						2466,
 						2470,
 						2469,
-						3517,
-						3519,
+						3544,
+						3546,
 						2465,
 						2468,
 						2457,
@@ -14597,11 +15292,11 @@
 						2462,
 						2461,
 						2473,
-						3514,
-						3518,
+						3541,
+						3545,
 						2474,
-						3516,
-						3515,
+						3543,
+						3542,
 						2471,
 						2460,
 						2464,
@@ -14611,37 +15306,37 @@
 						2456,
 						2454,
 						2463,
-						3502,
-						3507,
-						3497,
-						3496,
-						3500,
-						3499,
-						3494,
-						3495,
+						3529,
+						3534,
+						3524,
+						3523,
+						3527,
+						3526,
+						3521,
+						3522,
+						3547,
+						3538,
+						3540,
+						3525,
+						3536,
+						3530,
+						3518,
+						3519,
 						3520,
-						3511,
-						3513,
-						3498,
-						3509,
-						3503,
-						3491,
-						3492,
-						3493,
-						3501,
-						3508,
-						3504,
-						3505,
-						3510,
-						3512,
-						3506
+						3528,
+						3535,
+						3531,
+						3532,
+						3537,
+						3539,
+						3533
 					]
 				},
 				{
 					"title": "Namespaces",
 					"kind": 4,
 					"children": [
-						3038
+						3050
 					]
 				},
 				{
@@ -14656,16 +15351,17 @@
 					"kind": 256,
 					"children": [
 						2502,
-						2569,
+						2579,
 						11,
 						2,
+						3048,
 						118,
-						2524,
+						2529,
 						2515,
-						2551,
-						2534,
+						2561,
+						2544,
 						2489,
-						2576,
+						2586,
 						2511,
 						2483
 					]
@@ -34054,7 +34750,7 @@
 			"flags": {},
 			"children": [
 				{
-					"id": 3521,
+					"id": 3548,
 					"name": "BatchOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34069,7 +34765,7 @@
 					"target": 2472
 				},
 				{
-					"id": 3529,
+					"id": 3556,
 					"name": "BufferOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34077,7 +34773,7 @@
 					"target": 2502
 				},
 				{
-					"id": 3525,
+					"id": 3552,
 					"name": "Callback",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34085,15 +34781,15 @@
 					"target": 2476
 				},
 				{
-					"id": 3535,
+					"id": 3562,
 					"name": "CheckpointData",
 					"kind": 16777216,
 					"kindString": "Reference",
 					"flags": {},
-					"target": 2569
+					"target": 2579
 				},
 				{
-					"id": 3564,
+					"id": 3592,
 					"name": "CommandWrapFunction",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34101,7 +34797,7 @@
 					"target": 718
 				},
 				{
-					"id": 3566,
+					"id": 3594,
 					"name": "CommandWrapOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34109,15 +34805,23 @@
 					"target": 739
 				},
 				{
-					"id": 3532,
+					"id": 3564,
+					"name": "CreateCorrelationOptions",
+					"kind": 16777216,
+					"kindString": "Reference",
+					"flags": {},
+					"target": 3048
+				},
+				{
+					"id": 3559,
 					"name": "EnrichBatchOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
 					"flags": {},
-					"target": 2524
+					"target": 2529
 				},
 				{
-					"id": 3531,
+					"id": 3558,
 					"name": "EnrichOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34125,7 +34829,7 @@
 					"target": 2515
 				},
 				{
-					"id": 3522,
+					"id": 3549,
 					"name": "FromCsvOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34140,23 +34844,23 @@
 					"target": 2473
 				},
 				{
-					"id": 3534,
+					"id": 3561,
 					"name": "OffloadBatchOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
 					"flags": {},
-					"target": 2551
+					"target": 2561
 				},
 				{
-					"id": 3533,
+					"id": 3560,
 					"name": "OffloadOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
 					"flags": {},
-					"target": 2534
+					"target": 2544
 				},
 				{
-					"id": 3561,
+					"id": 3589,
 					"name": "ProcessCallback",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34164,7 +34868,7 @@
 					"target": 689
 				},
 				{
-					"id": 3565,
+					"id": 3593,
 					"name": "ProcessCallbackOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34172,7 +34876,7 @@
 					"target": 733
 				},
 				{
-					"id": 3523,
+					"id": 3550,
 					"name": "ProcessFunction",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34187,7 +34891,7 @@
 					"target": 2474
 				},
 				{
-					"id": 3563,
+					"id": 3591,
 					"name": "ProcessFunctionContext",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34195,7 +34899,7 @@
 					"target": 703
 				},
 				{
-					"id": 3562,
+					"id": 3590,
 					"name": "ProcessFunctionOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34203,7 +34907,7 @@
 					"target": 696
 				},
 				{
-					"id": 3528,
+					"id": 3555,
 					"name": "ReadOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34211,23 +34915,23 @@
 					"target": 2489
 				},
 				{
-					"id": 3536,
+					"id": 3563,
 					"name": "StatsStream",
 					"kind": 16777216,
 					"kindString": "Reference",
 					"flags": {},
-					"target": 2576
+					"target": 2586
 				},
 				{
-					"id": 3537,
+					"id": 3565,
 					"name": "StreamUtil",
 					"kind": 16777216,
 					"kindString": "Reference",
 					"flags": {},
-					"target": 3038
+					"target": 3050
 				},
 				{
-					"id": 3526,
+					"id": 3553,
 					"name": "ThroughEvent",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34235,7 +34939,7 @@
 					"target": 2481
 				},
 				{
-					"id": 3530,
+					"id": 3557,
 					"name": "ToCheckpointOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34243,7 +34947,7 @@
 					"target": 2511
 				},
 				{
-					"id": 3524,
+					"id": 3551,
 					"name": "ToCsvOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34258,7 +34962,7 @@
 					"target": 2475
 				},
 				{
-					"id": 3527,
+					"id": 3554,
 					"name": "WriteOptions",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34266,7 +34970,7 @@
 					"target": 2483
 				},
 				{
-					"id": 3549,
+					"id": 3577,
 					"name": "batch",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34274,7 +34978,7 @@
 					"target": 616
 				},
 				{
-					"id": 3554,
+					"id": 3582,
 					"name": "buffer",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34282,7 +34986,7 @@
 					"target": 659
 				},
 				{
-					"id": 3544,
+					"id": 3572,
 					"name": "bufferBackoff",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34290,7 +34994,7 @@
 					"target": 585
 				},
 				{
-					"id": 3543,
+					"id": 3571,
 					"name": "commandWrap",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34298,7 +35002,7 @@
 					"target": 579
 				},
 				{
-					"id": 3547,
+					"id": 3575,
 					"name": "counter",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34306,7 +35010,7 @@
 					"target": 601
 				},
 				{
-					"id": 3546,
+					"id": 3574,
 					"name": "devnull",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34314,7 +35018,7 @@
 					"target": 597
 				},
 				{
-					"id": 3541,
+					"id": 3569,
 					"name": "eventIdFromTimestamp",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34322,7 +35026,7 @@
 					"target": 571
 				},
 				{
-					"id": 3542,
+					"id": 3570,
 					"name": "eventIdToTimestamp",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34330,7 +35034,7 @@
 					"target": 576
 				},
 				{
-					"id": 3567,
+					"id": 3595,
 					"name": "eventstream",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34338,7 +35042,7 @@
 					"target": 742
 				},
 				{
-					"id": 3558,
+					"id": 3586,
 					"name": "fromCSV",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34346,7 +35050,7 @@
 					"target": 674
 				},
 				{
-					"id": 3560,
+					"id": 3588,
 					"name": "fromS3",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34354,7 +35058,7 @@
 					"target": 682
 				},
 				{
-					"id": 3545,
+					"id": 3573,
 					"name": "log",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34362,7 +35066,7 @@
 					"target": 593
 				},
 				{
-					"id": 3556,
+					"id": 3584,
 					"name": "parse",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34370,7 +35074,7 @@
 					"target": 667
 				},
 				{
-					"id": 3550,
+					"id": 3578,
 					"name": "passthrough",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34378,7 +35082,7 @@
 					"target": 620
 				},
 				{
-					"id": 3538,
+					"id": 3566,
 					"name": "pipe",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34386,7 +35090,7 @@
 					"target": 274
 				},
 				{
-					"id": 3539,
+					"id": 3567,
 					"name": "pipeAsync",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34394,7 +35098,7 @@
 					"target": 335
 				},
 				{
-					"id": 3540,
+					"id": 3568,
 					"name": "pipeline",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34402,7 +35106,7 @@
 					"target": 390
 				},
 				{
-					"id": 3548,
+					"id": 3576,
 					"name": "process",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34410,7 +35114,7 @@
 					"target": 609
 				},
 				{
-					"id": 3555,
+					"id": 3583,
 					"name": "stringify",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34418,7 +35122,7 @@
 					"target": 665
 				},
 				{
-					"id": 3551,
+					"id": 3579,
 					"name": "through",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34426,7 +35130,7 @@
 					"target": 625
 				},
 				{
-					"id": 3552,
+					"id": 3580,
 					"name": "throughAsync",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34434,7 +35138,7 @@
 					"target": 636
 				},
 				{
-					"id": 3557,
+					"id": 3585,
 					"name": "toCSV",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34442,7 +35146,7 @@
 					"target": 670
 				},
 				{
-					"id": 3559,
+					"id": 3587,
 					"name": "toS3",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34450,7 +35154,7 @@
 					"target": 678
 				},
 				{
-					"id": 3553,
+					"id": 3581,
 					"name": "writeWrapped",
 					"kind": 16777216,
 					"kindString": "Reference",
@@ -34474,7 +35178,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 408,
+									"line": 412,
 									"character": 1
 								}
 							],
@@ -34493,7 +35197,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 407,
+									"line": 411,
 									"character": 1
 								}
 							],
@@ -34516,7 +35220,7 @@
 					"sources": [
 						{
 							"fileName": "lib/types.d.ts",
-							"line": 406,
+							"line": 410,
 							"character": 17
 						}
 					]
@@ -34545,7 +35249,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 471,
+									"line": 475,
 									"character": 1
 								}
 							],
@@ -34568,7 +35272,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 474,
+									"line": 478,
 									"character": 1
 								}
 							],
@@ -34591,7 +35295,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 477,
+									"line": 481,
 									"character": 1
 								}
 							],
@@ -34614,7 +35318,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 480,
+									"line": 484,
 									"character": 1
 								}
 							],
@@ -34637,7 +35341,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 483,
+									"line": 487,
 									"character": 1
 								}
 							],
@@ -34663,7 +35367,7 @@
 					"sources": [
 						{
 							"fileName": "lib/types.d.ts",
-							"line": 469,
+							"line": 473,
 							"character": 17
 						}
 					]
@@ -34690,7 +35394,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 455,
+									"line": 459,
 									"character": 1
 								}
 							],
@@ -34741,7 +35445,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 458,
+									"line": 462,
 									"character": 1
 								}
 							],
@@ -34794,7 +35498,7 @@
 					"sources": [
 						{
 							"fileName": "lib/types.d.ts",
-							"line": 453,
+							"line": 457,
 							"character": 17
 						}
 					]
@@ -34830,7 +35534,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 338,
+									"line": 340,
 									"character": 1
 								}
 							],
@@ -34901,7 +35605,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 345,
+									"line": 349,
 									"character": 1
 								}
 							],
@@ -34955,7 +35659,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 444,
+									"line": 448,
 									"character": 1
 								}
 							],
@@ -34979,7 +35683,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 436,
+									"line": 440,
 									"character": 1
 								}
 							],
@@ -35000,7 +35704,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 417,
+									"line": 421,
 									"character": 1
 								}
 							],
@@ -35023,7 +35727,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 439,
+									"line": 443,
 									"character": 1
 								}
 							],
@@ -35046,7 +35750,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 420,
+									"line": 424,
 									"character": 1
 								}
 							],
@@ -35067,7 +35771,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 427,
+									"line": 431,
 									"character": 1
 								}
 							],
@@ -35088,7 +35792,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 433,
+									"line": 437,
 									"character": 1
 								}
 							],
@@ -35116,7 +35820,7 @@
 					"sources": [
 						{
 							"fileName": "lib/types.d.ts",
-							"line": 415,
+							"line": 419,
 							"character": 17
 						}
 					]
@@ -35366,7 +36070,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 489,
+									"line": 493,
 									"character": 1
 								}
 							],
@@ -35608,7 +36312,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 488,
+									"line": 492,
 									"character": 1
 								}
 							],
@@ -35627,7 +36331,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 490,
+									"line": 494,
 									"character": 1
 								}
 							],
@@ -35784,7 +36488,7 @@
 							"sources": [
 								{
 									"fileName": "lib/types.d.ts",
-									"line": 491,
+									"line": 495,
 									"character": 1
 								}
 							],
@@ -36010,7 +36714,7 @@
 					"sources": [
 						{
 							"fileName": "lib/types.d.ts",
-							"line": 486,
+							"line": 490,
 							"character": 17
 						}
 					],
@@ -57693,7 +58397,7 @@
 					"sources": [
 						{
 							"fileName": "lib/types.d.ts",
-							"line": 401,
+							"line": 405,
 							"character": 12
 						}
 					],
@@ -57722,7 +58426,7 @@
 									"sources": [
 										{
 											"fileName": "lib/types.d.ts",
-											"line": 401,
+											"line": 405,
 											"character": 52
 										}
 									]
@@ -58427,53 +59131,54 @@
 					"title": "References",
 					"kind": 16777216,
 					"children": [
-						3521,
-						3529,
-						3525,
-						3535,
-						3564,
-						3566,
-						3532,
-						3531,
-						3522,
-						3534,
-						3533,
-						3561,
-						3565,
-						3523,
-						3563,
-						3562,
-						3528,
-						3536,
-						3537,
-						3526,
-						3530,
-						3524,
-						3527,
-						3549,
-						3554,
-						3544,
-						3543,
-						3547,
-						3546,
-						3541,
-						3542,
-						3567,
-						3558,
-						3560,
-						3545,
-						3556,
-						3550,
-						3538,
-						3539,
-						3540,
 						3548,
-						3555,
-						3551,
+						3556,
 						3552,
-						3557,
+						3562,
+						3592,
+						3594,
+						3564,
 						3559,
-						3553
+						3558,
+						3549,
+						3561,
+						3560,
+						3589,
+						3593,
+						3550,
+						3591,
+						3590,
+						3555,
+						3563,
+						3565,
+						3553,
+						3557,
+						3551,
+						3554,
+						3577,
+						3582,
+						3572,
+						3571,
+						3575,
+						3574,
+						3569,
+						3570,
+						3595,
+						3586,
+						3588,
+						3573,
+						3584,
+						3578,
+						3566,
+						3567,
+						3568,
+						3576,
+						3583,
+						3579,
+						3580,
+						3585,
+						3587,
+						3581
 					]
 				},
 				{
