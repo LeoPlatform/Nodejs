@@ -288,10 +288,10 @@ export interface WriteEvent<T> extends Event<T> {
  * @todo question shouldn't we deprecate `id` or `eid`; why have both?
  */
 export interface ReadEvent<T> extends Event<T> {
-    /** The ID of the bot that wrote this event to the queue (a dup of id for legacy purposes) */
+	/** The ID of the bot that wrote this event to the queue (a dup of id for legacy purposes) */
 	eid: string;
 
-    /** The RStreams queue-specific data that this event exists to wrap */
+	/** The RStreams queue-specific data that this event exists to wrap */
 	payload: T;
 }
 
@@ -327,6 +327,8 @@ export interface CorrelationId {
 	 * will be the kinesis sequence number, etc.  If this event derived from more than one parent event, `end` will be set. 
 	 */
 	start: string;
+	// todo document: this actually exists and should be start or partial_start
+	// partial_start?: string;
 
 	/** 
 	 * The ending ID in the parent source this event derived from.  If the parent was an RStreams queue, this will
@@ -336,6 +338,8 @@ export interface CorrelationId {
 	 * @default `start`
 	 */
 	end?: string;
+	// todo document: this actually exists and should be end or partial_end
+	// partial_end?: string;
 
 	/**
 	 * If this event is derived from multiple parent events, this is how many.
