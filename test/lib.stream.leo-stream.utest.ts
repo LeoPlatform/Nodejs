@@ -1,7 +1,6 @@
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
-import { ReadEvent } from "../index";
 import utilFn from "../lib/stream/leo-stream";
 import { promisify } from "util";
 import AWS from "aws-sdk";
@@ -2743,7 +2742,7 @@ describe("leo-stream", function () {
 				]);
 			});
 		});
-
+    });
 		// batch
 		// flush
 		// sync
@@ -2873,4 +2872,3 @@ describe("leo-stream", function () {
 		});
 	});
 });
-
