@@ -7,7 +7,7 @@ import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
 import Streams, { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId } from "./types";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
 
@@ -411,7 +411,7 @@ export interface EnrichOptions<T, U> extends WriteOptions {
 	 * @todo example
 	 * @todo review
 	 */
-	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
+	transform(this: ProcessFunctionContext<U>, payload: T, wrapper: ReadEvent<T>, callback?: ProcessCallback<U>): Promise<ProcessFunctionAsyncReturn<U>> | void;
 }
 
 /**
@@ -472,7 +472,7 @@ export interface OffloadOptions<T> extends ReadOptions {
 	 * @todo review
 	 * @todo question Why is the second argument a boolean?  What does it mean?
 	 */
-	transform: ProcessFunction<T, boolean>;
+	transform(this: ProcessFunctionContext<never>, payload: T, wrapper: ReadEvent<T>, callback?: ProcessCallback<never>): Promise<ProcessFunctionAsyncReturn<never>> | void;
 }
 
 /**
@@ -489,7 +489,7 @@ export interface OffloadOptions<T> extends ReadOptions {
  * @see [[`RStreamsSdk.offload`]]
  * @see [[`RStreamsSdk.offloadEvents`]]
  */
-export interface OffloadBatchOptions<T> extends OffloadOptions<T[]> {
+export interface OffloadBatchOptions<T> extends OffloadOptions<ReadEvent<T>[]> {
 	/**
 * This governs micro-batching events that have been received from the source `inQueue` before they
 * are sent to your `transform` function, allowing that function to receive events in batches instead
@@ -855,7 +855,8 @@ export declare namespace StreamUtil {
 	 * @todo example
 	 * @todo review
 	 */
-	function enrich<T, U>(opts: EnrichOptions<T, U> | EnrichBatchOptions<T, U>, callback: Callback): void;
+	function enrich<T, U>(opts: EnrichOptions<T, U>, callback: Callback): void;
+	function enrich<T, U>(opts: EnrichBatchOptions<T, U>, callback: Callback): void;
 
 	/**
 	 * This is a callback-based version of [[`RStreamsSdk.offloadEvents`]].
@@ -872,7 +873,8 @@ export declare namespace StreamUtil {
 		 *						 The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @callback callback A function called when all events have been processed
 	 */
-	function offload<T>(config: OffloadOptions<T> | OffloadBatchOptions<T>, callback: Callback): void;
+	function offload<T>(config: OffloadOptions<T>, callback: Callback): void;
+	function offload<T>(config: OffloadBatchOptions<T>, callback: Callback): void;
 
 	/**
 	 * This creates a pipeline step that acts as the last step of the pipeline, the sink, writing events sent to the 
@@ -1069,6 +1071,24 @@ export declare namespace StreamUtil {
 
 
 	/**
+	 * This creates a pipeline step that takes events in of type T, allows your code to process it and then
+	 * you send an event of type U to the the next pipeline step.
+	 * 
+	 * @typeParam T The type of the data sent into the function to be processed
+	 * @typeParam U The type of the data you send on after being processed
+	 * 
+	 * @param id The name of the bot act as
+	 * @param func The function to process data, getting data of type T and returning data of type U
+	 * @param outQueue The queue to send the resulting data to
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * @todo question Couldn't find any references to this.
+	 * @todo question don't we already have other ways to do this?  do we need this?
+	 * @todo unclear This is a transform stream which means it can't be the sink and yet it takes an outQueue as though it's sending to another queue.  Don't get it.
+	 */
+	function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
+	function process<T, U>(id: string, func: ProcessFunctionAsync<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
+
+  /**
 	 * todo document: what this functon does.  Creates Correlation form read events
 	 * @param event 
 	 * @param opts 
