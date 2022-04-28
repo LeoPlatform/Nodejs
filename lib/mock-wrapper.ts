@@ -1,5 +1,5 @@
 import { StreamUtil } from "./lib";
-import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions } from "./types";
+import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions } from "./types";
 import fs from "fs";
 import path from "path";
 import util from "./aws-util";
@@ -55,7 +55,7 @@ export default function (leoStream: LeoStream) {
 		return mockStream;
 	};
 
-	leoStream.toLeo = <T>(botId: string, config?: WriteOptions): TransformStream<Event<T>, unknown> => {
+	leoStream.toLeo = <T>(botId: string, config?: BaseWriteOptions): TransformStream<Event<T>, unknown> => {
 		let records = 0;
 		let timestamp = Date.now();
 		let fileStreams = {};
