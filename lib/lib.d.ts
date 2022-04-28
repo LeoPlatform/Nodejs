@@ -5,7 +5,7 @@ import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
 import Streams, { BatchOptions, ProcessFunction, } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions } from "./types";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions, BaseEvent } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
 
@@ -38,7 +38,7 @@ export declare type ThroughEvent<T> = Event<T> | any;
  * 
  * @todo example
  */
-export interface WriteOptions {
+export interface BaseWriteOptions {
 	/**
 	 * If true, the SDK will write events to S3 and then pass a single event to kinesis whose payload
 	 * references the S3 file.  Thus, one actual event flows through Kinesis and that one event is eventually
@@ -124,6 +124,10 @@ export interface WriteOptions {
 	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
 	 */
 	time?: moment.DurationInputArg1;
+}
+
+export interface WriteOptions extends BaseWriteOptions {
+	force?: boolean
 }
 
 /**
@@ -471,6 +475,8 @@ export interface OffloadOptions<T> extends ReadOptions {
 	 * @todo question Why is the second argument a boolean?  What does it mean?
 	 */
 	transform(this: ProcessFunctionContext<never>, payload: T, wrapper: ReadEvent<T>, callback?: ProcessCallback<never>): Promise<ProcessFunctionAsyncReturn<never>> | void;
+
+	force?: boolean;
 }
 
 /**
@@ -804,7 +810,7 @@ export declare namespace StreamUtil {
 	 * @todo question What is the queue we are writing to?
 	 * @todo question since this returns a transform stream, seems like it is meant to pass an event to a downstream step but that doesn't make sense?
 	 */
-	function toLeo<T>(botId: string, config?: WriteOptions): TransformStream<Event<T>, unknown>;
+	function toLeo<T>(botId: string, config?: BaseWriteOptions): TransformStream<Event<T>, unknown>;
 
 	/**
 	 * Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.
@@ -884,7 +890,7 @@ export declare namespace StreamUtil {
 	 * @param config An object that contains config values that control the flow of events to outQueue
 	 * @todo example
 	 */
-	function load<T>(botId: string, outQueue: string, config?: WriteOptions): WritableStream<Event<T> | T>;
+	function load<T>(botId: string, outQueue: string, config?: WriteOptions): WritableStream<BaseEvent<T> | T>;
 
 	/**
 	 * Creates a pipeline step that can act as a noop sink.
@@ -1086,11 +1092,11 @@ export declare namespace StreamUtil {
 	function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
 	function process<T, U>(id: string, func: ProcessFunctionAsync<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
 
-  /**
-	 * todo document: what this functon does.  Creates Correlation form read events
-	 * @param event 
-	 * @param opts 
-	 */
+	/**
+	   * todo document: what this functon does.  Creates Correlation form read events
+	   * @param event 
+	   * @param opts 
+	   */
 	function createCorrelation<T>(event: ReadEvent<T>, opts?: CreateCorrelationOptions): CorrelationId;
 	function createCorrelation<T>(startEvent: ReadEvent<T>, endEvent: ReadEvent<T>, units: number, opts?: CreateCorrelationOptions): CorrelationId;
 	function createCorrelation<T>(events: ReadEvent<T>[], opts?: CreateCorrelationOptions): CorrelationId;

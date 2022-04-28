@@ -235,18 +235,19 @@ export declare type RStreamsTransformFunction<T, U, E = Error> = (this: Transfor
  */
 export declare type FlushCallback<T = any, E = Error> = (this: stream.Transform, flushCallback: DataCallback<T, E>) => any;
 
+
 /**
  * The standard RStreams event that is written to and read from RStreams bus queues and thus through Node pipes that work
  * with these queues.
  * 
  * @typeParam T The type of data that is the payload of the event, specific to the queue the event is meant for
  */
-export interface Event<T> {
+export interface BaseEvent<T> {
 	/** The ID of the bot that wrote this event to the queue */
-	id: string;
+	id?: string;
 
 	/** This is the name of the RStreams queue this event is in */
-	event: string;
+	event?: string;
 
 	/**
 	 * The millisecond (time since epoch) of when this event was created by the developer.
@@ -269,6 +270,20 @@ export interface Event<T> {
 	 * Reference the doc on [`CorrelationId`] that describes this well.
 	 */
 	correlation_id?: CorrelationId;
+}
+
+/**
+ * The standard RStreams event that is written to and read from RStreams bus queues and thus through Node pipes that work
+ * with these queues.
+ * 
+ * @typeParam T The type of data that is the payload of the event, specific to the queue the event is meant for
+ */
+export interface Event<T> extends BaseEvent<T> {
+	/** The ID of the bot that wrote this event to the queue */
+	id: string;
+
+	/** This is the name of the RStreams queue this event is in */
+	event: string;
 }
 
 /**
