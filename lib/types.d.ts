@@ -271,11 +271,28 @@ export interface Event<T> {
 	correlation_id?: CorrelationId;
 }
 
+/**
+ * An event that is written to an RStreams queue.  This is a wrapper around the 
+ * data you care about `T` which is stored in the `payload` attribute.
+ * 
+ * @typeParam T The data that is stored in the event in the payload attribute
+ */
 export interface WriteEvent<T> extends Event<T> {
 }
 
+/**
+ * An event that is read from an RStreams queue.  This is a wrapper around the 
+ * data you care about `T` which is stored in the `payload` attribute.
+ * 
+ * @typeParam T The data that is stored in the event in the payload attribute
+ * @todo question shouldn't we deprecate `id` or `eid`; why have both?
+ */
 export interface ReadEvent<T> extends Event<T> {
+	/** The ID of the bot that wrote this event to the queue (a dup of id for legacy purposes) */
 	eid: string;
+
+	/** The RStreams queue-specific data that this event exists to wrap */
+	payload: T;
 }
 
 /**
@@ -310,6 +327,8 @@ export interface CorrelationId {
 	 * will be the kinesis sequence number, etc.  If this event derived from more than one parent event, `end` will be set. 
 	 */
 	start: string;
+	// todo document: this actually exists and should be start or partial_start
+	// partial_start?: string;
 
 	/** 
 	 * The ending ID in the parent source this event derived from.  If the parent was an RStreams queue, this will
@@ -319,6 +338,8 @@ export interface CorrelationId {
 	 * @default `start`
 	 */
 	end?: string;
+	// todo document: this actually exists and should be end or partial_end
+	// partial_end?: string;
 
 	/**
 	 * If this event is derived from multiple parent events, this is how many.
