@@ -1,4 +1,7 @@
-import { Callback, EnrichOptions, OffloadOptions,  StreamUtil } from "./lib/lib";
+
+import Pumpify from "pumpify";
+import stream from "stream";
+import { Callback, EnrichOptions, EnrichBatchOptions, OffloadOptions, OffloadBatchOptions, ReadOptions, StreamUtil, ToCheckpointOptions, WriteOptions } from "./lib/lib";
 import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
 import AWS, { Credentials } from "aws-sdk";
@@ -130,14 +133,15 @@ export declare class RStreamsSdk {
 	 * 
 	 * @typeParam T The type of the event read from the source queue
 	 * @typeParam U The type of the event that will be written to the destination queue
-	 * @param opts The details of how to enrich and the function that does the work to enrich
+	 * @param opts The details of how to enrich and the function that does the work to enrich, either the batched or not batched version.
+	 *			 The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @method
 	 * @see [[`RStreamsSdk.enrich`]]
 	 * @todo example
 	 * @todo unclear The opts.transform function doesn't appear to be promise based?
 	 * @todo incomplete the docs above were partly copied from the callback version and once the unclear above is clear needs correcting.
 	 */
-	enrichEvents: <T, U>(opts: EnrichOptions<T, U>) => Promise<void>;
+	enrichEvents: <T, U>(opts: EnrichOptions<T, U> | EnrichBatchOptions<T, U>) => Promise<void>;
 
 	/**
 	 * This is an async/await friendly version of [[`RStreamsSdk.offload`]].
@@ -147,11 +151,12 @@ export declare class RStreamsSdk {
 	 * such as ElasticSearch or other databases that are off of the RStreams Bus.
 	 * 
 	 * @param opts What queue to read from, the transform function and other options.
+		 *						 The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @see [[`RStreamsSdk.offload`]]
 	 * @method
 	 * @todo example
 	 */
-	offloadEvents: <T>(config: OffloadOptions<T>) => void;
+	offloadEvents: <T>(config: OffloadOptions<T> | OffloadBatchOptions<T>) => void;
 
 	/**
 	 * A callback-based function to write a single event to an RStreams queue.  There are occasions where

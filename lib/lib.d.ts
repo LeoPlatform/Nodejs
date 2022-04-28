@@ -5,7 +5,7 @@ import { LeoDynamodb } from "./dynamodb";
 import { LeoCron } from "./cron";
 import Streams, { BatchOptions, ProcessFunction, } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream } from "./types";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
 
@@ -52,7 +52,7 @@ export interface WriteOptions {
 	 * is negligible for most use cases.  However, waiting to batch up a sufficient number of events
 	 * can cause a delay getting events into Kinesis for ingestion.  The rule of thumb is files
 	 * around 2mb or larger are fine.  It's OK if an occasional file is small.  However, creating many small
-	 * files smaller should be avoided as it could cause read latency.  For example, if requesting 1000 events
+	 * files should be avoided as it could cause read latency.  For example, if requesting 1000 events
 	 * from a queue if every two events are in an S3 file, the SDK will have to retrieve 500 files to read just
 	 * 1000 events.  Use the other settings to tune the amount of data saved to the file: `records`, `size`, `time`.
 	 * 
@@ -370,7 +370,7 @@ export interface ToCheckpointOptions {
  * @see [[`RStreamsSdk.enrichEvents`]]
  * @todo review there was a callback param, I removed it since I think it was a cut/paste error.  Here's what it said: callback A function called when all events have been processed. (payload, metadata, done) => { }
  */
-export interface EnrichOptions<T, U> {
+export interface EnrichOptions<T, U> extends WriteOptions {
 	/** 
 	 * The name of the bot that this code is acting as.  The SDK will use it to query to the bot Dynamo DB 
 	 * table to pull checkpoints and to checkpoint for you. 
@@ -399,19 +399,6 @@ export interface EnrichOptions<T, U> {
 	 */
 	start?: string;
 
-	/**
-	 * This governs micro-batching events that have been received from the source `inQueue` before they
-	 * are sent to your `transform` function, allowing that function to receive events in batches instead
-	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
-	 * resource such as a database.  Hitting a database for every single event that flows through a pipe can
-	 * be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
-	 * construct a single query to a database to read/write all data as a single DB operation.
-	 * 
-	 * If this is a number, it's just the number of events to micro-batch up.
-	 * @todo review is this doc right?
-	 */
-	batch?: BatchOptions | number;
-
 	/** Fine-grained control of reading from the source `inQueue` */
 	config?: ReadOptions;
 
@@ -422,7 +409,38 @@ export interface EnrichOptions<T, U> {
 	 * @todo example
 	 * @todo review
 	 */
-	transform: ProcessFunction<T, U>;//(payload: any, event: any, callback: ProcessFunction) => any;
+	transform(this: ProcessFunctionContext<U>, payload: T, wrapper: ReadEvent<T>, callback?: ProcessCallback<U>): Promise<ProcessFunctionAsyncReturn<U>> | void;
+}
+
+/**
+ * These options for an [[`RStreamsSdk.enrich`]] pipeline step.  This reads events from one queue and writes 
+ * them to another queue.  Put another way, an enrich pipeline operations reads events from an `inQueue` and 
+ * then writes them to an `outQueue`, allowing for side effects or transformation in the process.
+ * 
+ * This inherits from [[`EnrichOptions`]] and adds the ability to batch the data read from the source inQueue 
+ * before it is sent to the `transform` function which means your transform function will recieve an array of 
+ * type T which is the batched events instead of just a single event of type T.
+ * 
+ * @typeParam T The type of the event read from the source `inQueue`
+ * @typeParam U The type of the event that will be written to the destination `outQueue`
+ * 
+ * @see [[`RStreamsSdk.enrich`]]
+ * @see [[`RStreamsSdk.enrichEvents`]]
+ * @todo review there was a callback param, I removed it since I think it was a cut/paste error.  Here's what it said: callback A function called when all events have been processed. (payload, metadata, done) => { }
+ */
+export interface EnrichBatchOptions<T, U> extends EnrichOptions<ReadEvent<T>[], U> {
+	/**
+* This governs micro-batching events that have been received from the source `inQueue` before they
+* are sent to your `transform` function, allowing that function to receive events in batches instead
+* of one at a time.  This can be useful when your transform function will reach out and hit an external
+* resource such as a database.  Hitting a database for every single event that flows through a pipe can
+* be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
+* construct a single query to a database to read/write all data as a single DB operation.
+* 
+* If this is a number, it's just the number of events to micro-batch up.
+* @todo review is this doc right?
+*/
+	batch: BatchOptions | number;
 }
 
 /**
@@ -446,26 +464,42 @@ export interface OffloadOptions<T> extends ReadOptions {
 	inQueue: string;
 
 	/**
-	 * This governs micro-batching events that have been received from the source `inQueue` before they
-	 * are sent to your `transform` function, allowing that function to receive events in batches instead
-	 * of one at a time.  This can be useful when your transform function will reach out and hit an external
-	 * resource such as a database.  Hitting a database for every single event that flows through a pipe can
-	 * be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
-	 * construct a single query to a database to read/write all data as a single DB operation.
-	 * 
-	 * If this is a number, it's just the number of events to micro-batch up.
-	 * @todo review is this doc right?
-	 */
-	batch?: BatchOptions | number;
-
-	/**
 	 * The SDK will invoke this function after reading events from the `inQueue` where you can do your processing.
 	 * 
 	 * @todo example
 	 * @todo review
 	 * @todo question Why is the second argument a boolean?  What does it mean?
 	 */
-	transform: ProcessFunction<T, boolean>;
+	transform(this: ProcessFunctionContext<never>, payload: T, wrapper: ReadEvent<T>, callback?: ProcessCallback<never>): Promise<ProcessFunctionAsyncReturn<never>> | void;
+}
+
+/**
+ * These options for an [[`RStreamsSdk.offload`]] pipeline step.
+ * This reads events from a queue and allows for the processing of the data.  Note this inherits all the useful
+ * options from [[`ReadOptions`]] which control reading from `inQueue`.
+ * 
+ * This inherits from [[`OffloadOptions`]] and adds the ability to batch the data read from the source inQueue 
+ * before it is sent to the `transform` function which means your transform function will recieve an array of 
+ * type T which is the batched events instead of just a single event of type T.
+ * 
+ * @typeParam T The type of the event read from the source `inQueue`
+ * 
+ * @see [[`RStreamsSdk.offload`]]
+ * @see [[`RStreamsSdk.offloadEvents`]]
+ */
+export interface OffloadBatchOptions<T> extends OffloadOptions<ReadEvent<T>[]> {
+	/**
+* This governs micro-batching events that have been received from the source `inQueue` before they
+* are sent to your `transform` function, allowing that function to receive events in batches instead
+* of one at a time.  This can be useful when your transform function will reach out and hit an external
+* resource such as a database.  Hitting a database for every single event that flows through a pipe can
+* be very detrimental to performance.  So, it's common to micro-batch say 100 or 1000 or so and then
+* construct a single query to a database to read/write all data as a single DB operation.
+* 
+* If this is a number, it's just the number of events to micro-batch up.
+* @todo review is this doc right?
+*/
+	batch: BatchOptions | Number;
 }
 
 /**
@@ -531,6 +565,13 @@ export interface StatsStream extends stream.Transform {
 	get: {
 		(): CheckpointData;
 	};
+}
+
+/**
+ * @todo document: options for createCorrelation function
+ */
+export interface CreateCorrelationOptions {
+	partial: boolean;
 }
 
 /**
@@ -753,7 +794,7 @@ export declare namespace StreamUtil {
 
 	/**
 	 * Create a pipeline step that takes the events from the previous pipeline step and then writes them
-	 * to an RStreams bus queeu.
+	 * to an RStreams bus queue.
 	 * 
 	 * @param botId The bot to act as when writing.
 	 * @param config Options for writing
@@ -804,7 +845,8 @@ export declare namespace StreamUtil {
 	 * 
 	 * @typeParam T The type of the data event retrieved from the source queue
 	 * @typeParam U The type of the data event that is sent to the destination queue
-	 * @param opts TThe details of how to enrich and the function that does the work to enrich
+	 * @param opts The details of how to enrich and the function that does the work to enrich, either the batched or not batched version.
+	 *			   The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @param callback A function called when all events have been processed
 	 * @todo question why does enrich exist here and not elsewhere
 	 * @todo unclear don't understand the callback here
@@ -812,6 +854,7 @@ export declare namespace StreamUtil {
 	 * @todo review
 	 */
 	function enrich<T, U>(opts: EnrichOptions<T, U>, callback: Callback): void;
+	function enrich<T, U>(opts: EnrichBatchOptions<T, U>, callback: Callback): void;
 
 	/**
 	 * This is a callback-based version of [[`RStreamsSdk.offloadEvents`]].
@@ -825,9 +868,11 @@ export declare namespace StreamUtil {
 	 * 
 	 * @typeParam T The type of the data read from the RStreams bus queue
 	 * @param opts What queue to read from, the transform function and other options.
+		 *						 The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @callback callback A function called when all events have been processed
 	 */
 	function offload<T>(config: OffloadOptions<T>, callback: Callback): void;
+	function offload<T>(config: OffloadBatchOptions<T>, callback: Callback): void;
 
 	/**
 	 * This creates a pipeline step that acts as the last step of the pipeline, the sink, writing events sent to the 
@@ -1021,4 +1066,33 @@ export declare namespace StreamUtil {
 	 * @todo unclear
 	 */
 	const fromCSV: typeof Streams.fromCSV;
+
+
+	/**
+	 * This creates a pipeline step that takes events in of type T, allows your code to process it and then
+	 * you send an event of type U to the the next pipeline step.
+	 * 
+	 * @typeParam T The type of the data sent into the function to be processed
+	 * @typeParam U The type of the data you send on after being processed
+	 * 
+	 * @param id The name of the bot act as
+	 * @param func The function to process data, getting data of type T and returning data of type U
+	 * @param outQueue The queue to send the resulting data to
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * @todo question Couldn't find any references to this.
+	 * @todo question don't we already have other ways to do this?  do we need this?
+	 * @todo unclear This is a transform stream which means it can't be the sink and yet it takes an outQueue as though it's sending to another queue.  Don't get it.
+	 */
+	function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
+	function process<T, U>(id: string, func: ProcessFunctionAsync<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
+
+  /**
+	 * todo document: what this functon does.  Creates Correlation form read events
+	 * @param event 
+	 * @param opts 
+	 */
+	function createCorrelation<T>(event: ReadEvent<T>, opts?: CreateCorrelationOptions): CorrelationId;
+	function createCorrelation<T>(startEvent: ReadEvent<T>, endEvent: ReadEvent<T>, units: number, opts?: CreateCorrelationOptions): CorrelationId;
+	function createCorrelation<T>(events: ReadEvent<T>[], opts?: CreateCorrelationOptions): CorrelationId;
+
 }
