@@ -171,6 +171,7 @@ function SDK(id, data) {
 		putEvent: function(bot_id, queue, payload) {
 			return promisify(this.put).call(this, bot_id, queue, payload);
 		},
+		throughAsync: leoStream.throughAsync,
 		checkpoint: leoStream.toCheckpoint,
 		streams: leoStream,
 		bot: leoStream.cron,

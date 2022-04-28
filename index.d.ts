@@ -189,6 +189,11 @@ export declare class RStreamsSdk {
 	 */
 	putEvent: <T>(bot_id: string, outQueue: string, payload: Event<T> | T) => Promise<void>;
 
+
+	/** @method */
+	throughAsync: typeof StreamUtil.throughAsync;
+
+
 	/** A library allowing one to manually create, update, checkpoint or retrieve information on a bot. */
 	bot: LeoCron;
 	aws: {
