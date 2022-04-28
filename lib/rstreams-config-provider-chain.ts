@@ -173,6 +173,9 @@ export class ConfigProviderChain extends Configuration {
  */
 	public static defaultProviders: Provider[] = [
 
+		/* leo-config (first for backwards compatibility )*/
+		function () { return new LeoConfiguration(); },
+
 		/* Rstreams Env locations */
 		function () { return new EnvironmentConfiguration('RSTREAMS_CONFIG'); },
 
@@ -181,9 +184,6 @@ export class ConfigProviderChain extends Configuration {
 		function () { return new EnvironmentConfiguration('leo-sdk'); },
 		function () { return new EnvironmentConfiguration('LEOSDK'); },
 		function () { return new EnvironmentConfiguration('LEO-SDK'); },
-
-		/* leo-config */
-		function () { return new LeoConfiguration(); },
 
 		/* process Object locations */
 		function () { return new ObjectConfiguration(process, "leosdk"); },
