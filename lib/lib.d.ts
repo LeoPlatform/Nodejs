@@ -332,7 +332,7 @@ export interface ToCheckpointOptions {
 	 * Checkpoint after this number of records (events).
 	 * @default 1000 records (events)
 	 */
-	records: number;
+	records?: number;
 
 	/**
 	 * Checkpoint after this amount of time expires.
@@ -343,7 +343,7 @@ export interface ToCheckpointOptions {
 	 * @default 10s
 	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
 	 */
-	time: moment.DurationInputArg1;
+	time?: moment.DurationInputArg1;
 
 	/**
 	 * When the SDK writes an updated checkpoint event ID back to the RStreams bus, it checks if someone has changed
@@ -358,7 +358,7 @@ export interface ToCheckpointOptions {
 	 * 
 	 * @default false
 	 */
-	force: boolean;
+	force?: boolean;
 }
 
 /**
