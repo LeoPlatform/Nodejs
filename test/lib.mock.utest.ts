@@ -8,15 +8,15 @@ describe('lib/mock.js', function () {
 
 	describe("dateSafe", function () {
 		it('Is Invalid', async function () {
-			assert.equal(util.dateSafe("2022/03/17/12/25"), "Invalid date")
+			assert.equal(util.dateSafe("2022/03/17/12/25"), "Invalid date");
 		});
 
 		it('Is Valid', async function () {
-			assert.equal(util.dateSafe("2022/03/17 12:25"), "2022-03-17")
+			assert.equal(util.dateSafe("2022/03/17 12:25"), "2022-03-17");
 		});
 
 		it('Is undefined', async function () {
-			assert.equal(util.dateSafe(), undefined)
+			assert.equal(util.dateSafe(), undefined);
 		});
 	});
 });

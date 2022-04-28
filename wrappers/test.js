@@ -52,7 +52,7 @@ module.exports = function(configOverride, botHandler) {
 		callback = (err, data) => {
 			assert.print();
 			cb(err, data);
-		}
+		};
 		context.assert = assert.clear();
 		context.callbackWaitsForEmptyEventLoop = false;
 		context.resources = process.resources;
@@ -97,5 +97,5 @@ module.exports = function(configOverride, botHandler) {
 		}
 
 
-	}
-}
+	};
+};

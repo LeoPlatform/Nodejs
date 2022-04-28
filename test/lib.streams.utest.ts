@@ -21,7 +21,7 @@ let mockSdkConfig = {
 describe("Streams", function () {
 	let sandbox;
 	beforeEach(() => {
-		sandbox = sinon.createSandbox()
+		sandbox = sinon.createSandbox();
 	});
 	afterEach(() => {
 		sandbox.restore();
@@ -344,7 +344,7 @@ describe("Streams", function () {
 			let logs = [];
 			console.log = function (...args) {
 				logs.push(args);
-			}
+			};
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
 					util.eventstream.readArray([{
@@ -389,7 +389,7 @@ describe("Streams", function () {
 			let logs = [];
 			console.log = function (...args) {
 				logs.push(args);
-			}
+			};
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
 					util.eventstream.readArray([{
@@ -434,7 +434,7 @@ describe("Streams", function () {
 			let logs = [];
 			console.log = function (...args) {
 				logs.push(args);
-			}
+			};
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
 					util.eventstream.readArray(["data1", "data2", "data3", "data4", "data5", "data6", { __cmd: "hello" }]),
@@ -479,7 +479,7 @@ describe("Streams", function () {
 			let logs = [];
 			console.log = function (...args) {
 				logs.push(args);
-			}
+			};
 			Date.now = () => 1000;
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
@@ -525,7 +525,7 @@ describe("Streams", function () {
 			let logs = [];
 			console.log = function (...args) {
 				logs.push(args);
-			}
+			};
 			Date.now = () => 1000;
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
@@ -568,7 +568,7 @@ describe("Streams", function () {
 			let logs = [];
 			console.log = function (...args) {
 				logs.push(args);
-			}
+			};
 			Date.now = () => 1000;
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
@@ -619,7 +619,7 @@ describe("Streams", function () {
 			let logs = [];
 			console.log = function (...args) {
 				logs.push(args);
-			}
+			};
 			await new Promise((resolve, reject) => {
 				streams.pipe(
 					util.eventstream.readArray([{
@@ -654,7 +654,7 @@ describe("Streams", function () {
 			let logs = [];
 			console.log = function (...args) {
 				logs.push(args);
-			}
+			};
 			Date.now = () => 1000;
 			await new Promise((resolve, reject) => {
 				streams.pipe(

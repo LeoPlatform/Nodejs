@@ -52,15 +52,14 @@ describe('lib/mock-wrapper.ts', function () {
 			wrapper(ls);
 			assert(ls["mocked"], "should be mocked");
 			let data = [];
-			await
-				ls.pipeAsync(
-					ls.fromLeo("Mock", "MockQueue"),
-					ls.through((d, done) => {
-						data.push(d);
-						done();
-					}),
-					ls.devnull()
-				);
+			await ls.pipeAsync(
+				ls.fromLeo("Mock", "MockQueue"),
+				ls.through((d, done) => {
+					data.push(d);
+					done();
+				}),
+				ls.devnull()
+			);
 			assert.deepEqual(data, [{
 				a: 1,
 				b: "2"
@@ -71,7 +70,7 @@ describe('lib/mock-wrapper.ts', function () {
 			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
 
 			// intercept the dynamic file require
-			const Module = require('module')
+			const Module = require('module');
 			let _load = Module._load;
 			sandbox.stub(Module, "_load").callsFake((...args) => {
 				if (typeof args[0] === "string" && args[0].match(/MockQueue\.json$/)) {
@@ -88,14 +87,14 @@ describe('lib/mock-wrapper.ts', function () {
 			assert(ls["mocked"], "should be mocked");
 			let data = [];
 			await
-				ls.pipeAsync(
-					ls.fromLeo("Mock", "MockQueue"),
-					ls.through((d, done) => {
-						data.push(d);
-						done();
-					}),
-					ls.devnull()
-				);
+			ls.pipeAsync(
+				ls.fromLeo("Mock", "MockQueue"),
+				ls.through((d, done) => {
+					data.push(d);
+					done();
+				}),
+				ls.devnull()
+			);
 			assert.deepEqual(data, [{
 				a: 3,
 				b: "4"
@@ -108,27 +107,26 @@ describe('lib/mock-wrapper.ts', function () {
 		it('mock non existing file', async function () {
 			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
 
-			sandbox.stub(fs, "existsSync").returns(false)
+			sandbox.stub(fs, "existsSync").returns(false);
 			setMockDataLocation(".mock-data");
 			wrapper(ls);
 			assert(ls["mocked"], "should be mocked");
 			let data = [];
-			await
-				ls.pipeAsync(
-					ls.fromLeo("Mock", "MockQueue"),
-					ls.through((d, done) => {
-						data.push(d);
-						done();
-					}),
-					ls.devnull()
-				);
+			await ls.pipeAsync(
+				ls.fromLeo("Mock", "MockQueue"),
+				ls.through((d, done) => {
+					data.push(d);
+					done();
+				}),
+				ls.devnull()
+			);
 			assert.deepEqual(data, []);
 		});
 
 		it('mock checkpoint', async function () {
 			let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
 
-			sandbox.stub(fs, "existsSync").returns(false)
+			sandbox.stub(fs, "existsSync").returns(false);
 			setMockDataLocation(".mock-data");
 			wrapper(ls);
 			assert(ls["mocked"], "should be mocked");
@@ -155,14 +153,14 @@ describe('lib/mock-wrapper.ts', function () {
 			assert(ls["mocked"], "should be mocked");
 			let data = [];
 			await
-				ls.pipeAsync(
-					ls.fromLeo("Mock", "MockQueue"),
-					ls.through((d, done) => {
-						data.push(d);
-						done();
-					}),
-					ls.devnull()
-				);
+			ls.pipeAsync(
+				ls.fromLeo("Mock", "MockQueue"),
+				ls.through((d, done) => {
+					data.push(d);
+					done();
+				}),
+				ls.devnull()
+			);
 			assert.deepEqual(data, [{
 				a: 1,
 				b: "2"
@@ -188,15 +186,15 @@ describe('lib/mock-wrapper.ts', function () {
 
 			let count = 0;
 			// Override the creating of eids in the wrapper to give a constant
-			(ls as any).eventIdFromTimestamp = () => `z/2022/04/15/23/08/1650064081366-000000${count++}`
+			(ls as any).eventIdFromTimestamp = () => `z/2022/04/15/23/08/1650064081366-000000${count++}`;
 			await
-				ls.pipeAsync(
-					ls.eventstream.readArray([
-						{ event: "MockQueue", id: "MockParentBot", payload: { b: 1, c: true } },
-						{ event: "MockQueue", id: "MockParentBot", payload: { b: 2, c: false } }
-					]),
-					ls.toLeo("MOCK")
-				);
+			ls.pipeAsync(
+				ls.eventstream.readArray([
+					{ event: "MockQueue", id: "MockParentBot", payload: { b: 1, c: true } },
+					{ event: "MockQueue", id: "MockParentBot", payload: { b: 2, c: false } }
+				]),
+				ls.toLeo("MOCK")
+			);
 
 			assert.deepEqual(data, [
 				"{\"event\":\"MockQueue\",\"id\":\"MockParentBot\",\"payload\":{\"b\":1,\"c\":true},\"eid\":\"z/2022/04/15/23/08/1650064081366-0000000\"}\n",
@@ -221,12 +219,12 @@ describe('lib/mock-wrapper.ts', function () {
 			assert(ls["mocked"], "should be mocked");
 
 			// Override the creating of eids in the wrapper to give a constant
-			(ls as any).eventIdFromTimestamp = () => "z/2022/04/15/23/08/1650064081366-0000000"
+			(ls as any).eventIdFromTimestamp = () => "z/2022/04/15/23/08/1650064081366-0000000";
 			await
-				ls.pipeAsync(
-					ls.eventstream.readArray([]),
-					ls.toLeo("MOCK")
-				);
+			ls.pipeAsync(
+				ls.eventstream.readArray([]),
+				ls.toLeo("MOCK")
+			);
 
 			assert.deepEqual(data, []);
 			assert.isUndefined(process.env["RSTREAMS_MOCK_DATA_Q_MockQueue"]);
@@ -271,7 +269,7 @@ describe('lib/mock-wrapper.ts', function () {
 			let data = [];
 			await ls.pipeAsync(ls.fromS3({ key: "KEY", bucket: "BUCKET" }),
 				ls.through((d, done) => {
-					data.push(d)
+					data.push(d);
 					done();
 				}),
 				ls.devnull()
@@ -297,7 +295,7 @@ describe('lib/mock-wrapper.ts', function () {
 			wrapper(ls);
 			assert(ls["mocked"], "should be mocked");
 
-			let s3Stream = ls.toS3("BUCKET", "KEY")
+			let s3Stream = ls.toS3("BUCKET", "KEY");
 
 			assert(s3Stream instanceof stream.Writable, "Sholuld be a Writable stream");
 		});

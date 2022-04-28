@@ -98,7 +98,7 @@ function parse() {
 				}
 			}
 		} else if (i > 1) {
-			commands.push(arg)
+			commands.push(arg);
 		}
 	}
 

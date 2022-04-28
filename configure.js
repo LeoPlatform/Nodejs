@@ -11,7 +11,7 @@ let configDir = path.dirname(configPath);
 let parsed = parse();
 
 let options = parsed.options;
-let commands = parsed.commands
+let commands = parsed.commands;
 
 if (commands[0] == "show") {
 	let p = options.leoprofile || "default";
@@ -68,7 +68,7 @@ async.eachSeries(questions, (data, done) => {
 	});
 	fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 	console.log(`\nLeo profile "${leoprofile}" updated!`);
-})
+});
 
 
 function get() {
@@ -147,7 +147,7 @@ function parse() {
 				}
 			}
 		} else if (i > 1) {
-			commands.push(arg)
+			commands.push(arg);
 		}
 	}
 

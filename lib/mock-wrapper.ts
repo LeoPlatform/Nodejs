@@ -19,12 +19,12 @@ export default function (leoStream: LeoStream) {
 	}
 	let registry = process as any;
 	registry.rstreamsMock = registry.rstreamsMock || { queues: new Set() };
-	(leoStream as any).mocked = true
+	(leoStream as any).mocked = true;
 	let settings = {
 		queueDirectory: path.resolve(process.env.RSTREAMS_MOCK_DATA, "queue"),
 		s3Directory: path.resolve(process.env.RSTREAMS_MOCK_DATA, "s3"),
 		batchId: "output-data"//uuid.v4()
-	}
+	};
 
 	let fromLeo = leoStream.fromLeo.bind(leoStream);
 	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions): ReadableStream<ReadEvent<T>> => {
@@ -53,7 +53,7 @@ export default function (leoStream: LeoStream) {
 
 		mockStream.checkpoint = (callback) => callback();
 		return mockStream;
-	}
+	};
 
 	leoStream.toLeo = <T>(botId: string, config?: WriteOptions): TransformStream<Event<T>, unknown> => {
 		let records = 0;
@@ -71,11 +71,11 @@ export default function (leoStream: LeoStream) {
 			records++;
 			if (!fileStreams[queue]) {
 				let queueDataFileJsonl = path.resolve(settings.queueDirectory, settings.batchId, `${queue}.jsonl`);
-				createPath(path.dirname(queueDataFileJsonl))
+				createPath(path.dirname(queueDataFileJsonl));
 				fileStreams[queue] = leoStream.pipeline(leoStream.stringify(), fs.createWriteStream(queueDataFileJsonl) as unknown as TransformStream<string, unknown>);
 			}
 			if (!fileStreams[queue].write(data)) {
-				fileStreams[queue].once("drain", () => callback())
+				fileStreams[queue].once("drain", () => callback());
 			} else {
 				callback();
 			}
@@ -92,7 +92,7 @@ export default function (leoStream: LeoStream) {
 					called = true;
 					done(err);
 				}
-			}
+			};
 
 			Object.values(fileStreams).forEach((s: stream.Writable) => {
 				s.end(cb);
@@ -100,7 +100,7 @@ export default function (leoStream: LeoStream) {
 		});
 
 		return mockStream;
-	}
+	};
 
 	leoStream.fromS3 = (file: {
 		bucket: string,
@@ -118,14 +118,14 @@ export default function (leoStream: LeoStream) {
 				code: 'NoSuchKey'
 			});
 		}
-		return fs.createReadStream(filepath)
-	}
+		return fs.createReadStream(filepath);
+	};
 
 	leoStream.toS3 = (Bucket: string, File: string) => {
 		let filepath = path.resolve(settings.s3Directory, `${Bucket}/${File}`);
 		createPath(path.dirname(filepath));
 		return fs.createWriteStream(filepath);
-	}
+	};
 
 
 	leoStream.cron.checkLock = (cron: CronData, runid: string, remainingTime: number, callback: Callback<AWSError>) => callback(null);
@@ -138,7 +138,7 @@ export default function (leoStream: LeoStream) {
 
 function createPath(dir: string) {
 	if (!fs.existsSync(dir)) {
-		var parent = path.dirname(dir);
+		let parent = path.dirname(dir);
 		if (parent) {
 			createPath(parent);
 		}

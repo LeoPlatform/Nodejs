@@ -72,7 +72,7 @@ module.exports = function (configOverride, botHandler) {
 					if (config.cors && err.headers && !("Access-Control-Allow-Origin" in err.headers)) {
 						err.headers["Access-Control-Allow-Origin"] = config.cors;
 					}
-					callback(null, err)
+					callback(null, err);
 				} else {
 					callback(null, {
 						statusCode: 500,

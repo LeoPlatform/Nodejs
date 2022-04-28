@@ -51,7 +51,7 @@ describe('RStreams', function () {
 		delete process.env.LEO_ENVIRONMENT;
 		delete require("leo-config").leosdk;
 		delete (process as any).__config;
-		sandbox = sinon.createSandbox()
+		sandbox = sinon.createSandbox();
 	});
 	afterEach(() => {
 		sandbox.restore();
@@ -96,7 +96,7 @@ describe('RStreams', function () {
 			let s3 = new AWS.S3();
 			assert.deepEqual(await s3.listBuckets().promise(), response1);
 			assert.deepEqual(await s3.listBuckets().promise(), response2);
-			assert.deepEqual(await new Promise((resolve, reject) => { s3.listBuckets((err, data) => err ? reject(err) : resolve(data)) }), response2);
+			assert.deepEqual(await new Promise((resolve, reject) => { s3.listBuckets((err, data) => err ? reject(err) : resolve(data)); }), response2);
 			expect(listBuckets).to.be.callCount(3);
 
 		});
@@ -150,7 +150,7 @@ describe('RStreams', function () {
 				ls.pipe(
 					sdk.read(botId, queue, { start: ls.eventIdFromTimestamp(1647460979244) }),
 					ls.eventstream.writeArray((err: any, results: unknown) => {
-						err ? reject(err) : resolve(results)
+						err ? reject(err) : resolve(results);
 					})
 				);
 			});
@@ -728,7 +728,7 @@ describe('RStreams', function () {
 		it("default - fail", function () {
 			try {
 				RStreamsSdk();
-				assert.fail("Should throw an error")
+				assert.fail("Should throw an error");
 			} catch (err) {
 				console.log(err);
 				assert.equal(err.code, "AWSSecretsConfigurationProviderFailure");
@@ -740,14 +740,14 @@ describe('RStreams', function () {
 			process.env.RSTREAMS_CONFIG = JSON.stringify(mockSdkConfig);
 			let sdk = RStreamsSdk();
 			Object.keys(mockSdkConfig).forEach(key => {
-				assert.equal(sdk.configuration.resources[key], mockSdkConfig[key])
-			})
+				assert.equal(sdk.configuration.resources[key], mockSdkConfig[key]);
+			});
 		});
 
 		it("default - fail Secret not given", function () {
 			try {
 				RStreamsSdk();
-				assert.fail("Should throw an error")
+				assert.fail("Should throw an error");
 			} catch (err) {
 				assert.equal(err.message, "Secret not specified.  Use ENV var RSTREAMS_CONFIG_SECRET.");
 			}
@@ -769,7 +769,7 @@ describe('RStreams', function () {
 
 				process.env.RSTREAMS_CONFIG_SECRET = "some-random-secret-should-not-exist";
 				RStreamsSdk();
-				assert.fail("Should throw an error")
+				assert.fail("Should throw an error");
 			} catch (err) {
 				assert.equal(err.message, "Secret 'some-random-secret-should-not-exist' not available. ResourceNotFoundException: Secrets Manager can't find the specified secret.");
 			}
@@ -791,7 +791,7 @@ describe('RStreams', function () {
 
 				process.env.RSTREAMS_CONFIG_SECRET = "some-random-secret";
 				RStreamsSdk();
-				assert.fail("Should throw an error")
+				assert.fail("Should throw an error");
 			} catch (err) {
 				assert.equal(err.message, "Secret 'some-random-secret' not available. AccessDeniedException: User: xyz is not authorized to perform: secretsmanager:GetSecretValue on resource: some-random-secret");
 			}
@@ -803,7 +803,7 @@ describe('RStreams', function () {
 		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
 			delete require("leo-config").leoaws;
-			sandbox = sinon.createSandbox()
+			sandbox = sinon.createSandbox();
 		});
 		afterEach(() => {
 			sandbox.restore();
@@ -832,9 +832,9 @@ describe('RStreams', function () {
 			};
 			sandbox.stub(AWS, "STS").returns({
 				credentialsFrom: sandbox.stub().callsFake(() => fakeCredentials)
-			})
+			});
 			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
 		});
 
 		it("should read an aws profile w/ INI", async function () {
@@ -858,7 +858,7 @@ describe('RStreams', function () {
 			};
 			sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
 			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
 		});
 
 		it("should read an aws profile w/ INI no file", async function () {
@@ -874,14 +874,14 @@ describe('RStreams', function () {
 			};
 			sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
 			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials)
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
 		});
 	});
 
 	describe("sdk enrich", function () {
 		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
-			sandbox = sinon.createSandbox()
+			sandbox = sinon.createSandbox();
 		});
 		afterEach(() => {
 			sandbox.restore();
@@ -896,7 +896,7 @@ describe('RStreams', function () {
 
 			let inQueue = "mock-in";
 			let outQueue = "mock-out";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1177,7 +1177,7 @@ describe('RStreams', function () {
 	describe("sdk offload", function () {
 		let sandbox: sinon.SinonSandbox;
 		beforeEach(() => {
-			sandbox = sinon.createSandbox()
+			sandbox = sinon.createSandbox();
 		});
 		afterEach(() => {
 			sandbox.restore();
@@ -1188,7 +1188,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1314,7 +1314,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1434,7 +1434,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1560,7 +1560,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1687,7 +1687,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -1814,7 +1814,7 @@ describe('RStreams', function () {
 			}
 
 			let inQueue = "mock-in";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
@@ -2346,7 +2346,7 @@ class BusStreamMockBuilder {
 	items = {};
 	addEvents(queue: string, data: any[], options: any = {}, common: any = null) {
 
-		let now = options.now || Date.now()
+		let now = options.now || Date.now();
 		data.forEach((event, index) => {
 			Object.assign(event, common, { event: queue, eid: index });
 		});
@@ -2366,11 +2366,11 @@ class BusStreamMockBuilder {
 			records: count,
 			start: eid + "0000000",
 			end: eid + (count - 1).toString().padStart(7, "0")
-		})
+		});
 	}
 	getAll(queue: string, chunksSize: number = 50) {
 		let items = (this.items[queue] || []);
-		let results = []
+		let results = [];
 		while (items.length > 0) {
 			results.push(this.getNext(queue, chunksSize));
 		}
@@ -2386,7 +2386,7 @@ class BusStreamMockBuilder {
 		return results;
 	}
 	getNext(queue: string, count: number) {
-		let items = (this.items[queue] || []).splice(0, count)
+		let items = (this.items[queue] || []).splice(0, count);
 		return {
 			Items: items,
 			Count: items.length,
@@ -2399,6 +2399,6 @@ class BusStreamMockBuilder {
 				TableName: "mock-LeoStream",
 				CapacityUnits: 1
 			}
-		}
+		};
 	}
 }

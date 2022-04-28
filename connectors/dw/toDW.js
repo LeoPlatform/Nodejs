@@ -24,7 +24,7 @@ module.exports = function (configure) {
 		write: function (id, suffix) {
 			return ls.pipeline(this.stream(suffix), ls.through((event, done)=>{
 				event.id = id;
-				done(null, event)
+				done(null, event);
 			}), leo.write(id, {
 				firehose: true,
 				debug: true
@@ -51,5 +51,5 @@ module.exports = function (configure) {
 				callback
 			);
 		}
-	}
+	};
 };

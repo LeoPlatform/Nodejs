@@ -1,3 +1,4 @@
+
 import Pumpify from "pumpify";
 import stream from "stream";
 import { Callback, EnrichOptions, EnrichBatchOptions, OffloadOptions, OffloadBatchOptions, ReadOptions, StreamUtil, ToCheckpointOptions, WriteOptions } from "./lib/lib";
@@ -199,7 +200,7 @@ export declare class RStreamsSdk {
 
 		/** A refernce to the AWS CloudFormation library. */
 		cloudformation: AWS.CloudFormation
-	}
+	};
 
 	/**
 	 * @deprecated This is a legacy feature that is no longer used that remains for backward compatibility.

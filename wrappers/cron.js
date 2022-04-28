@@ -248,5 +248,5 @@ module.exports = function(configOverride, botHandler) {
 				}
 			});
 		}
-	}
-}
+	};
+};

@@ -20,14 +20,14 @@ export function invoke(service: string, method: string, config: any, params: any
 		if (err.message.match(/is not a function/)) {
 			err.message = `AWS.${service}.${method} is not a function`;
 		} else if (err.message.match(/is not a constructor/)) {
-			err.message = `AWS.${service} is not a constructor`
+			err.message = `AWS.${service} is not a constructor`;
 		}
 		if (!hasLogged) {
 			hasLogged = true;
 			console.log(`RESPONSE::${JSON.stringify({ error: { message: err.message } })}::RESPONSE`);
 		}
 	}
-};
+}
 
 function run(service: string, method: string, config: any, params: any) {
 	let fn = `(${invoke.toString()})("${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)})`;
@@ -48,7 +48,7 @@ function run(service: string, method: string, config: any, params: any) {
 			let parsedData = JSON.parse(outputJson);
 			// Return the response or error
 			if (parsedData.error != null) {
-				throw Object.assign(new Error(parsedData.error.message), parsedData.error)
+				throw Object.assign(new Error(parsedData.error.message), parsedData.error);
 			} else {
 				return parsedData.response;
 			}
@@ -59,7 +59,7 @@ function run(service: string, method: string, config: any, params: any) {
 class Service<T> {
 	constructor(private options?: T) { }
 	protected invoke(method: string, params?: any): any {
-		return run(this.constructor.name, method, this.options, params)
+		return run(this.constructor.name, method, this.options, params);
 	}
 }
 
@@ -78,4 +78,4 @@ export class S3 extends Service<AWS.S3.ClientConfiguration> {
 export default {
 	SecretsManager,
 	S3
-}
+};
