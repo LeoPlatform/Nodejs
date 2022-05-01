@@ -113,9 +113,15 @@ export declare class RStreamsSdk {
 	enrich: typeof StreamUtil.enrich;
 	/** @method */
 	read: typeof StreamUtil.fromLeo;
-	/** @method */
+	/** 
+     * @internal
+     * @method 
+     */
 	write: typeof StreamUtil.toLeo;
-	/** @method */
+	/** 
+     * @internal
+     * @method
+     */
 	checkpoint: typeof StreamUtil.toCheckpoint;
 
 	/**

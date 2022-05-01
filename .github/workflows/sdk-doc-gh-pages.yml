@@ -2,7 +2,7 @@ name: Deploy Docs
 on:
   push:
     branches:
-      - master
+      - feature/doc-changes-4
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest

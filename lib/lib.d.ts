@@ -35,8 +35,6 @@ export declare type ThroughEvent<T> = Event<T> | any;
  * interface provide a lot of control and performance optimization options and developers
  * should familiarize themselves with them. They are used in a write pipeline step 
  * to configure how to write.
- * 
- * @todo example
  */
 export interface BaseWriteOptions {
 	/**
@@ -126,7 +124,18 @@ export interface BaseWriteOptions {
 	time?: moment.DurationInputArg1;
 }
 
+/**
+ * Options when writing data to an instance of the RStreams bus that include the ability to 
+ * force checkpointing.  The options in this
+ * interface provide a lot of control and performance optimization options and developers
+ * should familiarize themselves with them. They are used in a write pipeline step 
+ * to configure how to write.
+ */
 export interface WriteOptions extends BaseWriteOptions {
+    /** 
+     * If true, the checkpoint will be applied even if someone else already checkpointed on the same bot/queue
+     * since the last time this code checkpointed.  This is only used in advanced fanout cases.
+     */
 	force?: boolean
 }
 
@@ -728,7 +737,8 @@ export declare namespace StreamUtil {
 
 	/**
 	 * This is a sink, a step designed to be the last step in the pipe.
-	 * 
+     * 
+     * @internal
 	 * @todo unclear
 	 * @todo incomplete
 	 * @todo example
@@ -777,6 +787,7 @@ export declare namespace StreamUtil {
 	 * @param config When to checkpoint.
 	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * 
+     * @internal
 	 * @todo review
 	 * @todo example
 	 */
@@ -818,6 +829,7 @@ export declare namespace StreamUtil {
 	 * @param config Options for when to checkpoint.
 	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * 
+     * @internal
 	 * @todo question what's the usage difference in this versus toCheckpoint where this is a Writable and the other is a TransformStream
 	 * @todo unclear Probably have this description wrong.
 	 */
@@ -885,12 +897,17 @@ export declare namespace StreamUtil {
 	 * pipeline step to the queue specified.
 	 * 
 	 * @typeParam T The type of the data received by the pipeline step
-	 * @param botId The bot to act as when writing, events will be marked as written by this bot
-	 * @param outQueue The queue into which events will be written
+	 * @param botId For events that don't specify the bot to act as, this default is used.
+     *              It is the bot to act as when writing, events will be marked as written by this bot.
+     *              If not provided, each event must include the id of the bot to write the event as.
+	 * @param outQueue For events that don't specify the queue to write to, this default is used.
+     *                 It is the queue into which events will be written.  If not provided, each event must
+     *                 include the queue to write the event to.
+     * 
 	 * @param config An object that contains config values that control the flow of events to outQueue
 	 * @todo example
 	 */
-	function load<T>(botId: string, outQueue: string, config?: WriteOptions): WritableStream<BaseEvent<T> | T>;
+	function load<T>(botId?: string, outQueue?: string, config?: WriteOptions): WritableStream<BaseEvent<T> | T>;
 
 	/**
 	 * Creates a pipeline step that can act as a noop sink.

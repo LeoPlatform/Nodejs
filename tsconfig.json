@@ -8,6 +8,9 @@
 		"moduleResolution": "node",
 		"sourceMap": true,
 		"allowJs": false,
+		"jsx": "react",
+		"jsxFactory": "JSX.createElement",
+		"jsxFragmentFactory": "JSX.Fragment",
 		"baseUrl": ".",
 		"paths": {
 			"*": [
@@ -17,7 +20,7 @@
 		}
 	},
 	"include": [
-		"**/*.ts"
+		"**/*.ts", "**/*.tsx"
 	],
 	"exclude": [
 		"node_modules",
