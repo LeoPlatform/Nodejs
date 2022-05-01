@@ -512,7 +512,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 616,
+									"line": 625,
 									"character": 7
 								}
 							],
@@ -536,7 +536,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 619,
+									"line": 628,
 									"character": 7
 								}
 							],
@@ -560,7 +560,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 613,
+									"line": 622,
 									"character": 7
 								}
 							],
@@ -589,7 +589,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 664,
+									"line": 673,
 									"character": 7
 								}
 							],
@@ -610,7 +610,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1050,
+									"line": 1067,
 									"character": 7
 								}
 							],
@@ -702,7 +702,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 824,
+									"line": 836,
 									"character": 10
 								}
 							],
@@ -715,7 +715,13 @@
 									"flags": {},
 									"comment": {
 										"shortText": "Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.",
-										"returns": "The pipeline step that is ready to be used in a pipeline\n"
+										"returns": "The pipeline step that is ready to be used in a pipeline\n",
+										"tags": [
+											{
+												"tag": "internal",
+												"text": ""
+											}
+										]
 									},
 									"parameters": [
 										{
@@ -750,7 +756,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 828,
+																	"line": 840,
 																	"character": 2
 																}
 															],
@@ -771,7 +777,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 835,
+																	"line": 847,
 																	"character": 2
 																}
 															],
@@ -815,7 +821,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 951,
+									"line": 968,
 									"character": 7
 								}
 							],
@@ -961,7 +967,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1100,
+									"line": 1117,
 									"character": 10
 								}
 							],
@@ -1185,7 +1191,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 910,
+									"line": 927,
 									"character": 7
 								}
 							],
@@ -1264,7 +1270,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 862,
+									"line": 874,
 									"character": 10
 								}
 							],
@@ -1426,7 +1432,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 601,
+									"line": 610,
 									"character": 7
 								}
 							],
@@ -1504,7 +1510,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 610,
+									"line": 619,
 									"character": 7
 								}
 							],
@@ -1551,7 +1557,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1074,
+									"line": 1091,
 									"character": 7
 								}
 							],
@@ -1638,7 +1644,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 799,
+									"line": 810,
 									"character": 10
 								}
 							],
@@ -1743,7 +1749,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1001,
+									"line": 1018,
 									"character": 10
 								}
 							],
@@ -1789,7 +1795,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1003,
+																	"line": 1020,
 																	"character": 2
 																}
 															],
@@ -1810,7 +1816,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1006,
+																	"line": 1023,
 																	"character": 2
 																}
 															],
@@ -1833,7 +1839,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1015,
+																	"line": 1032,
 																	"character": 2
 																}
 															],
@@ -1876,7 +1882,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 938,
+									"line": 955,
 									"character": 7
 								}
 							],
@@ -1927,7 +1933,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 928,
+									"line": 945,
 									"character": 7
 								}
 							],
@@ -1978,7 +1984,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 893,
+									"line": 910,
 									"character": 10
 								}
 							],
@@ -2010,9 +2016,11 @@
 											"name": "botId",
 											"kind": 32768,
 											"kindString": "Parameter",
-											"flags": {},
+											"flags": {
+												"isOptional": true
+											},
 											"comment": {
-												"shortText": "The bot to act as when writing, events will be marked as written by this bot"
+												"shortText": "For events that don't specify the bot to act as, this default is used.\n             It is the bot to act as when writing, events will be marked as written by this bot.\n             If not provided, each event must include the id of the bot to write the event as."
 											},
 											"type": {
 												"type": "intrinsic",
@@ -2024,9 +2032,11 @@
 											"name": "outQueue",
 											"kind": 32768,
 											"kindString": "Parameter",
-											"flags": {},
+											"flags": {
+												"isOptional": true
+											},
 											"comment": {
-												"shortText": "The queue into which events will be written"
+												"shortText": "For events that don't specify the queue to write to, this default is used.\n                It is the queue into which events will be written.  If not provided, each event must\n                include the queue to write the event to.\n"
 											},
 											"type": {
 												"type": "intrinsic",
@@ -2092,7 +2102,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 746,
+									"line": 756,
 									"character": 7
 								}
 							],
@@ -2166,7 +2176,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 880,
+									"line": 892,
 									"character": 10
 								}
 							],
@@ -2295,7 +2305,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 673,
+									"line": 682,
 									"character": 10
 								}
 							],
@@ -2368,7 +2378,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 968,
+									"line": 985,
 									"character": 10
 								}
 							],
@@ -2422,7 +2432,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 648,
+									"line": 657,
 									"character": 7
 								}
 							],
@@ -3617,7 +3627,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 655,
+									"line": 664,
 									"character": 7
 								}
 							],
@@ -4626,7 +4636,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 979,
+									"line": 996,
 									"character": 7
 								}
 							],
@@ -8092,7 +8102,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1092,
+									"line": 1109,
 									"character": 10
 								}
 							],
@@ -8355,7 +8365,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 760,
+									"line": 770,
 									"character": 10
 								}
 							],
@@ -8431,7 +8441,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 764,
+																	"line": 774,
 																	"character": 2
 																}
 															],
@@ -8452,7 +8462,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 771,
+																	"line": 781,
 																	"character": 2
 																}
 															],
@@ -8495,7 +8505,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 918,
+									"line": 935,
 									"character": 7
 								}
 							],
@@ -8537,7 +8547,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 701,
+									"line": 710,
 									"character": 7
 								}
 							],
@@ -8739,7 +8749,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 727,
+									"line": 736,
 									"character": 7
 								}
 							],
@@ -8985,7 +8995,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1062,
+									"line": 1079,
 									"character": 7
 								}
 							],
@@ -9072,7 +9082,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 783,
+									"line": 794,
 									"character": 10
 								}
 							],
@@ -9085,7 +9095,13 @@
 									"flags": {},
 									"comment": {
 										"shortText": "Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.",
-										"returns": "The pipeline step that is ready to be used in a pipeline\n"
+										"returns": "The pipeline step that is ready to be used in a pipeline\n",
+										"tags": [
+											{
+												"tag": "internal",
+												"text": ""
+											}
+										]
 									},
 									"parameters": [
 										{
@@ -9129,7 +9145,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1029,
+									"line": 1046,
 									"character": 10
 								}
 							],
@@ -9186,7 +9202,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1030,
+																	"line": 1047,
 																	"character": 2
 																}
 															],
@@ -9204,7 +9220,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1031,
+																	"line": 1048,
 																	"character": 2
 																}
 															],
@@ -9224,7 +9240,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1032,
+																	"line": 1049,
 																	"character": 2
 																}
 															],
@@ -9244,7 +9260,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1033,
+																	"line": 1050,
 																	"character": 2
 																}
 															],
@@ -9264,7 +9280,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1034,
+																	"line": 1051,
 																	"character": 2
 																}
 															],
@@ -9311,7 +9327,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 813,
+									"line": 824,
 									"character": 10
 								}
 							],
@@ -9403,7 +9419,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 992,
+									"line": 1009,
 									"character": 10
 								}
 							],
@@ -9466,7 +9482,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 736,
+									"line": 746,
 									"character": 7
 								}
 							],
@@ -9478,7 +9494,13 @@
 									"kindString": "Call signature",
 									"flags": {},
 									"comment": {
-										"shortText": "This is a sink, a step designed to be the last step in the pipe."
+										"shortText": "This is a sink, a step designed to be the last step in the pipe.",
+										"tags": [
+											{
+												"tag": "internal",
+												"text": ""
+											}
+										]
 									},
 									"typeParameter": [
 										{
@@ -9558,7 +9580,13 @@
 									"kindString": "Call signature",
 									"flags": {},
 									"comment": {
-										"shortText": "This is a sink, a step designed to be the last step in the pipe."
+										"shortText": "This is a sink, a step designed to be the last step in the pipe.",
+										"tags": [
+											{
+												"tag": "internal",
+												"text": ""
+											}
+										]
 									},
 									"typeParameter": [
 										{
@@ -9676,7 +9704,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 590,
+							"line": 599,
 							"character": 25
 						}
 					]
@@ -9757,7 +9785,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 199,
+									"line": 205,
 									"character": 1
 								}
 							],
@@ -9782,7 +9810,7 @@
 											"sources": [
 												{
 													"fileName": "index.d.ts",
-													"line": 207,
+													"line": 213,
 													"character": 2
 												}
 											],
@@ -9805,7 +9833,7 @@
 											"sources": [
 												{
 													"fileName": "index.d.ts",
-													"line": 201,
+													"line": 207,
 													"character": 2
 												}
 											],
@@ -9827,7 +9855,7 @@
 											"sources": [
 												{
 													"fileName": "index.d.ts",
-													"line": 204,
+													"line": 210,
 													"character": 2
 												}
 											],
@@ -9865,7 +9893,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 198,
+									"line": 204,
 									"character": 1
 								}
 							],
@@ -9942,7 +9970,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 119,
+									"line": 125,
 									"character": 1
 								}
 							],
@@ -9963,7 +9991,13 @@
 											"flags": {},
 											"comment": {
 												"shortText": "Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.",
-												"returns": "The pipeline step that is ready to be used in a pipeline\n"
+												"returns": "The pipeline step that is ready to be used in a pipeline\n",
+												"tags": [
+													{
+														"tag": "internal",
+														"text": ""
+													}
+												]
 											},
 											"parameters": [
 												{
@@ -10009,7 +10043,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 230,
+									"line": 236,
 									"character": 1
 								}
 							],
@@ -10145,7 +10179,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 214,
+									"line": 220,
 									"character": 1
 								}
 							],
@@ -10408,7 +10442,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 144,
+									"line": 150,
 									"character": 1
 								}
 							],
@@ -10576,9 +10610,11 @@
 													"name": "botId",
 													"kind": 32768,
 													"kindString": "Parameter",
-													"flags": {},
+													"flags": {
+														"isOptional": true
+													},
 													"comment": {
-														"shortText": "The bot to act as when writing, events will be marked as written by this bot"
+														"shortText": "For events that don't specify the bot to act as, this default is used.\n             It is the bot to act as when writing, events will be marked as written by this bot.\n             If not provided, each event must include the id of the bot to write the event as."
 													},
 													"type": {
 														"type": "intrinsic",
@@ -10590,9 +10626,11 @@
 													"name": "outQueue",
 													"kind": 32768,
 													"kindString": "Parameter",
-													"flags": {},
+													"flags": {
+														"isOptional": true
+													},
 													"comment": {
-														"shortText": "The queue into which events will be written"
+														"shortText": "For events that don't specify the queue to write to, this default is used.\n                It is the queue into which events will be written.  If not provided, each event must\n                include the queue to write the event to.\n"
 													},
 													"type": {
 														"type": "intrinsic",
@@ -10800,7 +10838,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 159,
+									"line": 165,
 									"character": 1
 								}
 							],
@@ -10894,7 +10932,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 176,
+									"line": 182,
 									"character": 1
 								}
 							],
@@ -11029,7 +11067,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 190,
+									"line": 196,
 									"character": 1
 								}
 							],
@@ -11266,7 +11304,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 194,
+									"line": 200,
 									"character": 1
 								}
 							],
@@ -11522,7 +11560,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 117,
+									"line": 120,
 									"character": 1
 								}
 							],
@@ -11693,7 +11731,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 85,
+									"line": 83,
 									"character": 1
 								}
 							],
@@ -11731,7 +11769,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 98,
+									"line": 96,
 									"character": 1
 								}
 							],
@@ -11769,7 +11807,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 110,
+									"line": 108,
 									"character": 1
 								}
 							],
@@ -11807,7 +11845,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 126,
+									"line": 124,
 									"character": 1
 								}
 							],
@@ -11839,7 +11877,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 67,
+									"line": 65,
 									"character": 1
 								}
 							],
@@ -11865,7 +11903,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 41,
+							"line": 39,
 							"character": 17
 						}
 					],
@@ -11907,7 +11945,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 311,
+									"line": 320,
 									"character": 1
 								}
 							],
@@ -11929,7 +11967,7 @@
 											"sources": [
 												{
 													"fileName": "lib/lib.d.ts",
-													"line": 312,
+													"line": 321,
 													"character": 2
 												}
 											],
@@ -11968,7 +12006,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 300,
+									"line": 309,
 									"character": 1
 								}
 							],
@@ -11992,7 +12030,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 297,
+									"line": 306,
 									"character": 1
 								}
 							],
@@ -12016,7 +12054,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 288,
+									"line": 297,
 									"character": 1
 								}
 							],
@@ -12040,7 +12078,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 279,
+									"line": 288,
 									"character": 1
 								}
 							],
@@ -12065,7 +12103,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 308,
+									"line": 317,
 									"character": 1
 								}
 							],
@@ -12092,7 +12130,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 266,
+							"line": 275,
 							"character": 17
 						}
 					]
@@ -12130,7 +12168,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 531,
+									"line": 540,
 									"character": 1
 								}
 							],
@@ -12153,7 +12191,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 548,
+									"line": 557,
 									"character": 1
 								}
 							],
@@ -12176,7 +12214,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 542,
+									"line": 551,
 									"character": 1
 								}
 							],
@@ -12199,7 +12237,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 551,
+									"line": 560,
 									"character": 1
 								}
 							],
@@ -12222,7 +12260,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 545,
+									"line": 554,
 									"character": 1
 								}
 							],
@@ -12245,7 +12283,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 534,
+									"line": 543,
 									"character": 1
 								}
 							],
@@ -12272,7 +12310,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 529,
+							"line": 538,
 							"character": 17
 						}
 					]
@@ -12748,7 +12786,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 580,
+									"line": 589,
 									"character": 1
 								}
 							],
@@ -12770,7 +12808,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 579,
+							"line": 588,
 							"character": 17
 						}
 					]
@@ -12799,7 +12837,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 246,
+									"line": 252,
 									"character": 1
 								}
 							],
@@ -12822,7 +12860,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 243,
+									"line": 249,
 									"character": 1
 								}
 							],
@@ -12845,7 +12883,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 241,
+							"line": 247,
 							"character": 17
 						}
 					]
@@ -12884,7 +12922,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 447,
+									"line": 456,
 									"character": 1
 								}
 							],
@@ -12917,7 +12955,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 407,
+									"line": 416,
 									"character": 1
 								}
 							],
@@ -12953,7 +12991,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 85,
+									"line": 83,
 									"character": 1
 								}
 							],
@@ -12975,10 +13013,13 @@
 							"flags": {
 								"isOptional": true
 							},
+							"comment": {
+								"shortText": "If true, the checkpoint will be applied even if someone else already checkpointed on the same bot/queue\nsince the last time this code checkpointed.  This is only used in advanced fanout cases."
+							},
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 130,
+									"line": 139,
 									"character": 1
 								}
 							],
@@ -13004,7 +13045,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 382,
+									"line": 391,
 									"character": 1
 								}
 							],
@@ -13030,7 +13071,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 385,
+									"line": 394,
 									"character": 1
 								}
 							],
@@ -13056,7 +13097,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 388,
+									"line": 397,
 									"character": 1
 								}
 							],
@@ -13099,7 +13140,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 98,
+									"line": 96,
 									"character": 1
 								}
 							],
@@ -13142,7 +13183,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 110,
+									"line": 108,
 									"character": 1
 								}
 							],
@@ -13177,7 +13218,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 404,
+									"line": 413,
 									"character": 1
 								}
 							],
@@ -13220,7 +13261,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 126,
+									"line": 124,
 									"character": 1
 								}
 							],
@@ -13257,7 +13298,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 67,
+									"line": 65,
 									"character": 1
 								}
 							],
@@ -13453,7 +13494,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 435,
+							"line": 444,
 							"character": 17
 						}
 					],
@@ -13543,7 +13584,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 407,
+									"line": 416,
 									"character": 1
 								}
 							],
@@ -13574,7 +13615,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 85,
+									"line": 83,
 									"character": 1
 								}
 							],
@@ -13596,10 +13637,13 @@
 							"flags": {
 								"isOptional": true
 							},
+							"comment": {
+								"shortText": "If true, the checkpoint will be applied even if someone else already checkpointed on the same bot/queue\nsince the last time this code checkpointed.  This is only used in advanced fanout cases."
+							},
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 130,
+									"line": 139,
 									"character": 1
 								}
 							],
@@ -13625,7 +13669,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 382,
+									"line": 391,
 									"character": 1
 								}
 							],
@@ -13646,7 +13690,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 385,
+									"line": 394,
 									"character": 1
 								}
 							],
@@ -13667,7 +13711,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 388,
+									"line": 397,
 									"character": 1
 								}
 							],
@@ -13705,7 +13749,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 98,
+									"line": 96,
 									"character": 1
 								}
 							],
@@ -13748,7 +13792,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 110,
+									"line": 108,
 									"character": 1
 								}
 							],
@@ -13783,7 +13827,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 404,
+									"line": 413,
 									"character": 1
 								}
 							],
@@ -13821,7 +13865,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 126,
+									"line": 124,
 									"character": 1
 								}
 							],
@@ -13858,7 +13902,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 67,
+									"line": 65,
 									"character": 1
 								}
 							],
@@ -14023,7 +14067,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 377,
+							"line": 386,
 							"character": 17
 						}
 					],
@@ -14098,7 +14142,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 508,
+									"line": 517,
 									"character": 1
 								}
 							],
@@ -14138,7 +14182,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 213,
+									"line": 222,
 									"character": 1
 								}
 							],
@@ -14176,7 +14220,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 236,
+									"line": 245,
 									"character": 1
 								}
 							],
@@ -14210,7 +14254,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 245,
+									"line": 254,
 									"character": 1
 								}
 							],
@@ -14235,7 +14279,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 479,
+									"line": 488,
 									"character": 1
 								}
 							],
@@ -14261,7 +14305,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 465,
+									"line": 474,
 									"character": 1
 								}
 							],
@@ -14287,7 +14331,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 468,
+									"line": 477,
 									"character": 1
 								}
 							],
@@ -14321,7 +14365,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 200,
+									"line": 209,
 									"character": 1
 								}
 							],
@@ -14356,7 +14400,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 175,
+									"line": 184,
 									"character": 1
 								}
 							],
@@ -14394,7 +14438,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 225,
+									"line": 234,
 									"character": 1
 								}
 							],
@@ -14423,7 +14467,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 164,
+									"line": 173,
 									"character": 1
 								}
 							],
@@ -14459,7 +14503,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 210,
+									"line": 219,
 									"character": 1
 								}
 							],
@@ -14494,7 +14538,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 190,
+									"line": 199,
 									"character": 1
 								}
 							],
@@ -14522,7 +14566,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 216,
+									"line": 225,
 									"character": 1
 								}
 							],
@@ -14560,7 +14604,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 255,
+									"line": 264,
 									"character": 1
 								}
 							],
@@ -14593,7 +14637,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 149,
+									"line": 158,
 									"character": 1
 								}
 							],
@@ -14790,7 +14834,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 496,
+							"line": 505,
 							"character": 17
 						}
 					],
@@ -14870,7 +14914,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 213,
+									"line": 222,
 									"character": 1
 								}
 							],
@@ -14908,7 +14952,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 236,
+									"line": 245,
 									"character": 1
 								}
 							],
@@ -14942,7 +14986,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 245,
+									"line": 254,
 									"character": 1
 								}
 							],
@@ -14967,7 +15011,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 479,
+									"line": 488,
 									"character": 1
 								}
 							],
@@ -14988,7 +15032,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 465,
+									"line": 474,
 									"character": 1
 								}
 							],
@@ -15009,7 +15053,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 468,
+									"line": 477,
 									"character": 1
 								}
 							],
@@ -15038,7 +15082,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 200,
+									"line": 209,
 									"character": 1
 								}
 							],
@@ -15073,7 +15117,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 175,
+									"line": 184,
 									"character": 1
 								}
 							],
@@ -15111,7 +15155,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 225,
+									"line": 234,
 									"character": 1
 								}
 							],
@@ -15140,7 +15184,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 164,
+									"line": 173,
 									"character": 1
 								}
 							],
@@ -15176,7 +15220,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 210,
+									"line": 219,
 									"character": 1
 								}
 							],
@@ -15211,7 +15255,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 190,
+									"line": 199,
 									"character": 1
 								}
 							],
@@ -15239,7 +15283,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 216,
+									"line": 225,
 									"character": 1
 								}
 							],
@@ -15277,7 +15321,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 255,
+									"line": 264,
 									"character": 1
 								}
 							],
@@ -15310,7 +15354,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 149,
+									"line": 158,
 									"character": 1
 								}
 							],
@@ -15476,7 +15520,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 460,
+							"line": 469,
 							"character": 17
 						}
 					],
@@ -15537,7 +15581,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 213,
+									"line": 222,
 									"character": 1
 								}
 							],
@@ -15570,7 +15614,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 236,
+									"line": 245,
 									"character": 1
 								}
 							],
@@ -15599,7 +15643,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 245,
+									"line": 254,
 									"character": 1
 								}
 							],
@@ -15628,7 +15672,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 200,
+									"line": 209,
 									"character": 1
 								}
 							],
@@ -15658,7 +15702,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 175,
+									"line": 184,
 									"character": 1
 								}
 							],
@@ -15691,7 +15735,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 225,
+									"line": 234,
 									"character": 1
 								}
 							],
@@ -15715,7 +15759,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 164,
+									"line": 173,
 									"character": 1
 								}
 							],
@@ -15746,7 +15790,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 210,
+									"line": 219,
 									"character": 1
 								}
 							],
@@ -15776,7 +15820,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 190,
+									"line": 199,
 									"character": 1
 								}
 							],
@@ -15799,7 +15843,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 216,
+									"line": 225,
 									"character": 1
 								}
 							],
@@ -15832,7 +15876,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 255,
+									"line": 264,
 									"character": 1
 								}
 							],
@@ -15860,7 +15904,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 149,
+									"line": 158,
 									"character": 1
 								}
 							],
@@ -15893,7 +15937,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 147,
+							"line": 156,
 							"character": 17
 						}
 					],
@@ -15925,7 +15969,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 566,
+									"line": 575,
 									"character": 1
 								}
 							],
@@ -16011,7 +16055,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 571,
+									"line": 580,
 									"character": 1
 								}
 							],
@@ -16057,7 +16101,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 564,
+							"line": 573,
 							"character": 17
 						}
 					],
@@ -16102,7 +16146,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 361,
+									"line": 370,
 									"character": 1
 								}
 							],
@@ -16131,7 +16175,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 335,
+									"line": 344,
 									"character": 1
 								}
 							],
@@ -16161,7 +16205,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 346,
+									"line": 355,
 									"character": 1
 								}
 							],
@@ -16187,7 +16231,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 330,
+							"line": 339,
 							"character": 17
 						}
 					]
@@ -16198,6 +16242,9 @@
 					"kind": 256,
 					"kindString": "Interface",
 					"flags": {},
+					"comment": {
+						"shortText": "Options when writing data to an instance of the RStreams bus that include the ability to\nforce checkpointing.  The options in this\ninterface provide a lot of control and performance optimization options and developers\nshould familiarize themselves with them. They are used in a write pipeline step\nto configure how to write."
+					},
 					"children": [
 						{
 							"id": 2538,
@@ -16220,7 +16267,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 85,
+									"line": 83,
 									"character": 1
 								}
 							],
@@ -16242,10 +16289,13 @@
 							"flags": {
 								"isOptional": true
 							},
+							"comment": {
+								"shortText": "If true, the checkpoint will be applied even if someone else already checkpointed on the same bot/queue\nsince the last time this code checkpointed.  This is only used in advanced fanout cases."
+							},
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 130,
+									"line": 139,
 									"character": 1
 								}
 							],
@@ -16283,7 +16333,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 98,
+									"line": 96,
 									"character": 1
 								}
 							],
@@ -16326,7 +16376,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 110,
+									"line": 108,
 									"character": 1
 								}
 							],
@@ -16369,7 +16419,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 126,
+									"line": 124,
 									"character": 1
 								}
 							],
@@ -16406,7 +16456,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 67,
+									"line": 65,
 									"character": 1
 								}
 							],
@@ -16438,7 +16488,7 @@
 					"sources": [
 						{
 							"fileName": "lib/lib.d.ts",
-							"line": 129,
+							"line": 134,
 							"character": 17
 						}
 					],
@@ -16547,7 +16597,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 236,
+							"line": 242,
 							"character": 20
 						}
 					],
@@ -16578,7 +16628,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 236,
+									"line": 242,
 									"character": 49
 								}
 							],
@@ -16701,7 +16751,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 254,
+							"line": 260,
 							"character": 17
 						}
 					],
@@ -16765,7 +16815,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 581,
+							"line": 582,
 							"character": 16
 						}
 					],
@@ -26593,7 +26643,7 @@
 							"sources": [
 								{
 									"fileName": "lib/streams.d.ts",
-									"line": 762,
+									"line": 763,
 									"character": 1
 								}
 							],
@@ -26616,7 +26666,7 @@
 							"sources": [
 								{
 									"fileName": "lib/streams.d.ts",
-									"line": 755,
+									"line": 756,
 									"character": 1
 								}
 							],
@@ -26645,7 +26695,7 @@
 							"sources": [
 								{
 									"fileName": "lib/streams.d.ts",
-									"line": 783,
+									"line": 784,
 									"character": 1
 								}
 							],
@@ -26669,7 +26719,7 @@
 							"sources": [
 								{
 									"fileName": "lib/streams.d.ts",
-									"line": 772,
+									"line": 773,
 									"character": 1
 								}
 							],
@@ -26696,7 +26746,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 753,
+							"line": 754,
 							"character": 17
 						}
 					]
@@ -27252,7 +27302,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 706,
+							"line": 707,
 							"character": 17
 						}
 					],
@@ -27850,7 +27900,7 @@
 							"sources": [
 								{
 									"fileName": "lib/streams.d.ts",
-									"line": 717,
+									"line": 718,
 									"character": 1
 								}
 							],
@@ -27879,7 +27929,7 @@
 							"sources": [
 								{
 									"fileName": "lib/streams.d.ts",
-									"line": 724,
+									"line": 725,
 									"character": 1
 								}
 							],
@@ -27908,7 +27958,7 @@
 							"sources": [
 								{
 									"fileName": "lib/streams.d.ts",
-									"line": 739,
+									"line": 740,
 									"character": 1
 								}
 							],
@@ -27937,7 +27987,7 @@
 							"sources": [
 								{
 									"fileName": "lib/streams.d.ts",
-									"line": 731,
+									"line": 732,
 									"character": 1
 								}
 							],
@@ -27962,7 +28012,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 711,
+							"line": 712,
 							"character": 17
 						}
 					]
@@ -28681,7 +28731,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 524,
+							"line": 525,
 							"character": 16
 						}
 					],
@@ -28773,7 +28823,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 617,
+							"line": 618,
 							"character": 16
 						}
 					],
@@ -29397,7 +29447,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 661,
+							"line": 662,
 							"character": 16
 						}
 					],
@@ -29484,7 +29534,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 684,
+							"line": 685,
 							"character": 16
 						}
 					],
@@ -29530,7 +29580,7 @@
 													"sources": [
 														{
 															"fileName": "lib/streams.d.ts",
-															"line": 686,
+															"line": 687,
 															"character": 1
 														}
 													],
@@ -29551,7 +29601,7 @@
 													"sources": [
 														{
 															"fileName": "lib/streams.d.ts",
-															"line": 689,
+															"line": 690,
 															"character": 1
 														}
 													],
@@ -29574,7 +29624,7 @@
 													"sources": [
 														{
 															"fileName": "lib/streams.d.ts",
-															"line": 698,
+															"line": 699,
 															"character": 1
 														}
 													],
@@ -29696,7 +29746,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 637,
+							"line": 638,
 							"character": 16
 						}
 					],
@@ -29747,7 +29797,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 526,
+							"line": 527,
 							"character": 16
 						}
 					],
@@ -35732,7 +35782,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 509,
+							"line": 510,
 							"character": 16
 						}
 					],
@@ -35745,7 +35795,13 @@
 							"flags": {},
 							"comment": {
 								"shortText": "This creates a pipeline step that takes events in of type T, allows your code to process it and then\nyou send an event of type U to the the next pipeline step.",
-								"returns": "The pipeline step that is ready to be used in a pipeline"
+								"returns": "The pipeline step that is ready to be used in a pipeline",
+								"tags": [
+									{
+										"tag": "internal",
+										"text": ""
+									}
+								]
 							},
 							"typeParameter": [
 								{
@@ -35855,7 +35911,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 627,
+							"line": 628,
 							"character": 16
 						}
 					],
@@ -35897,7 +35953,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 555,
+							"line": 556,
 							"character": 16
 						}
 					],
@@ -36099,7 +36155,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 581,
+							"line": 582,
 							"character": 16
 						}
 					],
@@ -36345,7 +36401,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 649,
+							"line": 650,
 							"character": 16
 						}
 					],
@@ -36432,7 +36488,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 674,
+							"line": 675,
 							"character": 16
 						}
 					],
@@ -36500,7 +36556,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 592,
+							"line": 593,
 							"character": 16
 						}
 					],
@@ -39668,13 +39724,13 @@
 									},
 									"inheritedFrom": {
 										"type": "reference",
-										"name": "stream.Readable.__@asyncIterator@21791"
+										"name": "stream.Readable.__@asyncIterator@22894"
 									}
 								}
 							],
 							"inheritedFrom": {
 								"type": "reference",
-								"name": "stream.Readable.__@asyncIterator@21791"
+								"name": "stream.Readable.__@asyncIterator@22894"
 							}
 						},
 						{
@@ -46488,13 +46544,13 @@
 									},
 									"inheritedFrom": {
 										"type": "reference",
-										"name": "stream.Duplex.__@asyncIterator@21791"
+										"name": "stream.Duplex.__@asyncIterator@22894"
 									}
 								}
 							],
 							"inheritedFrom": {
 								"type": "reference",
-								"name": "stream.Duplex.__@asyncIterator@21791"
+								"name": "stream.Duplex.__@asyncIterator@22894"
 							}
 						},
 						{
@@ -61409,7 +61465,7 @@
 					"sources": [
 						{
 							"fileName": "lib/streams.d.ts",
-							"line": 581,
+							"line": 582,
 							"character": 16
 						}
 					],
