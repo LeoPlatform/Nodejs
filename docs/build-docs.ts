@@ -12,6 +12,9 @@ import * as path from 'path';
 const TYPEDOC_FILE_PATH = './typedoc.json';
 const THEME_ASSETS_PATH = 'theme/assets';
 const BUILD_ASSETS_PATH = 'build/assets';
+const MAIN_JS_PATH = BUILD_ASSETS_PATH + '/main.js';
+const PATH_FOR_SERVER = 'Nodejs';
+const PATH_FOR_LOCAL = 'build';
 
 class MyTheme extends DefaultTheme {
 	private _contextCache?: RStreamsThemeContext;
@@ -81,6 +84,32 @@ async function buildDocs() {
 	// Move over theme assets manually
 	const files = await getAllFiles(THEME_ASSETS_PATH, []);
 	await moveFiles(files, BUILD_ASSETS_PATH);
+
+	// Correct the search index which is sometimes setting the wrong base path and stupid
+	// IE scroll code that throws uncaught JS exceptions
+	await correctSearchIndexPathAndRemoveBrokenIeScrollCode();
+}
+
+/**
+ * The generated main.js file lunr search index doesn't set the correct path depending on what file you are in
+ * in the docs.  It was always running home to './' prepended to all search index URLs.  Modified
+ * so if in the root doc of the website prepends './' otherwise prepends '../' so it works correctly.
+ * 
+ * Also removed broken IE onscroll code throwing an exception since I modified the theme.
+ */
+async function correctSearchIndexPathAndRemoveBrokenIeScrollCode() {
+	let find = /;p\.href=n\.base\+u\.url/g;
+	const replace = `;const iluw = window.location.pathname || '';n.base = iluw.endsWith('/${PATH_FOR_SERVER}/') || ` + 
+					`iluw.endsWith('/${PATH_FOR_SERVER}/index.html') || iluw.endsWith('/${PATH_FOR_LOCAL}/') || `+ 
+					`iluw.endsWith('/${PATH_FOR_LOCAL}/index.html')  ? './' : '../';p.href=n.base+u.url`;
+
+	let fileData: string = await fs.readFile(MAIN_JS_PATH, 'utf8');
+	fileData = fileData.replace(find, replace);
+
+	find = /window\.addEventListener\("scroll",ne\(\(\)=>this\.onScroll\(\),10\)\),/g;
+	fileData = fileData.replace(find, '');
+
+	await fs.writeFile(MAIN_JS_PATH, fileData, 'utf8');
 }
 
 function onConverterCreateDeclaration(context: Context): void {
