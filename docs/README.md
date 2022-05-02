@@ -12,10 +12,6 @@
 
     * **rstreams-site-url** => https://rstreams.org
 
-1. post processing replace in file
-   
-   ``npm install replace-in-file --save-dev``
-
 1. stop inheriting docs when I don't want it to plugin
 
    npm install typedoc-plugin-no-inherit --save-dev

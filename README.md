@@ -1,6 +1,6 @@
 A Node/Typescript SDK that pushes data to and pulls data from an instance of an RStreams bus.
 
-Full documentation and getting started guide here: https://rstreams.org/rstreams-node-sdk/
+Full documentation and getting started guide here: rstreams-site-url/rstreams-node-sdk/
 
 For this SDK API documentation, get started with the [RStreamsSdk](classes/index.RStreamsSdk.html).
 
@@ -8,7 +8,7 @@ For this SDK API documentation, get started with the [RStreamsSdk](classes/index
 
 Send events one at a time to an instance of the RStreams bus.
 
-[Put Operation documentation](https://rstreams.org/rstreams-node-sdk/sdk-apis/standalone-ops/put/)
+[Put Operation documentation](rstreams-site-url/rstreams-node-sdk/sdk-apis/standalone-ops/put/)
 
 ```typescript
 import { ConfigurationResources, RStreamsSdk } from "leo-sdk";
@@ -44,7 +44,7 @@ async function getRandomPerson(): Promise<PersonRaw> {
 
 Read events from one queue, modify them and send them on to another queue of the RStreams bus.
 
-[Enrich Operation documentation](https://rstreams.org/rstreams-node-sdk/sdk-apis/standalone-ops/enrich/)
+[Enrich Operation documentation](rstreams-site-url/rstreams-node-sdk/sdk-apis/standalone-ops/enrich/)
 
 ```typescript
 import { EnrichOptions,  RStreamsSdk } from "leo-sdk";
@@ -118,7 +118,7 @@ function translate(p: PersonRaw): Person {
 
 Stream data down from an RStreams bus queue at scale, optionally modify it and send it to another source such as a database or file.
 
-[Offload Operation documentation](https://rstreams.org/rstreams-node-sdk/sdk-apis/standalone-ops/offload/)
+[Offload Operation documentation](rstreams-site-url/rstreams-node-sdk/sdk-apis/standalone-ops/offload/)
 
 ```typescript
 import { OffloadOptions,  RStreamsSdk } from "leo-sdk";
