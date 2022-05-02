@@ -125,7 +125,8 @@ export class RStreamsThemeContext extends DefaultThemeRenderContext {
 			<div class="toolbarcontainer container dflex align-c">
 				{JSX.createElement("a", { href: this.relativeURL(_rstreamsSiteUrl), class: "title ml10" }, 
 					JSX.createElement("img", { src: this.relativeURL("assets/rstreams-logo.png") }))}
-				{JSX.createElement("a", { href: this.relativeURL("index.html"), class: "title sitename header-color" }, "Node SDK")}
+				{JSX.createElement("div", {class: "dflex align-c fg1 flexcenter"},
+					JSX.createElement("a", { href: this.relativeURL("index.html"), class: "title sitename header-color" }, "Node SDK"))}
 				<div id="tsd-search" data-base="." class="mr10">
 					<label for="tsd-search-field" style="display:none" class="tsd-widget search">Search</label>
 					<div class="field"><input type="text" id="tsd-search-field" placeholder="Search here..." /></div>
