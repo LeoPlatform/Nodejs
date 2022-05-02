@@ -43,6 +43,10 @@ export function init(rstreamsSiteUrl: string) {
 export class RStreamsThemeContext extends DefaultThemeRenderContext {
 	defaultLayout = (props: PageEvent<Reflection>) => {
 		let _a;
+		let hidePageHeaderForHomePage = false;
+		if (props.model.name === 'leo-sdk') {
+			hidePageHeaderForHomePage = true;
+		}
 
 		return (JSX.createElement("html", { class: "default" },
 			JSX.createElement("head", null,
@@ -76,7 +80,7 @@ export class RStreamsThemeContext extends DefaultThemeRenderContext {
 
 							// Moved from header
 							(
-								JSX.createElement("div", null,
+								JSX.createElement("div", {style: hidePageHeaderForHomePage ? 'display:none' : ''},
 									JSX.createElement("div", {class: "dflex mt-minus30"},
 										!!props.model.parent && JSX.createElement("ul", { class: "tsd-breadcrumb fg1" }, this.breadcrumb(props.model)),
 										JSX.createElement("div", { id: "tsd-widgets", class: "mr10"},
