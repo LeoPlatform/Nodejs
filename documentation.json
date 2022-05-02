@@ -39724,13 +39724,13 @@
 									},
 									"inheritedFrom": {
 										"type": "reference",
-										"name": "stream.Readable.__@asyncIterator@22894"
+										"name": "stream.Readable.__@asyncIterator@22949"
 									}
 								}
 							],
 							"inheritedFrom": {
 								"type": "reference",
-								"name": "stream.Readable.__@asyncIterator@22894"
+								"name": "stream.Readable.__@asyncIterator@22949"
 							}
 						},
 						{
@@ -46544,13 +46544,13 @@
 									},
 									"inheritedFrom": {
 										"type": "reference",
-										"name": "stream.Duplex.__@asyncIterator@22894"
+										"name": "stream.Duplex.__@asyncIterator@22949"
 									}
 								}
 							],
 							"inheritedFrom": {
 								"type": "reference",
-								"name": "stream.Duplex.__@asyncIterator@22894"
+								"name": "stream.Duplex.__@asyncIterator@22949"
 							}
 						},
 						{
