@@ -1,9 +1,9 @@
 {
 	"id": 0,
-	"name": "leo-sdk",
+	"name": "RStreams Node SDK - v6.0.5",
 	"kind": 1,
 	"flags": {},
-	"originalName": "",
+	"originalName": "RStreams Node SDK",
 	"children": [
 		{
 			"id": 1,
@@ -39724,13 +39724,13 @@
 									},
 									"inheritedFrom": {
 										"type": "reference",
-										"name": "stream.Readable.__@asyncIterator@22952"
+										"name": "stream.Readable.__@asyncIterator@22969"
 									}
 								}
 							],
 							"inheritedFrom": {
 								"type": "reference",
-								"name": "stream.Readable.__@asyncIterator@22952"
+								"name": "stream.Readable.__@asyncIterator@22969"
 							}
 						},
 						{
@@ -46544,13 +46544,13 @@
 									},
 									"inheritedFrom": {
 										"type": "reference",
-										"name": "stream.Duplex.__@asyncIterator@22952"
+										"name": "stream.Duplex.__@asyncIterator@22969"
 									}
 								}
 							],
 							"inheritedFrom": {
 								"type": "reference",
-								"name": "stream.Duplex.__@asyncIterator@22952"
+								"name": "stream.Duplex.__@asyncIterator@22969"
 							}
 						},
 						{
