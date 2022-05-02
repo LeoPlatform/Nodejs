@@ -35,16 +35,20 @@ function renderFlags(flags) {
 // </script>);
 
 let _rstreamsSiteUrl: string;
+let _sdkName: string;
+let _sdkNameForBreadcrumb: string;
 
-export function init(rstreamsSiteUrl: string) {
+export function init(rstreamsSiteUrl: string, sdkName: string, sdkNameForBreadcrumb: string) {
 	_rstreamsSiteUrl = rstreamsSiteUrl;
+	_sdkName = sdkName;
+	_sdkNameForBreadcrumb = sdkNameForBreadcrumb;
 }
 
 export class RStreamsThemeContext extends DefaultThemeRenderContext {
 	defaultLayout = (props: PageEvent<Reflection>) => {
 		let _a;
 		let hidePageHeaderForHomePage = false;
-		if (props.model.name === 'leo-sdk') {
+		if (props.model.name.indexOf(_sdkName) > -1) {
 			hidePageHeaderForHomePage = true;
 		}
 
@@ -80,13 +84,13 @@ export class RStreamsThemeContext extends DefaultThemeRenderContext {
 
 							// Moved from header
 							(
-								JSX.createElement("div", {style: hidePageHeaderForHomePage ? 'display:none' : ''},
+								JSX.createElement("div", null,
 									JSX.createElement("div", {class: "dflex mt-minus30"},
 										!!props.model.parent && JSX.createElement("ul", { class: "tsd-breadcrumb fg1" }, this.breadcrumb(props.model)),
-										JSX.createElement("div", { id: "tsd-widgets", class: "mr10"},
+										JSX.createElement("div", { id: "tsd-widgets", class: "mr10", style: hidePageHeaderForHomePage ? 'display:none' : ''},
 											JSX.createElement("input", { type: "checkbox", id: "tsd-filter-inherited", checked: true }),
 											JSX.createElement("label", { class: "tsd-widget ws-nowrap dflex align-c ht17", for: "tsd-filter-inherited" }, "Inherited")),
-										JSX.createElement("div", { id: "tsd-widgets2", class: "mr10"},
+										JSX.createElement("div", { id: "tsd-widgets2", class: "mr10", style: hidePageHeaderForHomePage ? 'display:none' : ''},
 											JSX.createElement("input", { type: "checkbox", id: "tsd-show-legend", checked: false}),
 											JSX.createElement("label", { class: "tsd-widget ws-nowrap dflex align-c ht17", for: "tsd-show-legend" }, "Legend"))),
 									JSX.createElement("h1", {class: "mt0 header-color"},
@@ -149,5 +153,16 @@ export class RStreamsThemeContext extends DefaultThemeRenderContext {
 		);
 	};
 
+	breadcrumb = (props: Reflection) => {
+		let linkName = props.name;
+		if (linkName.indexOf(_sdkName) > -1) {
+			linkName = _sdkNameForBreadcrumb;
+		}
+
+		return props.parent ? (JSX.createElement(JSX.Fragment, null,
+			this.breadcrumb(props.parent),
+			JSX.createElement("li", null, props.url ? JSX.createElement("a", { href: this.urlTo(props) }, linkName) : JSX.createElement("span", null, linkName)))) : props.url ? (JSX.createElement("li", null,
+			JSX.createElement("a", { href: this.urlTo(props) }, linkName))) : undefined;
+	}
 	
 }

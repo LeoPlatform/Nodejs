@@ -1,5 +1,3 @@
-# RStreams Node SDK
-
 A Node/Typescript SDK that pushes data to and pulls data from an instance of an RStreams bus.
 
 Full documentation and getting started guide here: https://rstreams.org/rstreams-node-sdk/

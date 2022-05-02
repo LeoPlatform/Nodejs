@@ -9,6 +9,8 @@
         "../lib/rstreams-configuration.ts"
     ],
     "out": "build",
+	"name": "RStreams Node SDK",
+	"includeVersion": true,
     "gitRevision": "master",
     "tsconfig": "../tsconfig.json",
     "theme": "mydefault",

@@ -15,6 +15,7 @@ const BUILD_ASSETS_PATH = 'build/assets';
 const MAIN_JS_PATH = BUILD_ASSETS_PATH + '/main.js';
 const PATH_FOR_SERVER = 'Nodejs';
 const PATH_FOR_LOCAL = 'build';
+const SDK_NAME_FOR_BREADCRUMB = 'node-sdk';
 
 class MyTheme extends DefaultTheme {
 	private _contextCache?: RStreamsThemeContext;
@@ -55,7 +56,7 @@ async function buildDocs() {
 	const typedocConfig = await getTypedocConfig();
 	const RSTREAMS_SITE_URL = typedocConfig.replaceText?.replacements[0].replace;
 
-	initRstreamsTheme(RSTREAMS_SITE_URL);
+	initRstreamsTheme(RSTREAMS_SITE_URL, typedocConfig.name, SDK_NAME_FOR_BREADCRUMB);
 
 	const app = new Application();
 
