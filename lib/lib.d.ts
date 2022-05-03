@@ -682,6 +682,9 @@ export declare namespace StreamUtil {
 	function parse<T>(skipErrors?: boolean): TransformStream<any, T>;
 
 	/**
+	 * This is a callback-based version of the [[`RStreamsSdk.throughAsync`]] function and should no longer be used.
+	 * Callback-based API flavors will be phased out over time.
+	 * 
 	 * This creates a callback based pipeline step that will take data in, possibly transform the data or do computation, and then
 	 * sends the result on to the next step in the pipeline.
 	 * 
@@ -700,8 +703,8 @@ export declare namespace StreamUtil {
 	 *   pipeline where `U` is the type of object being sent on.
 	 *				  
 	* @param flush A function to be called when the entire pipeline has been flushed to allow for cleanup, perhaps closing a DB connection.
-	* @see [[`throughAsync`]]
 	* @returns The pipeline step that is ready to be used in a pipeline
+	* @deprecated Please use [[`RStreamsSdk.throughAsync`]]
 	* 
 	* @todo example When you'd want to use this in the transform function.
 	* @todo review
@@ -782,6 +785,9 @@ export declare namespace StreamUtil {
 	}): StatsStream;
 
 	/**
+	 * This is only to be used internally by the SDK.  It used to be necessary externally and so remains
+	 * for backward comaptibiliy.
+	 * 
 	 * Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.
 	 * 
 	 * @param config When to checkpoint.
@@ -849,7 +855,8 @@ export declare namespace StreamUtil {
 
 
 	/**
-	 * This is a callback-based version of the [[`RStreamsSdk.enrichEvents`]] function.
+	 * This is a callback-based version of the [[`RStreamsSdk.enrichEvents`]] function and should no longer be used.
+	 * Callback-based API flavors will be phased out over time.
 	 * 
 	 * It reads events from one queue and writes them to another queue.  Put another way,
 	 * an enrich operation reads events from a source `inQueue` and then writes them to a destination `outQueue`,
@@ -866,6 +873,7 @@ export declare namespace StreamUtil {
 	 * @param opts The details of how to enrich and the function that does the work to enrich, either the batched or not batched version.
 	 *			   The batched version will batch up requests to your transform function and pass it an array instead of a single object.
 	 * @param callback A function called when all events have been processed
+	 * @deprecated Please use [[`RStreamsSdk.enrichEvents`]]
 	 * @todo question why does enrich exist here and not elsewhere
 	 * @todo unclear don't understand the callback here
 	 * @todo example
@@ -875,7 +883,8 @@ export declare namespace StreamUtil {
 	function enrich<T, U>(opts: EnrichBatchOptions<T, U>, callback: Callback): void;
 
 	/**
-	 * This is a callback-based version of [[`RStreamsSdk.offloadEvents`]].
+     * This is a callback-based version of the [[`RStreamsSdk.offloadEvents`]] function and should no longer be used.
+	 * Callback-based API flavors will be phased out over time.
 	 * 
 	 * It reads events from a queue to do general processing (such as write to an external DB).  It's called
 	 * offload because it is commonly used to process events and offload them to external resources
@@ -884,6 +893,7 @@ export declare namespace StreamUtil {
 	 * It reads from the queue specified in `opts` and then calls the `opts.transform` function passing in the
 	 * events retrieved so they may be processed.
 	 * 
+	 * @deprecated Please use [[`RStreamsSdk.offloadEvents`]]
 	 * @typeParam T The type of the data read from the RStreams bus queue
 	 * @param opts What queue to read from, the transform function and other options.
 		 *						 The batched version will batch up requests to your transform function and pass it an array instead of a single object.
@@ -1092,6 +1102,9 @@ export declare namespace StreamUtil {
 
 
 	/**
+	 * This is for internal SDK use only and is no longer needed externally but remains here for
+	 * backward compatibility.
+	 * 
 	 * This creates a pipeline step that takes events in of type T, allows your code to process it and then
 	 * you send an event of type U to the the next pipeline step.
 	 * 
@@ -1102,6 +1115,7 @@ export declare namespace StreamUtil {
 	 * @param func The function to process data, getting data of type T and returning data of type U
 	 * @param outQueue The queue to send the resulting data to
 	 * @returns The pipeline step that is ready to be used in a pipeline
+	 * @internal
 	 * @todo question Couldn't find any references to this.
 	 * @todo question don't we already have other ways to do this?  do we need this?
 	 * @todo unclear This is a transform stream which means it can't be the sink and yet it takes an outQueue as though it's sending to another queue.  Don't get it.
