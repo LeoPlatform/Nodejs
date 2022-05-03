@@ -610,7 +610,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1067,
+									"line": 1077,
 									"character": 7
 								}
 							],
@@ -702,7 +702,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 836,
+									"line": 842,
 									"character": 10
 								}
 							],
@@ -756,7 +756,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 840,
+																	"line": 846,
 																	"character": 2
 																}
 															],
@@ -777,7 +777,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 847,
+																	"line": 853,
 																	"character": 2
 																}
 															],
@@ -821,7 +821,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 968,
+									"line": 978,
 									"character": 7
 								}
 							],
@@ -967,7 +967,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1117,
+									"line": 1131,
 									"character": 10
 								}
 							],
@@ -1191,7 +1191,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 927,
+									"line": 937,
 									"character": 7
 								}
 							],
@@ -1270,7 +1270,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 874,
+									"line": 882,
 									"character": 10
 								}
 							],
@@ -1282,8 +1282,14 @@
 									"kindString": "Call signature",
 									"flags": {},
 									"comment": {
-										"shortText": "This is a callback-based version of the [[`RStreamsSdk.enrichEvents`]] function.",
-										"text": "It reads events from one queue and writes them to another queue.  Put another way,\nan enrich operation reads events from a source `inQueue` and then writes them to a destination `outQueue`,\nallowing for side effects or transformation in the process.\n\nThe [[`EnrichOptions.transform`]] function\nis called when events are retrieved from the source queue so you can transform them and send them to the\ndestination queue by calling the callback in the transform function.  The callback here as the second argument\nof this function is meant to be called when all enriching is done on all events (right before it closes down the stream),\nallowing you to do clean up like closing a DB connection or something.\n"
+										"shortText": "This is a callback-based version of the [[`RStreamsSdk.enrichEvents`]] function and should no longer be used.\nCallback-based API flavors will be phased out over time.",
+										"text": "It reads events from one queue and writes them to another queue.  Put another way,\nan enrich operation reads events from a source `inQueue` and then writes them to a destination `outQueue`,\nallowing for side effects or transformation in the process.\n\nThe [[`EnrichOptions.transform`]] function\nis called when events are retrieved from the source queue so you can transform them and send them to the\ndestination queue by calling the callback in the transform function.  The callback here as the second argument\nof this function is meant to be called when all enriching is done on all events (right before it closes down the stream),\nallowing you to do clean up like closing a DB connection or something.\n",
+										"tags": [
+											{
+												"tag": "deprecated",
+												"text": "Please use [[`RStreamsSdk.enrichEvents`]]"
+											}
+										]
 									},
 									"typeParameter": [
 										{
@@ -1557,7 +1563,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1091,
+									"line": 1101,
 									"character": 7
 								}
 							],
@@ -1644,7 +1650,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 810,
+									"line": 816,
 									"character": 10
 								}
 							],
@@ -1749,7 +1755,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1018,
+									"line": 1028,
 									"character": 10
 								}
 							],
@@ -1795,7 +1801,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1020,
+																	"line": 1030,
 																	"character": 2
 																}
 															],
@@ -1816,7 +1822,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1023,
+																	"line": 1033,
 																	"character": 2
 																}
 															],
@@ -1839,7 +1845,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1032,
+																	"line": 1042,
 																	"character": 2
 																}
 															],
@@ -1882,7 +1888,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 955,
+									"line": 965,
 									"character": 7
 								}
 							],
@@ -1933,7 +1939,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 945,
+									"line": 955,
 									"character": 7
 								}
 							],
@@ -1984,7 +1990,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 910,
+									"line": 920,
 									"character": 10
 								}
 							],
@@ -2102,7 +2108,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 756,
+									"line": 759,
 									"character": 7
 								}
 							],
@@ -2176,7 +2182,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 892,
+									"line": 902,
 									"character": 10
 								}
 							],
@@ -2188,8 +2194,14 @@
 									"kindString": "Call signature",
 									"flags": {},
 									"comment": {
-										"shortText": "This is a callback-based version of [[`RStreamsSdk.offloadEvents`]].",
-										"text": "It reads events from a queue to do general processing (such as write to an external DB).  It's called\noffload because it is commonly used to process events and offload them to external resources\nsuch as ElasticSearch or other databases that are off of the RStreams Bus.\n\nIt reads from the queue specified in `opts` and then calls the `opts.transform` function passing in the\nevents retrieved so they may be processed.\n"
+										"shortText": "This is a callback-based version of the [[`RStreamsSdk.offloadEvents`]] function and should no longer be used.\nCallback-based API flavors will be phased out over time.",
+										"text": "It reads events from a queue to do general processing (such as write to an external DB).  It's called\noffload because it is commonly used to process events and offload them to external resources\nsuch as ElasticSearch or other databases that are off of the RStreams Bus.\n\nIt reads from the queue specified in `opts` and then calls the `opts.transform` function passing in the\nevents retrieved so they may be processed.\n",
+										"tags": [
+											{
+												"tag": "deprecated",
+												"text": "Please use [[`RStreamsSdk.offloadEvents`]]"
+											}
+										]
 									},
 									"typeParameter": [
 										{
@@ -2378,7 +2390,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 985,
+									"line": 995,
 									"character": 10
 								}
 							],
@@ -4636,7 +4648,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 996,
+									"line": 1006,
 									"character": 7
 								}
 							],
@@ -8102,7 +8114,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1109,
+									"line": 1123,
 									"character": 10
 								}
 							],
@@ -8114,8 +8126,15 @@
 									"kindString": "Call signature",
 									"flags": {},
 									"comment": {
-										"shortText": "This creates a pipeline step that takes events in of type T, allows your code to process it and then\nyou send an event of type U to the the next pipeline step.",
-										"returns": "The pipeline step that is ready to be used in a pipeline"
+										"shortText": "This is for internal SDK use only and is no longer needed externally but remains here for\nbackward compatibility.",
+										"text": "This creates a pipeline step that takes events in of type T, allows your code to process it and then\nyou send an event of type U to the the next pipeline step.\n",
+										"returns": "The pipeline step that is ready to be used in a pipeline",
+										"tags": [
+											{
+												"tag": "internal",
+												"text": ""
+											}
+										]
 									},
 									"typeParameter": [
 										{
@@ -8365,7 +8384,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 770,
+									"line": 773,
 									"character": 10
 								}
 							],
@@ -8441,7 +8460,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 774,
+																	"line": 777,
 																	"character": 2
 																}
 															],
@@ -8462,7 +8481,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 781,
+																	"line": 784,
 																	"character": 2
 																}
 															],
@@ -8505,7 +8524,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 935,
+									"line": 945,
 									"character": 7
 								}
 							],
@@ -8547,7 +8566,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 710,
+									"line": 713,
 									"character": 7
 								}
 							],
@@ -8559,12 +8578,13 @@
 									"kindString": "Call signature",
 									"flags": {},
 									"comment": {
-										"shortText": "This creates a callback based pipeline step that will take data in, possibly transform the data or do computation, and then\nsends the result on to the next step in the pipeline.",
-										"returns": "The pipeline step that is ready to be used in a pipeline\n",
+										"shortText": "This is a callback-based version of the [[`RStreamsSdk.throughAsync`]] function and should no longer be used.\nCallback-based API flavors will be phased out over time.",
+										"text": "This creates a callback based pipeline step that will take data in, possibly transform the data or do computation, and then\nsends the result on to the next step in the pipeline.\n",
+										"returns": "The pipeline step that is ready to be used in a pipeline",
 										"tags": [
 											{
-												"tag": "see",
-												"text": "[[`throughAsync`]]"
+												"tag": "deprecated",
+												"text": "Please use [[`RStreamsSdk.throughAsync`]]\n"
 											}
 										]
 									},
@@ -8749,7 +8769,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 736,
+									"line": 739,
 									"character": 7
 								}
 							],
@@ -8995,7 +9015,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1079,
+									"line": 1089,
 									"character": 7
 								}
 							],
@@ -9082,7 +9102,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 794,
+									"line": 800,
 									"character": 10
 								}
 							],
@@ -9094,7 +9114,8 @@
 									"kindString": "Call signature",
 									"flags": {},
 									"comment": {
-										"shortText": "Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.",
+										"shortText": "This is only to be used internally by the SDK.  It used to be necessary externally and so remains\nfor backward comaptibiliy.",
+										"text": "Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.\n",
 										"returns": "The pipeline step that is ready to be used in a pipeline\n",
 										"tags": [
 											{
@@ -9145,7 +9166,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1046,
+									"line": 1056,
 									"character": 10
 								}
 							],
@@ -9202,7 +9223,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1047,
+																	"line": 1057,
 																	"character": 2
 																}
 															],
@@ -9220,7 +9241,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1048,
+																	"line": 1058,
 																	"character": 2
 																}
 															],
@@ -9240,7 +9261,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1049,
+																	"line": 1059,
 																	"character": 2
 																}
 															],
@@ -9260,7 +9281,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1050,
+																	"line": 1060,
 																	"character": 2
 																}
 															],
@@ -9280,7 +9301,7 @@
 															"sources": [
 																{
 																	"fileName": "lib/lib.d.ts",
-																	"line": 1051,
+																	"line": 1061,
 																	"character": 2
 																}
 															],
@@ -9327,7 +9348,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 824,
+									"line": 830,
 									"character": 10
 								}
 							],
@@ -9419,7 +9440,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 1009,
+									"line": 1019,
 									"character": 10
 								}
 							],
@@ -9482,7 +9503,7 @@
 							"sources": [
 								{
 									"fileName": "lib/lib.d.ts",
-									"line": 746,
+									"line": 749,
 									"character": 7
 								}
 							],
@@ -9785,7 +9806,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 205,
+									"line": 208,
 									"character": 1
 								}
 							],
@@ -9810,7 +9831,7 @@
 											"sources": [
 												{
 													"fileName": "index.d.ts",
-													"line": 213,
+													"line": 216,
 													"character": 2
 												}
 											],
@@ -9833,7 +9854,7 @@
 											"sources": [
 												{
 													"fileName": "index.d.ts",
-													"line": 207,
+													"line": 210,
 													"character": 2
 												}
 											],
@@ -9855,7 +9876,7 @@
 											"sources": [
 												{
 													"fileName": "index.d.ts",
-													"line": 210,
+													"line": 213,
 													"character": 2
 												}
 											],
@@ -9893,7 +9914,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 204,
+									"line": 207,
 									"character": 1
 								}
 							],
@@ -9990,7 +10011,8 @@
 											"kindString": "Call signature",
 											"flags": {},
 											"comment": {
-												"shortText": "Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.",
+												"shortText": "This is only to be used internally by the SDK.  It used to be necessary externally and so remains\nfor backward comaptibiliy.",
+												"text": "Creates a pipeline step that will checkpoint and then pass the events on to the next step in the pipeline.\n",
 												"returns": "The pipeline step that is ready to be used in a pipeline\n",
 												"tags": [
 													{
@@ -10043,7 +10065,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 236,
+									"line": 239,
 									"character": 1
 								}
 							],
@@ -10179,7 +10201,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 220,
+									"line": 223,
 									"character": 1
 								}
 							],
@@ -10289,8 +10311,14 @@
 											"kindString": "Call signature",
 											"flags": {},
 											"comment": {
-												"shortText": "This is a callback-based version of the [[`RStreamsSdk.enrichEvents`]] function.",
-												"text": "It reads events from one queue and writes them to another queue.  Put another way,\nan enrich operation reads events from a source `inQueue` and then writes them to a destination `outQueue`,\nallowing for side effects or transformation in the process.\n\nThe [[`EnrichOptions.transform`]] function\nis called when events are retrieved from the source queue so you can transform them and send them to the\ndestination queue by calling the callback in the transform function.  The callback here as the second argument\nof this function is meant to be called when all enriching is done on all events (right before it closes down the stream),\nallowing you to do clean up like closing a DB connection or something.\n"
+												"shortText": "This is a callback-based version of the [[`RStreamsSdk.enrichEvents`]] function and should no longer be used.\nCallback-based API flavors will be phased out over time.",
+												"text": "It reads events from one queue and writes them to another queue.  Put another way,\nan enrich operation reads events from a source `inQueue` and then writes them to a destination `outQueue`,\nallowing for side effects or transformation in the process.\n\nThe [[`EnrichOptions.transform`]] function\nis called when events are retrieved from the source queue so you can transform them and send them to the\ndestination queue by calling the callback in the transform function.  The callback here as the second argument\nof this function is meant to be called when all enriching is done on all events (right before it closes down the stream),\nallowing you to do clean up like closing a DB connection or something.\n",
+												"tags": [
+													{
+														"tag": "deprecated",
+														"text": "Please use [[`RStreamsSdk.enrichEvents`]]"
+													}
+												]
 											},
 											"typeParameter": [
 												{
@@ -10718,8 +10746,14 @@
 											"kindString": "Call signature",
 											"flags": {},
 											"comment": {
-												"shortText": "This is a callback-based version of [[`RStreamsSdk.offloadEvents`]].",
-												"text": "It reads events from a queue to do general processing (such as write to an external DB).  It's called\noffload because it is commonly used to process events and offload them to external resources\nsuch as ElasticSearch or other databases that are off of the RStreams Bus.\n\nIt reads from the queue specified in `opts` and then calls the `opts.transform` function passing in the\nevents retrieved so they may be processed.\n"
+												"shortText": "This is a callback-based version of the [[`RStreamsSdk.offloadEvents`]] function and should no longer be used.\nCallback-based API flavors will be phased out over time.",
+												"text": "It reads events from a queue to do general processing (such as write to an external DB).  It's called\noffload because it is commonly used to process events and offload them to external resources\nsuch as ElasticSearch or other databases that are off of the RStreams Bus.\n\nIt reads from the queue specified in `opts` and then calls the `opts.transform` function passing in the\nevents retrieved so they may be processed.\n",
+												"tags": [
+													{
+														"tag": "deprecated",
+														"text": "Please use [[`RStreamsSdk.offloadEvents`]]"
+													}
+												]
 											},
 											"typeParameter": [
 												{
@@ -10932,7 +10966,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 182,
+									"line": 185,
 									"character": 1
 								}
 							],
@@ -10952,11 +10986,12 @@
 											"kindString": "Method",
 											"flags": {},
 											"comment": {
-												"shortText": "A callback-based function to write a single event to an RStreams queue.  There are occasions where\nthis is useful, perhaps inside a pipeline step.",
+												"shortText": "This is a callback-based version of the [[`RStreamsSdk.putEvent`]] function and should no longer be used.\nCallback-based API flavors will be phased out over time.",
+												"text": "A callback-based function to write a single event to an RStreams queue.  There are occasions where\nthis is useful, perhaps inside a pipeline step.\n",
 												"tags": [
 													{
-														"tag": "see",
-														"text": "[[`RStreamsSdk.putEvents`]] An async/await friendly version of this function."
+														"tag": "deprecated",
+														"text": "Please use [[`RStreamsSdk.putEvent`]]"
 													}
 												]
 											},
@@ -11067,7 +11102,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 196,
+									"line": 199,
 									"character": 1
 								}
 							],
@@ -11304,7 +11339,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 200,
+									"line": 203,
 									"character": 1
 								}
 							],
@@ -12837,7 +12872,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 252,
+									"line": 255,
 									"character": 1
 								}
 							],
@@ -12860,7 +12895,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 249,
+									"line": 252,
 									"character": 1
 								}
 							],
@@ -12883,7 +12918,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 247,
+							"line": 250,
 							"character": 17
 						}
 					]
@@ -16597,7 +16632,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 242,
+							"line": 245,
 							"character": 20
 						}
 					],
@@ -16628,7 +16663,7 @@
 							"sources": [
 								{
 									"fileName": "index.d.ts",
-									"line": 242,
+									"line": 245,
 									"character": 49
 								}
 							],
@@ -16751,7 +16786,7 @@
 					"sources": [
 						{
 							"fileName": "index.d.ts",
-							"line": 260,
+							"line": 263,
 							"character": 17
 						}
 					],
