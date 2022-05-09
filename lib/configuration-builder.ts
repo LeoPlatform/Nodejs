@@ -1,5 +1,6 @@
 import aws from "./aws-sdk-sync";
-
+import leolog from "leo-logger"
+const logger = leolog("configuration-builder");
 
 export interface ConfigOptions {
 	stageEnvVar?: string;
@@ -42,6 +43,7 @@ export class ConfigurationBuilder<T> {
 	constructor(private data: ConfigurationData) { }
 
 	build(options: ConfigOptions = {}): T {
+		logger.time("get-config");
 		options.stage = options.stage || process.env.STAGE || process.env.ENVIRONMENT || process.env.LEO_ENVIRONMENT;
 		options.region = options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1";
 		let g = (global as any);
@@ -54,20 +56,30 @@ export class ConfigurationBuilder<T> {
 		}
 
 		if (typeof this.data === "string") {
-			if (this.data.match(/^{.*}$/)) {
+			if (this.data.startsWith("{") && this.data.endsWith("}")) {
 				// config is a json string
-				this.data = JSON.stringify(this.data);
+				// Secrets that are resolved at deploy time and reference objects
+				// get injected without escaping quotes eg.  {"secret":"{"key1":"value1"}"}
+				// TODO: there could be a bug where a valid string starts with { or ends with }
+				// What is the best way to handle this
+				this.data = this.data.replace(/"{/g, '{').replace(/}"/, "}");
+				this.data = JSON.parse(this.data);
 			} else {
 				// config is the key to a secret
+
+				logger.time("get-rsf-config");
 				this.data = JSON.parse(new aws.SecretsManager({
 					region: options.region
 				}).getSecretValue({
 					SecretId: this.data
 				}).SecretString);
+				logger.timeEnd("get-rsf-config");
 			}
 		}
 
-		return this.resolve(this.data, g.rstreams_project_config_cache, options) as T;
+		let result = this.resolve(this.data, g.rstreams_project_config_cache, options) as T;
+		logger.timeEnd("get-config");
+		return result;
 
 	}
 
@@ -85,11 +97,11 @@ export class ConfigurationBuilder<T> {
 					key,
 					type,
 					options: opts && inferTypes((opts).split(';').reduce((all, one) => {
-						let [key, value] = one.split('=')
+						let [key, value] = one.split('=');
 						if (key !== '') {
-							all[key] = value == null ? true : value
+							all[key] = value == null ? true : value;
 						}
-						return all
+						return all;
 					}, {}))
 				}
 			}
@@ -145,15 +157,15 @@ export class ConfigurationBuilder<T> {
 	}
 
 	static Resolvers = {
-		ssm: (ref: ResourceReference) => {
-			return process.env[`RS_ssm::${resolveKeywords(ref.key, ref.options)}`];
-		},
-		cf: (ref: ResourceReference) => {
-			return process.env[`RS_cf::${resolveKeywords(ref.key, ref.options)}`];
-		},
-		stack: (ref: ResourceReference) => {
-			return process.env[`RS_stack::${resolveKeywords(ref.key, ref.options)}`];
-		},
+		// ssm: (ref: ResourceReference) => {
+		// 	return process.env[`RS_ssm::${resolveKeywords(ref.key, ref.options)}`];
+		// },
+		// cf: (ref: ResourceReference) => {
+		// 	return process.env[`RS_cf::${resolveKeywords(ref.key, ref.options)}`];
+		// },
+		// stack: (ref: ResourceReference) => {
+		// 	return process.env[`RS_stack::${resolveKeywords(ref.key, ref.options)}`];
+		// },
 		secret: (ref: ResourceReference, cache: any) => {
 			let resolvedKey = resolveKeywords(ref.key, ref.options);
 			if (process.env[`RS_secret::${resolvedKey}`] && !process.env[`RS_secret::${resolvedKey}`].match(/^(true|false)$/)) {
@@ -162,20 +174,24 @@ export class ConfigurationBuilder<T> {
 			let [, key, path] = resolvedKey.match(/^(.*?)(?:\.(.*))?$/);
 			let cacheKey = `secret::${key}`;
 			let cachedValue = cache[cacheKey];
-			let envValue = process.env[`RS_${cacheKey}`]
+			//let envValue = process.env[`RS_${cacheKey}`]
 			if (cachedValue == null) {
-				if (envValue === "true") {
-					let value = JSON.parse(new aws.SecretsManager({
-						region: ref.options?.region
-					}).getSecretValue({
-						SecretId: resolveKeywords(key, ref.options)
-					}).SecretString);
-					cache[cacheKey] = value;
-					cachedValue = value;
-				} else if (envValue != null) {
-					cachedValue = JSON.parse(envValue);
-					cache[cacheKey] = cachedValue;
-				}
+				//if (envValue === "true") {
+				logger.log(`SecretsManager  Key: ${key}, Region:${ref.options?.region}`);
+
+				logger.time("secret-get");
+				let value = JSON.parse(new aws.SecretsManager({
+					region: ref.options?.region
+				}).getSecretValue({
+					SecretId: resolveKeywords(key, ref.options)
+				}).SecretString);
+				logger.timeEnd("secret-get");
+				cache[cacheKey] = value;
+				cachedValue = value;
+				// } else if (envValue != null) {
+				// 	cachedValue = JSON.parse(envValue);
+				// 	cache[cacheKey] = cachedValue;
+				// }
 			}
 			return getDataSafe(cachedValue, path);
 		}
@@ -205,7 +221,7 @@ const numberRegex = /^\d+(?:\.\d*)?$/;
 const boolRegex = /^(?:false|true)$/i;
 const nullRegex = /^null$/;
 const undefinedRegex = /^undefined$/;
-const jsonRegex = /^{.*}$/;
+const jsonRegex = /^{(.|\n)*}$/;
 
 function inferTypes(node) {
 	let type = typeof node;
