@@ -113,9 +113,15 @@ export declare class RStreamsSdk {
 	enrich: typeof StreamUtil.enrich;
 	/** @method */
 	read: typeof StreamUtil.fromLeo;
-	/** @method */
+	/** 
+     * @internal
+     * @method 
+     */
 	write: typeof StreamUtil.toLeo;
-	/** @method */
+	/** 
+     * @internal
+     * @method
+     */
 	checkpoint: typeof StreamUtil.toCheckpoint;
 
 	/**
@@ -159,6 +165,9 @@ export declare class RStreamsSdk {
 	offloadEvents: <T>(config: OffloadOptions<T> | OffloadBatchOptions<T>) => void;
 
 	/**
+	 * This is a callback-based version of the [[`RStreamsSdk.putEvent`]] function and should no longer be used.
+	 * Callback-based API flavors will be phased out over time.
+	 * 
 	 * A callback-based function to write a single event to an RStreams queue.  There are occasions where
 	 * this is useful, perhaps inside a pipeline step.
 	 *
@@ -167,7 +176,7 @@ export declare class RStreamsSdk {
 	 * @param outQueue The name of the queue to write to
 	 * @param payload The data to write to the queue
 	 * @param callback The function to call when done
-	 * @see [[`RStreamsSdk.putEvents`]] An async/await friendly version of this function.
+	 * @deprecated Please use [[`RStreamsSdk.putEvent`]]
 	 * @method
 	 * @todo inconsistent bot_id
 	 * @todo question offload and enrich are just pass throughs to StreamUtil.offload/enrich. Why isn't this one also?  Why is it actually defined here?
