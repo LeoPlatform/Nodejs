@@ -9,17 +9,22 @@
         "../lib/rstreams-configuration.ts"
     ],
     "out": "build",
+	"name": "RStreams Node SDK",
+	"includeVersion": true,
     "gitRevision": "master",
     "tsconfig": "../tsconfig.json",
+    "theme": "mydefault",
     "excludeTags": [
         "todo"
     ],
-    "replace-in-comments-config": [
-        {
-            "pattern": "rstreams-site-url",
-            "replace": "https://rstreams.org"
-        }
-    ],
+    "replaceText": {
+        "replacements": [
+            {
+                "pattern": "rstreams-site-url",
+                "replace": "https://rstreams.org"
+            }
+        ]
+    },
     "defaultCategory": " ",
     "categorizeByGroup": true
 }

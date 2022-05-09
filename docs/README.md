@@ -6,15 +6,11 @@
 
 1. typedoc replace plugin
 
-    ``npm install typedoc-plugin-replace-in-comments --save-dev``
+    ``npm install typedoc-plugin-replace-text --save-dev``
 
     Used to replace these variables in the TypeDoc comments
 
     * **rstreams-site-url** => https://rstreams.org
-
-1. post processing replace in file
-   
-   ``npm install replace-in-file --save-dev``
 
 1. stop inheriting docs when I don't want it to plugin
 
@@ -22,12 +18,12 @@
 
    then use `@noInheritDoc` 
 
-1. Add rstreams-specific typedoc plugin located in docs/typedoc-plugin-rstreams.  The top-level package.json's
+<!-- 1. Add rstreams-specific typedoc plugin located in docs/typedoc-plugin-rstreams.  The top-level package.json's
    preinstall will automatically run anytime npm install is run that will also npm install in the 
    docs/typedoc-plugin-rstreams directory as well as compile the typescript.  Then, the npm install will continue
    and references the just built plugin locally.
    
-   ``npm add -D ./docs/typedoc-plugin-rstreams``
+   ``npm add -D ./docs/typedoc-plugin-rstreams`` -->
 
 1. installed VSCode extension Todo Tree to see @todo's in code, a new icon on the far left called TODO's will show up.
    Change the background/foreground highlight if you don't like the yellow color that shows up in the code

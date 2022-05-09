@@ -498,6 +498,7 @@ export function counter<T>(records?: number): TransformStream<T, T>;
  * @typeParam T The type of the data sent into the function to be processed
  * @typeParam U The type of the data you send on after being processed
  * 
+ * @internal
  * @param id The name of the bot act as
  * @param func The function to process data, getting data of type T and returning data of type U
  * @param outQueue The queue to send the resulting data to
