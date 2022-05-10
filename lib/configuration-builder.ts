@@ -52,7 +52,13 @@ export class ConfigurationBuilder<T> {
 		}
 
 		if (this.data == null) {
-			this.data = process.env.RSF_CONFIG;
+			if (process.env.RSF_CONFIG) {
+				this.data = process.env.RSF_CONFIG;
+			} else if ((process as any).rsf_config) {
+				this.data = (process as any).rsf_config;
+			} else if (global.rsf_config) {
+				this.data = global.rsf_config;
+			}
 		}
 
 		if (typeof this.data === "string") {
