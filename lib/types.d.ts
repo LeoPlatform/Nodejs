@@ -66,7 +66,7 @@ export interface WritableStream<T> extends stream.Writable {
 	 * 
 	 * @param chunk The object to push into the stream
 	 * @param callback Will call callback if there's an error
-	 * @returns ??
+	 * @returns true if more events can be written and false if you need to back off sending events
 	 * @todo question what's the boolean that is returned
 	 */
 	write(chunk: T, callback?: (error: Error | null | undefined) => void): boolean;
@@ -78,7 +78,7 @@ export interface WritableStream<T> extends stream.Writable {
 	 * @param chunk The object to push into the stream
 	 * @param encoding Not needed due to object mode of stream
 	 * @param callback Optional for RStreams, will call callback if there's an error.
-	 * @returns ??
+	 * @returns true if more events can be written and false if you need to back off sending events
 	 * @todo question what's the boolean that is returned
 	 */
 	write(chunk: T, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): boolean;
@@ -131,7 +131,8 @@ export declare type DuplexStream<T, U> = TransformStream<T, U>;
  * @typeParam U The type of data that will flow out of the `TransformStream` and continue on to the next pipe step
  * @todo review
  */
-export interface TransformStream<T, U> extends stream.Duplex {
+declare type TransformStreamType<T, U> = stream.Duplex & ReadableStream<U> & WritableStream<T>
+export interface TransformStream<T, U> extends TransformStreamType<T, U> {
 	/**
 	 * An internal function.  Don't use it.
 	 * 
