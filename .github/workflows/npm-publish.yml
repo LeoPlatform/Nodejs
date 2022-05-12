@@ -35,7 +35,7 @@ jobs:
       - run: echo version ${{steps.extract_version.outputs.version}}
       - run: echo tag ${{steps.extract_tag.outputs.tag}}
 
-      - run: npm version ${{steps.extract_version.outputs.version}} --no-git-tag-version
+      - run: npm version ${{steps.extract_version.outputs.version}} --no-git-tag-version --allow-same-version
 
       - if: steps.extract_tag.outputs.tag == github.ref
         run: npm publish
