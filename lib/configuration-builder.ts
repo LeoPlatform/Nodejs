@@ -1,5 +1,7 @@
 import aws from "./aws-sdk-sync";
-import leolog from "leo-logger"
+import leolog from "leo-logger";
+import path from "path";
+import fs from "fs";
 const logger = leolog("configuration-builder");
 
 export interface ConfigOptions {
@@ -44,6 +46,23 @@ export class ConfigurationBuilder<T> {
 
 	build(options: ConfigOptions = {}): T {
 		logger.time("get-config");
+
+		let fileCache = path.resolve(".rsf/config.json");
+		if (process.env.IS_LOCAL === "true" && fs.existsSync(fileCache)) {
+			let stat = fs.statSync(fileCache);
+			let duration = Math.floor((Date.now() - stat.mtimeMs) / 1000);
+
+			// Default cache duration is 30 min
+			let validCacheDuration = (+process.env.RSF_CACHE_SECONDS) || 1800;
+			if (duration < validCacheDuration) {
+				try {
+					return module.require(fileCache);
+				} catch (e) {
+					// Error getting cache
+				}
+			}
+		}
+
 		options.stage = options.stage || process.env.STAGE || process.env.ENVIRONMENT || process.env.LEO_ENVIRONMENT;
 		options.region = options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1";
 		let g = (global as any);
@@ -83,7 +102,31 @@ export class ConfigurationBuilder<T> {
 			}
 		}
 
+		// Allow extra env vars to be defined as RSF_CONFIG_some.new.field=my_value
+		Object.entries(process.env).forEach(([key, value]) => {
+			const a = (key.match(/^RSF_CONFIG_(.*)$/) || [])[1];
+			if (a) {
+				let parts = a.split(".");
+				let lastPart = parts.pop();
+				let parent = parts.reduce((a, b) => {
+					a[b] = a[b] || {};
+					return a[b];
+				}, this.data);
+				parent[lastPart] = inferTypes(value);
+			}
+		});
+
 		let result = this.resolve(this.data, g.rstreams_project_config_cache, options) as T;
+
+		if (process.env.IS_LOCAL === "true") {
+			try {
+
+				fs.mkdirSync(path.dirname(fileCache), { recursive: true });
+				fs.writeFileSync(fileCache, JSON.stringify(result, null, 2));
+			} catch (e) {
+				// Error writing cache
+			}
+		}
 		logger.timeEnd("get-config");
 		return result;
 
@@ -109,7 +152,7 @@ export class ConfigurationBuilder<T> {
 						}
 						return all;
 					}, {}))
-				}
+				};
 			}
 
 			if (this.isResourceReference(value)) {
@@ -201,7 +244,7 @@ export class ConfigurationBuilder<T> {
 			}
 			return getDataSafe(cachedValue, path);
 		}
-	}
+	};
 }
 
 function resolveKeywords(template: string, data: any) {

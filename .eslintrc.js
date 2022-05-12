@@ -25,14 +25,15 @@ module.exports = {
 		"no-console": "off",
 		"indent": [
 			"error",
-			"tab"
+			"tab",
+			{ "SwitchCase": 1 }
 		],
 		"semi": [
 			"error",
 			"always"
 		],
 		"@typescript-eslint/no-var-requires": "off",
-		"@typescript-eslint/no-inferrable-types":"off",
+		"@typescript-eslint/no-inferrable-types": "off",
 		"@typescript-eslint/no-empty-interface": "off",
 
 		/* Should Be Enable */
