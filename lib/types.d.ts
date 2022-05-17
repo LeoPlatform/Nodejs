@@ -428,6 +428,23 @@ export interface BotInvocationEvent {
 	__cron: Cron,
 }
 
+
+export interface RSFBotInvocationEvent extends BotInvocationEvent {
+	prefix?: string;
+	suffix?: string;
+	botNumber: number;
+	botCount?: number;
+}
+
+export interface RSFCronBotInvocationEvent extends RSFBotInvocationEvent {
+}
+
+export interface RSFQueueBotInvocationEvent extends RSFBotInvocationEvent {
+	source: string;
+	queue: string;
+	destination?: string;
+}
+
 /**
  * First, remember that for legacy reasons `Cron` really means `Bot`.  This is details
  * about a bot.
