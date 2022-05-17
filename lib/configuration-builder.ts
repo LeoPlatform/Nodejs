@@ -47,7 +47,7 @@ export class ConfigurationBuilder<T> {
 	build(options: ConfigOptions = {}): T {
 		logger.time("get-config");
 
-		let fileCache = path.resolve(".rsf/config.json");
+		let fileCache = path.resolve(`.rsf/config-${process.env.AWS_REGION}-${process.env.RSF_INVOKE_STAGE}.json`);
 		if (process.env.IS_LOCAL === "true" && fs.existsSync(fileCache)) {
 			let stat = fs.statSync(fileCache);
 			let duration = Math.floor((Date.now() - stat.mtimeMs) / 1000);
