@@ -473,7 +473,7 @@ export interface Cron {
 	force?: boolean;
 
 	/** For local dev, skip the locking process altogether for guaranteing only one instance of the bot runs */
-	ignore_lock?: boolean;
+	ignoreLock?: boolean;
 
 	//  time: i64;
 
