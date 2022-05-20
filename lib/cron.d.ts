@@ -1,5 +1,6 @@
 import { AWSError } from "aws-sdk";
 import moment, { Moment } from "moment";
+import { Checkpoints, Cron } from "./types";
 
 /**
  * Defines a callback function that takes an error object.
@@ -14,28 +15,52 @@ export declare type Callback<E> = (err: E) => void;
  */
 declare type DataCallback<E, T> = (err: E, data: T) => void;
 
+type InstanceStatus = "error" | "complete";
+
 /**
  * @todo question What is this here for?
  */
-interface CronData {
+export interface InstanceData {
 
+	invokeTime?: number;
+	startTime?: number;
+	completedTime?: number;
+
+	maxDuration?: number;
+
+	status?: InstanceStatus;
+	requestId?: string;
+	log?: Buffer;
+	result?: Buffer;
 }
 
-/**
- * @todo question What is this here for?
- */
-interface InstanceData { }
+type ExecutionType = "lambda" | "fargate";
 
 /**
  * @todo question What is this here for?
  */
-interface BotData { }
+export interface BotData<Settings = unknown> {
+	id: string;
+	checkpoints: Checkpoints,
+
+	lambdaName: string,
+	name?: string,
+	description?: string,
+	lambda: {
+		settings: Settings[]
+	}
+	time?: string,
+	triggers?: string[],
+	executionType: ExecutionType,
+	instances: Record<string, InstanceData>,
+	requested_kinesis: Record<string, string>
+}
 
 /**
  * Options for reporting a bot is done.
  * @todo review
  */
-interface ReportCompleteOptions {
+export interface ReportCompleteOptions {
 	/** If true, force the bot to be marked completed. */
 	forceComplete?: boolean;
 }
@@ -154,7 +179,7 @@ export interface LeoCron {
 	 * @param callback A callback that will be called if something goes wrong
 	 * @todo question cron is the first arg but it's an empty type definition, what is it for?
 	 */
-	checkLock: (cron: CronData, runid: string, remainingTime: Milliseconds, callback: Callback<AWSError>) => void;
+	checkLock: (cron: Cron, runid: string, remainingTime: Milliseconds, callback: Callback<AWSError>) => void;
 
 	/**
 	 * Mark a bot done running.
@@ -168,7 +193,7 @@ export interface LeoCron {
 	 * 
 	 * @todo question what does forcing a bot to complete mean, remove the lock?
 	 */
-	reportComplete: (cron: CronData, runid: string, status: string, log: any, opts: ReportCompleteOptions, callback: Callback<AWSError>) => void;
+	reportComplete: (cron: Cron, runid: string, status: string, log: any, opts: ReportCompleteOptions, callback: Callback<AWSError>) => void;
 
 	/**
 	 * Lock the given bot, marking it as currently running.  Only one instance of a bot is meant to be running
@@ -267,7 +292,7 @@ export interface LeoCron {
 	 * @internal Don't use.
 	 * @todo docbug preg/opts missing types
 	 */
-	buildPayloads: (cron: CronData, prev, opts) => void;
+	buildPayloads: (cron: Cron, prev, opts) => void;
 
 	/**
 	 * @internal Don't use.
@@ -305,7 +330,7 @@ export interface LeoCron {
 	 * 
 	 * @todo docbug types missing?
 	 */
-	createBot: (id: string, bot, opts) => void;
+	createBot: (id: string, bot, opts?) => Promise<BotData>;
 }
 
 export default function (config: any): LeoCron;
