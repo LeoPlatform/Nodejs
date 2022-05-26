@@ -8,16 +8,9 @@ import { CorrelationId, ReadEvent } from "../lib/types";
 chai.use(sinonchai);
 let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
 
-let mockSdkConfig = {
-	Region: "mock-Region",
-	LeoStream: "mock-LeoStream",
-	LeoCron: "mock-LeoCron",
-	LeoEvent: "mock-LeoEvent",
-	LeoS3: "mock-leos3",
-	LeoKinesisStream: "mock-LeoKinesisStream",
-	LeoFirehoseStream: "mock-LeoFirehoseStream",
-	LeoSettings: "mock-LeoSettings",
-};
+function deepEqualRemoveUndefined<T extends Record<any, any>>(actual: T, expected: T, message?: string) {
+	return assert.deepEqual(JSON.parse(JSON.stringify(actual)), JSON.parse(JSON.stringify(expected)), message);
+}
 
 describe("leo-stream", function () {
 	let sandbox;
@@ -153,7 +146,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -282,7 +275,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -364,7 +357,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -456,7 +449,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -560,7 +553,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -754,7 +747,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -864,7 +857,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -974,7 +967,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -1129,7 +1122,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -1258,7 +1251,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -1340,7 +1333,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -1432,7 +1425,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -1586,7 +1579,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -1690,7 +1683,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -1887,7 +1880,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -1997,7 +1990,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -2157,7 +2150,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -2267,7 +2260,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -2421,7 +2414,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -2588,7 +2581,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -2688,7 +2681,7 @@ describe("leo-stream", function () {
 					})
 				);
 
-				assert.deepEqual(result, [
+				deepEqualRemoveUndefined(result, [
 					{
 						"correlation_id": {
 							"source": "SourceQueue",
@@ -2742,10 +2735,10 @@ describe("leo-stream", function () {
 				]);
 			});
 		});
-    });
-		// batch
-		// flush
-		// sync
+	});
+	// batch
+	// flush
+	// sync
 
 	describe("createCorrelation", function () {
 		it("single event", function () {
@@ -2755,7 +2748,7 @@ describe("leo-stream", function () {
 				eid: "z/1234",
 				payload: {}
 			};
-			assert.deepEqual(ls.createCorrelation(event), {
+			deepEqualRemoveUndefined(ls.createCorrelation(event), {
 				source: "MyQueue",
 				start: "z/1234",
 				end: undefined,
@@ -2775,7 +2768,7 @@ describe("leo-stream", function () {
 				eid: "z/12345",
 				payload: {}
 			};
-			assert.deepEqual(ls.createCorrelation(event, { partial: true }), {
+			deepEqualRemoveUndefined(ls.createCorrelation(event, { partial: true }), {
 				source: "MyQueue",
 				partial_start: "z/12345",
 				partial_end: undefined,
@@ -2798,7 +2791,7 @@ describe("leo-stream", function () {
 				eid: "z/1234567",
 				payload: {}
 			};
-			assert.deepEqual(ls.createCorrelation(startEvent, endEvent, 100), {
+			deepEqualRemoveUndefined(ls.createCorrelation(startEvent, endEvent, 100), {
 				source: "MyQueue",
 				start: "z/12345",
 				end: "z/1234567",
@@ -2819,7 +2812,7 @@ describe("leo-stream", function () {
 				eid: "z/12345678",
 				payload: {}
 			};
-			assert.deepEqual(ls.createCorrelation(startEvent, endEvent, 100, { partial: true }), {
+			deepEqualRemoveUndefined(ls.createCorrelation(startEvent, endEvent, 100, { partial: true }), {
 				source: "MyQueue",
 				partial_start: "z/123456",
 				partial_end: "z/12345678",
@@ -2840,7 +2833,7 @@ describe("leo-stream", function () {
 				eid: "z/123456789",
 				payload: {}
 			}];
-			assert.deepEqual(ls.createCorrelation(events), {
+			deepEqualRemoveUndefined(ls.createCorrelation(events), {
 				source: "MyQueue",
 				start: "z/1234567",
 				end: "z/123456789",
@@ -2859,7 +2852,7 @@ describe("leo-stream", function () {
 				eid: "z/123456789",
 				payload: {}
 			}];
-			assert.deepEqual(ls.createCorrelation(events, { partial: true }), {
+			deepEqualRemoveUndefined(ls.createCorrelation(events, { partial: true }), {
 				source: "MyQueue",
 				partial_start: "z/1234567",
 				partial_end: "z/123456789",

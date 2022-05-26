@@ -34,6 +34,12 @@ export interface InstanceData {
 	result?: Buffer;
 }
 
+export interface ReadFilterGroup {
+	eid: string;
+	icount: number;
+	ts: number;
+}
+
 type ExecutionType = "lambda" | "fargate";
 
 /**
@@ -54,6 +60,7 @@ export interface BotData<Settings = unknown> {
 	executionType: ExecutionType,
 	instances: Record<string, InstanceData>,
 	requested_kinesis: Record<string, string>
+	read_filter_groups?: ReadFilterGroup[]
 }
 
 /**
@@ -179,7 +186,7 @@ export interface LeoCron {
 	 * @param callback A callback that will be called if something goes wrong
 	 * @todo question cron is the first arg but it's an empty type definition, what is it for?
 	 */
-	checkLock: (cron: Cron, runid: string, remainingTime: Milliseconds, callback: Callback<AWSError>) => void;
+	checkLock: (cron: Cron & { time?: number }, runid: string, remainingTime: Milliseconds, callback: Callback<AWSError>) => void;
 
 	/**
 	 * Mark a bot done running.
@@ -193,7 +200,7 @@ export interface LeoCron {
 	 * 
 	 * @todo question what does forcing a bot to complete mean, remove the lock?
 	 */
-	reportComplete: (cron: Cron, runid: string, status: string, log: any, opts: ReportCompleteOptions, callback: Callback<AWSError>) => void;
+	reportComplete: (cron: Cron & { result?: any, message?: any }, runid: string, status: string, log: any, opts: ReportCompleteOptions, callback: Callback<AWSError>) => void;
 
 	/**
 	 * Lock the given bot, marking it as currently running.  Only one instance of a bot is meant to be running
@@ -246,7 +253,7 @@ export interface LeoCron {
 	 * @param bot The bot data to save on the bot
 	 * @param callback A callback that will be called if something goes wrong
 	 */
-	update: (bot: BotData, callback: Callback<AWSError>) => void;
+	update: (bot: Partial<BotData> & { id: string }, callback?: Callback<AWSError>) => Promise<BotData>;
 
 	/**
 	 * @todo unclear

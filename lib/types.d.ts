@@ -4,6 +4,7 @@ import { Context } from "aws-lambda";
 import { RStreamsSdk } from "../index";
 /// <reference types="node" />
 import stream from 'stream';
+import { InstanceData } from "./cron";
 // export interface LeoStreamOptions extends stream.TransformOptions {
 //	 ignoreCommands?: any;
 //	 cmd?: any;
@@ -426,6 +427,25 @@ export type BotInvocationEventTyped<T extends any = {}> = T & BotInvocationEvent
 export interface BotInvocationEvent {
 	botId: string,
 	__cron: Cron,
+
+	paused?: boolean,
+	instances?: Record<any, InstanceData>,
+	requested_kinesis?: Record<string, string>,
+	trigger?: number,
+	//type?: string, // cron|??
+	//token?: number,
+	name?: string,
+	scheduledTrigger?: number,
+	progress?: Record<string, string>,
+	//id?: string;
+	errorCount?: number,
+	//startTime?: number,
+	//endTime?: number,
+	//maxDuration?: number,
+	//status?: "complete" | "error",
+	//invokeTime?: number,
+	goals?: Record<string, string>,
+	//lock?: boolean,
 }
 
 
@@ -461,13 +481,13 @@ export interface Cron {
 	 * 
 	 * @todo question is this the same as the ID of the bot or can they differ?
 	 */
-	name: string;
+	name?: string;
 
 	/** 
 	 * The invocation timestamp token which is what is used to lock on to prevent multiple concurrent invocations to the same bot
 	 * @todo question Is this runid which I've seen elsewhere?
 	 */
-	ts: number;
+	ts?: number;
 
 	/** For local dev it will ignore the cron locking and force it to run (will run through the handshake and force it to take the lock) */
 	force?: boolean;

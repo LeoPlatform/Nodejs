@@ -1,10 +1,10 @@
 import { StreamUtil } from "./lib";
-import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions } from "./types";
+import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions, Cron } from "./types";
 import fs from "fs";
 import path from "path";
 import util from "./aws-util";
 import stream from "stream";
-import { Callback, CronData, Milliseconds, ReportCompleteOptions } from "./cron";
+import { Callback, Milliseconds, ReportCompleteOptions } from "./cron";
 import { AWSError } from "aws-sdk";
 import uuid from "uuid";
 
@@ -128,8 +128,8 @@ export default function (leoStream: LeoStream) {
 	};
 
 
-	leoStream.cron.checkLock = (cron: CronData, runid: string, remainingTime: number, callback: Callback<AWSError>) => callback(null);
-	leoStream.cron.reportComplete = (cron: CronData, runid: string, status: string, log: any, opts: ReportCompleteOptions, callback: Callback<AWSError>) => callback(null);
+	leoStream.cron.checkLock = (cron: Cron, runid: string, remainingTime: number, callback: Callback<AWSError>) => callback(null);
+	leoStream.cron.reportComplete = (cron: Cron, runid: string, status: string, log: any, opts: ReportCompleteOptions, callback: Callback<AWSError>) => callback(null);
 	leoStream.cron.createLock = (id: string, runid: string, maxDuration: Milliseconds, callback: Callback<AWSError>) => callback(null);
 	leoStream.cron.removeLock = (id: string, runid: string, callback: Callback<AWSError>) => callback(null);
 
