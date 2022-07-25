@@ -86,8 +86,7 @@ describe('lib/mock-wrapper.ts', function () {
 			wrapper(ls);
 			assert(ls["mocked"], "should be mocked");
 			let data = [];
-			await
-			ls.pipeAsync(
+			await ls.pipeAsync(
 				ls.fromLeo("Mock", "MockQueue"),
 				ls.through((d, done) => {
 					data.push(d);
@@ -152,8 +151,7 @@ describe('lib/mock-wrapper.ts', function () {
 			wrapper(ls);
 			assert(ls["mocked"], "should be mocked");
 			let data = [];
-			await
-			ls.pipeAsync(
+			await ls.pipeAsync(
 				ls.fromLeo("Mock", "MockQueue"),
 				ls.through((d, done) => {
 					data.push(d);
@@ -187,8 +185,7 @@ describe('lib/mock-wrapper.ts', function () {
 			let count = 0;
 			// Override the creating of eids in the wrapper to give a constant
 			(ls as any).eventIdFromTimestamp = () => `z/2022/04/15/23/08/1650064081366-000000${count++}`;
-			await
-			ls.pipeAsync(
+			await ls.pipeAsync(
 				ls.eventstream.readArray([
 					{ event: "MockQueue", id: "MockParentBot", payload: { b: 1, c: true } },
 					{ event: "MockQueue", id: "MockParentBot", payload: { b: 2, c: false } }
@@ -220,8 +217,7 @@ describe('lib/mock-wrapper.ts', function () {
 
 			// Override the creating of eids in the wrapper to give a constant
 			(ls as any).eventIdFromTimestamp = () => "z/2022/04/15/23/08/1650064081366-0000000";
-			await
-			ls.pipeAsync(
+			await ls.pipeAsync(
 				ls.eventstream.readArray([]),
 				ls.toLeo("MOCK")
 			);
@@ -309,7 +305,7 @@ describe('lib/mock-wrapper.ts', function () {
 			wrapper(ls);
 			assert(ls["mocked"], "should be mocked");
 
-			let cron = {};
+			let cron = { id: "SomeBotId" };
 			let runid = "runid-1";
 
 			// verifying they don't throw errors

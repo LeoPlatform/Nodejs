@@ -41,7 +41,7 @@ describe("lib/cron.js", function () {
 
 			await new Promise((resolve, reject) => cron.trigger({
 				id: "MOCK_CRON_ID"
-			}, (err) => { err ? reject(err) : resolve(undefined) }));
+			}, (err) => { err ? reject(err) : resolve(undefined); }));
 
 			expect(update).called;
 			assert.deepEqual(update.getCall(0).args[0],
@@ -84,7 +84,7 @@ describe("lib/cron.js", function () {
 			try {
 				await new Promise((resolve, reject) => cron.trigger({
 					id: "MOCK_CRON_ID"
-				}, (err) => { err ? reject(err) : resolve(undefined) }));
+				}, (err) => { err ? reject(err) : resolve(undefined); }));
 			} catch (err) {
 				error = err;
 			}
@@ -698,7 +698,7 @@ describe("lib/cron.js", function () {
 				}
 			);
 
-			assert.isNotNull(error)
+			assert.isNotNull(error);
 			assert.equal(error.message, "Update Error");
 		});
 	});
@@ -1082,7 +1082,6 @@ describe("lib/cron.js", function () {
 				id: "MOCK_CRON_ID"
 			}, runid, status, log, opts, (err) => err ? reject(err) : resolve(undefined)));
 			expect(update).called;
-
 
 			let args = update.getCall(0).args[0];
 			args.ExpressionAttributeValues[":log"] = JSON.parse(zlib.gunzipSync(args.ExpressionAttributeValues[":log"]).toString());
@@ -1534,7 +1533,7 @@ describe("lib/cron.js", function () {
 				}
 			);
 			assert.isNotNull(error);
-			assert.equal(error.message, "Some Error")
+			assert.equal(error.message, "Some Error");
 		});
 	});
 
@@ -1734,10 +1733,10 @@ describe("lib/cron.js", function () {
 
 	describe("checkpoint", function () {
 
-		function assertInMemoryValue(type: string, queue: string, expected: string | undefined) {
+		function assertInMemoryValue(type: string, queue: string, expected: string | undefined, cpLocation = "checkpoints") {
 			let value;
 			try {
-				value = process["__config"].registry?.__cron?.checkpoints[type][ref(queue)]?.checkpoint;
+				value = process["__config"].registry?.__cron[cpLocation][type][ref(queue)]?.checkpoint;
 			} catch (e) {
 				// nothing
 			}
@@ -1868,7 +1867,7 @@ describe("lib/cron.js", function () {
 				},
 			);
 
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("Read without expected", async function () {
@@ -1938,7 +1937,7 @@ describe("lib/cron.js", function () {
 					"ConditionExpression": "attribute_not_exists(#checkpoints.#type.#event.#checkpoint)"
 				},
 			);
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("different checkpoint location", async function () {
@@ -2000,7 +1999,7 @@ describe("lib/cron.js", function () {
 					"UpdateExpression": "set #checkpoints.#type.#event = :value",
 				},
 			);
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("1", queue, "z/123/456/789", "instances");
 		});
 
 		it("Read undefined value", async function () {
@@ -2061,7 +2060,7 @@ describe("lib/cron.js", function () {
 				},
 			);
 
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("Stale Checkpoint", async function () {
@@ -2374,7 +2373,7 @@ describe("lib/cron.js", function () {
 				},
 			);
 
-			assertInMemoryValue("read", queue, "z/987/654/321");
+			assertInMemoryValue("1", queue, "z/987/654/321", "instances");
 		});
 
 		it("Update Error and exists", async function () {
