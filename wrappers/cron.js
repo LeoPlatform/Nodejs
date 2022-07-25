@@ -139,6 +139,7 @@ module.exports = function(configOverride, botHandler) {
 		leosdk.configuration.registry = config.registry;
 		config.registry.context = context;
 		config.registry.__cron = event.__cron;
+		config.registry.__event = event;
 		global.cron_run_again = false;
 		if (event.__cron && event.__cron.id) { //If it is in cron, use that regardless
 			config.registry.id = event.__cron.id;

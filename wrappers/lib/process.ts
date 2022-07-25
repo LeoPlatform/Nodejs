@@ -1,7 +1,7 @@
 import leoConfig from "../../leoConfigure";
 
 export interface RStreamsProcess extends NodeJS.Process {
-	__config: unknown;
+	__config: Record<string, any>;
 	resources: Record<any, unknown>;
 }
 
@@ -13,7 +13,7 @@ if (rstreamsProcess.__config == null) {
 	rstreamsProcess.resources = process.env.Resources && JSON.parse(process.env.Resources) || {};
 }
 
-export const config = leoConfig;
-export const registry = leoConfig.registry;
+export const config = rstreamsProcess.__config;
+export const registry = rstreamsProcess.__config.registry;
 export const resources = rstreamsProcess.resources;
 export default rstreamsProcess;

@@ -127,11 +127,12 @@ export class RStreamsBot<InvocationEvent, Settings, Result> {
 		return rstreamsContext;
 	}
 
-	setupRegistry(context: Context, _inputEvent: InvocationEvent) {
+	setupRegistry(context: Context, inputEvent: InvocationEvent) {
 
 		empty(config.registry);
 		this.sdk.configuration.registry = config.registry;
 		config.registry.context = context;
+		config.registry.__event = inputEvent;
 
 		global.cron_run_again = false;
 	}

@@ -62,8 +62,8 @@ export class CronProcessor<E extends BotInvocationEvent, T, S> extends Processor
 		await this.reportComplete(this.cron, this.id, error ? InstanceStatus.error : InstanceStatus.complete, error ? error : "", {});
 	}
 
-	override setupRegistory() {
-
+	override setupRegistry() {
+		super.setupRegistry();
 		config.registry.__cron = this.cron;
 		config.registry.id = this.cron.id;
 	}

@@ -26,7 +26,7 @@ export class Processor<E, T, S> implements IProcessor<T> {
 	}
 
 	initialize() {
-		this.setupRegistory();
+		this.setupRegistry();
 	}
 
 	public async run(): Promise<T> {
@@ -45,7 +45,8 @@ export class Processor<E, T, S> implements IProcessor<T> {
 		}
 	}
 
-	protected setupRegistory() {
+	protected setupRegistry() {
+		config.registry.context = this.context;
 		if (!config.registry.id) {
 			config.registry.id = process.env.AWS_LAMBDA_FUNCTION_NAME;
 		}

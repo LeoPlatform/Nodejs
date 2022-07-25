@@ -1038,7 +1038,7 @@ describe('RStreams', function () {
 
 			let inQueue = "mock-in";
 			let outQueue = "mock-out";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
