@@ -122,6 +122,20 @@ export interface BaseWriteOptions {
 	 * @todo question Need examples of what this can take?  Cool moment things used for example.  Is this ms?
 	 */
 	time?: moment.DurationInputArg1;
+
+
+	/**
+	 * The hash value used to explicitly determine the shard to send events
+	 * 
+	 * @default 0
+	 */
+	partitionHashKey?: string;
+
+	/**
+	 * Flag to use the queue name to determine the shard to send events
+	 * @default false
+	 */
+	useQueuePartition?: boolean
 }
 
 /**
@@ -132,10 +146,10 @@ export interface BaseWriteOptions {
  * to configure how to write.
  */
 export interface WriteOptions extends BaseWriteOptions {
-    /** 
-     * If true, the checkpoint will be applied even if someone else already checkpointed on the same bot/queue
-     * since the last time this code checkpointed.  This is only used in advanced fanout cases.
-     */
+	/** 
+	 * If true, the checkpoint will be applied even if someone else already checkpointed on the same bot/queue
+	 * since the last time this code checkpointed.  This is only used in advanced fanout cases.
+	 */
 	force?: boolean
 }
 
@@ -740,8 +754,8 @@ export declare namespace StreamUtil {
 
 	/**
 	 * This is a sink, a step designed to be the last step in the pipe.
-     * 
-     * @internal
+	 * 
+	 * @internal
 	 * @todo unclear
 	 * @todo incomplete
 	 * @todo example
@@ -793,7 +807,7 @@ export declare namespace StreamUtil {
 	 * @param config When to checkpoint.
 	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * 
-     * @internal
+	 * @internal
 	 * @todo review
 	 * @todo example
 	 */
@@ -835,7 +849,7 @@ export declare namespace StreamUtil {
 	 * @param config Options for when to checkpoint.
 	 * @returns The pipeline step that is ready to be used in a pipeline
 	 * 
-     * @internal
+	 * @internal
 	 * @todo question what's the usage difference in this versus toCheckpoint where this is a Writable and the other is a TransformStream
 	 * @todo unclear Probably have this description wrong.
 	 */
@@ -883,7 +897,7 @@ export declare namespace StreamUtil {
 	function enrich<T, U>(opts: EnrichBatchOptions<T, U>, callback: Callback): void;
 
 	/**
-     * This is a callback-based version of the [[`RStreamsSdk.offloadEvents`]] function and should no longer be used.
+	 * This is a callback-based version of the [[`RStreamsSdk.offloadEvents`]] function and should no longer be used.
 	 * Callback-based API flavors will be phased out over time.
 	 * 
 	 * It reads events from a queue to do general processing (such as write to an external DB).  It's called
@@ -908,12 +922,12 @@ export declare namespace StreamUtil {
 	 * 
 	 * @typeParam T The type of the data received by the pipeline step
 	 * @param botId For events that don't specify the bot to act as, this default is used.
-     *              It is the bot to act as when writing, events will be marked as written by this bot.
-     *              If not provided, each event must include the id of the bot to write the event as.
+	 *              It is the bot to act as when writing, events will be marked as written by this bot.
+	 *              If not provided, each event must include the id of the bot to write the event as.
 	 * @param outQueue For events that don't specify the queue to write to, this default is used.
-     *                 It is the queue into which events will be written.  If not provided, each event must
-     *                 include the queue to write the event to.
-     * 
+	 *                 It is the queue into which events will be written.  If not provided, each event must
+	 *                 include the queue to write the event to.
+	 * 
 	 * @param config An object that contains config values that control the flow of events to outQueue
 	 * @todo example
 	 */
