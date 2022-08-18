@@ -19,8 +19,8 @@ interface PutOptions { }
  * @todo document functions below
  */
 export interface LeoDynamodb {
-	getSettingPromise: any;
-	setSettingPromise: any;
+	getSettingPromise: <T>(setting_id: string) => Promise<T>;
+	setSettingPromise: <T>(setting_id: string, value: T) => Promise<void>;
 	docClient: AWS.DynamoDB.DocumentClient,
 	get: <T>(table: string, id: string, opts: GetOptions, callback: DataCallback<AWSError, T>) => void,
 	put: <T>(table: string, id: string, item: T, opts: PutOptions, callback: Callback<AWSError>) => void,

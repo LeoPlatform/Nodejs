@@ -36,7 +36,7 @@ let keys = [
 	"LeoSettings"
 ];
 
-describe('RStreams', function () {
+describe('index', function () {
 	let sandbox: sinon.SinonSandbox;
 	beforeEach(() => {
 		envVars.forEach(field => {
@@ -1038,7 +1038,7 @@ describe('RStreams', function () {
 
 			let inQueue = "mock-in";
 			let outQueue = "mock-out";
-			let botId = "mock-bot"
+			let botId = "mock-bot";
 
 			let batchGetResponse = {
 				Responses: {
