@@ -75,8 +75,8 @@ export class ConfigurationBuilder<T> {
 				this.data = process.env.RSF_CONFIG;
 			} else if ((process as any).rsf_config) {
 				this.data = (process as any).rsf_config;
-			} else if (global.rsf_config) {
-				this.data = global.rsf_config;
+			} else if (g.rsf_config) {
+				this.data = g.rsf_config;
 			}
 		}
 
