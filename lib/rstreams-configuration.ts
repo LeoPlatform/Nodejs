@@ -40,6 +40,7 @@ export default class Configuration {
 	LeoFirehoseStream: string;
 	LeoSettings: string;
 	LeoCron: string;
+	LeoSystem?: string;
 
 	/**
 	 * A configuration object can be created using positional arguments or an options
@@ -68,7 +69,8 @@ export default class Configuration {
 			"LeoS3",
 			"LeoKinesisStream",
 			"LeoFirehoseStream",
-			"LeoSettings"
+			"LeoSettings",
+			"LeoSystem"
 		].forEach(field => {
 			this[field] = config[field];
 		});
@@ -100,9 +102,10 @@ export default class Configuration {
 				"LeoS3",
 				"LeoKinesisStream",
 				"LeoFirehoseStream",
-				"LeoSettings"
+				"LeoSettings",
+				"LeoSystem"
 			].every(field => {
-				return this[field] != null || field === "LeoSettings";
+				return this[field] != null || field === "LeoSettings" || field === "LeoSystem";
 			});
 
 			return this.expired || !valid;
@@ -120,6 +123,7 @@ export default class Configuration {
 			LeoKinesisStream: this.LeoKinesisStream,
 			LeoFirehoseStream: this.LeoFirehoseStream,
 			LeoSettings: this.LeoSettings,
+			LeoSystem: this.LeoSystem,
 		};
 	}
 
