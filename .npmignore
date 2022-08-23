@@ -1,2 +1,22 @@
 utils
 .git
+
+# ignore the .ts files
+*.ts
+*.js.map
+coverage/
+docs/
+test/
+.vscode/
+.nycrc.json
+.nyc_output
+.github/
+*.txt
+*.diff
+*.patch
+*.utest.js
+rstreams-features.md
+README-old.md
+
+# include the .d.ts files
+!*.d.ts
