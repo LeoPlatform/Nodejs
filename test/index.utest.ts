@@ -39,6 +39,10 @@ let keys = [
 describe('index', function () {
 	let sandbox: sinon.SinonSandbox;
 	beforeEach(() => {
+		sandbox = sinon.createSandbox();
+	});
+	afterEach(() => {
+		sandbox.restore();
 		envVars.forEach(field => {
 			delete process.env[field];
 			delete process[field];
@@ -50,11 +54,12 @@ describe('index', function () {
 
 		delete process.env.LEO_ENVIRONMENT;
 		delete require("leo-config").leosdk;
+		delete require("leo-config").leoaws;
+		delete global.leosdk;
 		delete (process as any).__config;
-		sandbox = sinon.createSandbox();
 	});
-	afterEach(() => {
-		sandbox.restore();
+	after(() => {
+		delete require[require.resolve("leo-config")];
 	});
 
 	describe('sdk.read/write', function () {
@@ -800,14 +805,6 @@ describe('index', function () {
 
 
 	describe("sdk profile load", function () {
-		let sandbox: sinon.SinonSandbox;
-		beforeEach(() => {
-			delete require("leo-config").leoaws;
-			sandbox = sinon.createSandbox();
-		});
-		afterEach(() => {
-			sandbox.restore();
-		});
 
 		it("should read an aws profile w/ STS", async function () {
 

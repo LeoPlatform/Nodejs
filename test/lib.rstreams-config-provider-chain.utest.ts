@@ -27,6 +27,9 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 	let sandbox;
 	beforeEach(() => {
 		sandbox = sinon.createSandbox();
+	});
+	afterEach(() => {
+		sandbox.restore();
 		envVars.forEach(field => {
 			delete process.env[field];
 			delete process[field];
@@ -38,9 +41,10 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 
 		delete process.env.LEO_ENVIRONMENT;
 		delete require("leo-config").leosdk;
+		delete global.leosdk;
 	});
-	afterEach(() => {
-		sandbox.restore();
+	after(() => {
+		delete require[require.resolve("leo-config")];
 	});
 	describe("Chain", function () {
 		it('throws and error', async function () {
@@ -313,7 +317,7 @@ describe('lib/rstreams-config-provider-chain.ts', function () {
 				gotError = err;
 			}
 			assert(!!gotError, "should have thrown an error");
-			assert(gotError.message.match(/^Unable to get config from leo-config env/));
+			assert(gotError.message.match(/^Unable to get config from leo-config env/), gotError.message);
 		});
 	});
 	describe("Object", function () {
