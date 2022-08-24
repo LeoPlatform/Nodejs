@@ -5,6 +5,8 @@ import utilFn from "../lib/stream/leo-stream";
 import { promisify } from "util";
 import AWS from "aws-sdk";
 import { CorrelationId, ReadEvent } from "../lib/types";
+import { RStreamsSdk } from "../index";
+
 chai.use(sinonchai);
 let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
 
@@ -19,7 +21,7 @@ let mockSdkConfig = {
 	LeoSettings: "mock-LeoSettings",
 };
 
-describe("leo-stream", function () {
+describe("lib/streams/leo-stream", function () {
 	let sandbox;
 	beforeEach(() => {
 		delete (process as any).__config;
@@ -2742,10 +2744,10 @@ describe("leo-stream", function () {
 				]);
 			});
 		});
-    });
-		// batch
-		// flush
-		// sync
+	});
+	// batch
+	// flush
+	// sync
 
 	describe("createCorrelation", function () {
 		it("single event", function () {
@@ -2869,6 +2871,32 @@ describe("leo-stream", function () {
 		it("array of events 0 len", function () {
 			let events: ReadEvent<any>[] = [];
 			expect(() => ls.createCorrelation(events, { partial: true })).to.throw("startEvent must not be empty");
+		});
+	});
+
+	describe("from-leo", function () {
+		it("ddb throw error", function (cb) {
+			let queue = "mock-queue";
+			let botId = "mock-bot-id";
+
+			let batchGet = sandbox.stub()
+				.onFirstCall()
+				.callsFake((_, cb) => {
+					process.nextTick(() => cb(Object.assign(new Error("Socket timed out!"), { code: "SOCKET_TIMEOUT" })));
+				});
+
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet });
+
+			let sdk = new RStreamsSdk(mockSdkConfig);
+			let ls = sdk.streams;
+			ls.pipe(
+				sdk.read(botId, queue, { start: ls.eventIdFromTimestamp(1647460979244) }),
+				ls.devnull(),
+				(err) => {
+					assert.exists(err, "Expected an error");
+					cb();
+				}
+			);
 		});
 	});
 });

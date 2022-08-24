@@ -89,7 +89,8 @@ export interface Configuration {
  * more advanced capabilities. 
  */
 export declare class RStreamsSdk {
-	constructor(config?: ConfigurationResources | typeof ConfigurationProvider);
+	constructor(config?: ConfigurationResources | typeof ConfigurationProvider, awsResourceConfig?: AwsResourceConfig);
+	constructor(awsResourceConfig?: AwsResourceConfig);
 	/** 
 	 * Config used to communicate with AWS resources that comprise the RStreams Bus used by the SDK.
 	 * It is included here for information purposes and so you can access the AWS resources that 
@@ -114,14 +115,14 @@ export declare class RStreamsSdk {
 	/** @method */
 	read: typeof StreamUtil.fromLeo;
 	/** 
-     * @internal
-     * @method 
-     */
+	 * @internal
+	 * @method 
+	 */
 	write: typeof StreamUtil.toLeo;
 	/** 
-     * @internal
-     * @method
-     */
+	 * @internal
+	 * @method
+	 */
 	checkpoint: typeof StreamUtil.toCheckpoint;
 
 	/**
@@ -212,6 +213,12 @@ export declare class RStreamsSdk {
 		/** A refernce to the AWS S3 library. */
 		s3: AWS.S3,
 
+		/** A refernce to the AWS Kinesis library. */
+		kinesis: AWS.Kinesis
+
+		/** A refernce to the AWS Firehose library. */
+		firehose: AWS.Firehose
+
 		/** A refernce to the AWS CloudFormation library. */
 		cloudformation: AWS.CloudFormation
 	};
@@ -255,11 +262,18 @@ export interface CreateSourceOptions {
 	milliseconds?: number;
 }
 
+export interface AwsResourceConfig {
+	s3Config?: AWS.S3.ClientConfiguration,
+	dynamodbConfig?: AWS.DynamoDB.DocumentClient.DocumentClientOptions & AWS.ConfigurationOptions & AWS.DynamoDB.ClientApiVersions,
+	firehoseConfig?: AWS.Firehose.ClientConfiguration,
+	kinesisConfig?: AWS.Kinesis.ClientConfiguration
+}
+
 /**
  * This returns a function that you call to create an instance of the RStreams SDK.
  * @param config The SDK is usually smart enough to find the config it needs or you can pass it in directly here.
  * @returns The SDK instance itself.
  */
-declare function ExportTypeFn(config?: ConfigurationResources | typeof ConfigurationProvider): RStreamsSdk;
+declare function ExportTypeFn(config?: ConfigurationResources | typeof ConfigurationProvider, awsConfig?: AwsResourceConfig): RStreamsSdk;
 export default ExportTypeFn;
 

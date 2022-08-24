@@ -13,11 +13,18 @@ const ConfigProviderChain = require("./lib/rstreams-config-provider-chain").Conf
 const mockWrapper = require("./lib/mock-wrapper");
 const leologger = require("leo-logger")("sdk");
 
-function SDK(id, data) {
+function SDK(id, data, awsResourceConfig) {
 	if (typeof id !== "string" && id != null) {
+		awsResourceConfig = data;
 		data = id;
 		id = data.id || "default_bot";
 	}
+	if (awsResourceConfig == null && data &&
+		(data.dynamodbConfig || data.s3Config || data.firehoseConfig || data.kinesisConfig)) {
+		awsResourceConfig = data;
+		data = null;
+	}
+
 	let dataOrig = data;
 
 	if (data == null || data === false || data instanceof Configuration) {
@@ -43,6 +50,7 @@ function SDK(id, data) {
 	// }
 
 	let configuration = new LeoConfiguration(data);
+	configuration.awsResourceConfig = awsResourceConfig || {};
 
 	let awsConfig = leoconfig.leoaws || configuration.aws;
 
@@ -178,6 +186,8 @@ function SDK(id, data) {
 		aws: {
 			dynamodb: leoStream.dynamodb,
 			s3: leoStream.s3,
+			kinesis: leoStream.kinesis,
+			firehose: leoStream.firehose,
 			cloudformation: new aws.CloudFormation({
 				region: configuration.aws.region,
 				credentials: configuration.credentials
