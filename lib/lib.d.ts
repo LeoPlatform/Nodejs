@@ -276,6 +276,11 @@ export interface ReadOptions {
 	 * @todo inconsistent stream_query_limit
 	 */
 	stream_query_limit?: number;
+
+	poll?: boolean | {
+		intervalMS?: (count: number, waitTimeMS: number) => number,
+		maxWaitMS?: number,
+	};
 }
 
 /**
