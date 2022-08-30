@@ -8,6 +8,7 @@ module.exports = function(configOverride, botHandler) {
 	let config = require("../leoConfigure.js");
 	//const async = require("async");
 	const logger = require('leo-logger')('cron.wrapper');
+	const cmdLogger = process.env.LEO_LOGGER_CRON === "true" ? logger : console;
 	const leosdk = require("../index.js");
 	//const kms = require("../lib/kms")(leosdk.configuration);
 	const refUtil = require("../lib/reference.js");
@@ -61,7 +62,7 @@ module.exports = function(configOverride, botHandler) {
 	let theContext = {};
 	let __theEvent = {};
 	process.on('uncaughtException', function(err) {
-		console.log(`[LEOCRON]:end:${config.name}:${theContext.awsRequestId}`);
+		cmdLogger.log(`[LEOCRON]:end:${config.name}:${theContext.awsRequestId}`);
 		logger.error((new Date).toUTCString() + ' uncaughtException:', err.message);
 		logger.error(err.stack);
 		if (__theEvent.__cron) {
@@ -69,14 +70,14 @@ module.exports = function(configOverride, botHandler) {
 				msg: err.message,
 				stack: err.stack
 			}, {}, function() {
-				console.log("Cron Lock removed");
+				cmdLogger.log("Cron Lock removed");
 				if (theCallback) {
 					theCallback(null, "Application Error");
 				}
 			});
 		} else {
 			cron.removeLock(config.name, theContext.awsRequestId, function() {
-				console.log("Lock removed");
+				cmdLogger.log("Lock removed");
 				if (theCallback) {
 					theCallback(null, "Application Error");
 				}
@@ -150,7 +151,7 @@ module.exports = function(configOverride, botHandler) {
 		__theEvent = event;
 		if (event.__cron) {
 			let cronkey = event.__cron.id + ":" + event.__cron.iid + ":" + event.__cron.ts + ":" + context.awsRequestId;
-			console.log("[LEOCRON]:check:" + cronkey);
+			cmdLogger.log("[LEOCRON]:check:" + cronkey);
 			logger.log("Locking on  __cron", event.__cron);
 			let startTime = moment.now();
 			cron.checkLock(event.__cron, context.awsRequestId, context.getRemainingTimeInMillis(), function(err, data) {
@@ -164,10 +165,10 @@ module.exports = function(configOverride, botHandler) {
 					}
 				} else {
 					try {
-						console.log("[LEOCRON]:start:" + cronkey);
+						cmdLogger.log("[LEOCRON]:start:" + cronkey);
 						fill(event || {}, config, dynamodb.docClient).then(filledEvent => {
 							let promise = botHandler(filledEvent, context, function(err, data) {
-								console.log("[LEOCRON]:complete:" + cronkey);
+								cmdLogger.log("[LEOCRON]:complete:" + cronkey);
 								cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
 									if (err || err2) {
 										logger.log(err || err2);
@@ -177,7 +178,7 @@ module.exports = function(configOverride, botHandler) {
 							});
 							if (promise && typeof promise.then == "function" && botHandler.length < 3) {
 								promise.then(data => {
-									console.log("[LEOCRON]:complete:" + cronkey);
+									cmdLogger.log("[LEOCRON]:complete:" + cronkey);
 									cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
 										if (err || err2) {
 											logger.log(err || err2);
@@ -188,7 +189,7 @@ module.exports = function(configOverride, botHandler) {
 							}
 							if (promise && typeof promise.catch == "function") {
 								promise.catch(err => {
-									console.log("[LEOCRON]:complete:" + cronkey);
+									cmdLogger.log("[LEOCRON]:complete:" + cronkey);
 									cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
 										callback(null, err);
 									});
@@ -213,7 +214,7 @@ module.exports = function(configOverride, botHandler) {
 
 			});
 		} else {
-			console.log("Locking Settings");
+			cmdLogger.log("Locking Settings");
 
 			cron.createLock(config.name, context.awsRequestId, context.getRemainingTimeInMillis() + 100, function(err, data) {
 				if (err) {
