@@ -134,7 +134,7 @@ export class ConfigurationBuilder<T> {
 
 	private resolve(root: any, cache: any, options: ConfigOptions): any {
 		let returnValue = {};
-		Object.getOwnPropertyNames(root).forEach(key => {
+		Object.getOwnPropertyNames(root || {}).forEach(key => {
 			let value = root[key];
 
 			// convert  string shorthand to full ResourceReference
