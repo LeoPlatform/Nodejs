@@ -267,6 +267,32 @@ export interface ReadOptions {
 	 */
 	fast_s3_read_parallel_fetch_max_bytes?: number;
 
+
+	/**
+	 * When using the [[`ReadOptions.fast_s3_read`]] feature, this specifies if downloaded files should be saved after they are consumed.
+	 * 
+	 * @default false
+	 * @todo inconsistent fast_s3_read_save_files
+	 */
+	fast_s3_read_save_files?: boolean;
+
+	/**
+	 * When using the [[`ReadOptions.fast_s3_read`]] feature, this specifies if max size in bytes that a file should be download locally vs streamed from S3.
+	 * 
+	 * @default 5mb in bytes
+	 * @todo inconsistent fast_s3_read_max_download_file_size_bytes
+	 */
+	fast_s3_read_max_download_file_size_bytes?: number;
+
+	/**
+	 * When using the [[`ReadOptions.fast_s3_read`]] feature, this specifies if downloaded files should be saved uncompressed (jsonl vs jsonl.gz).
+	 * 
+	 * @default false
+	 * @todo inconsistent fast_s3_read_download_as_uncompressed
+	 */
+	fast_s3_read_download_as_uncompressed?: boolean;
+
+
 	/**
 	 * The max number of records, events, the SDK should retrieve each time it retrieves events from the 
 	 * RStreams Bus' Dynamo DB events table.
