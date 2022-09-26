@@ -27,7 +27,7 @@ export function tryPurgeS3Files(
 		let toDelete = [];
 		for (const file of cachedFiles) {
 			let eidTimestamp = parseInt((file.filename.match(/^\d+-\d+/) || [])[0]);
-			if (!eidTimestamp || eidTimestamp < startEidTimestamp || (eidTimestamp > endEidTimestamp && size > maxStorage)) {
+			if (!eidTimestamp || eidTimestamp < startEidTimestamp || (eidTimestamp >= endEidTimestamp && size >= maxStorage)) {
 				unlinkSync(file.fullpath);
 				deleted++;
 				purgeSize += file.size;
@@ -65,6 +65,10 @@ export function verifyLocalDirectory(dir = BASE_DIR) {
 	}
 }
 
+export function clearVerifiedLocalDirectories() {
+	verified = {};
+}
+
 export function buildLocalFilePath(file: S3File, eid = ""): string {
 	let bucket = file.bucket || file.Bucket;
 	let key = file.key || file.Key;
@@ -89,7 +93,7 @@ interface S3File {
 
 	range: string;
 
-	uncompressed: boolean
+	uncompressed?: boolean
 }
 
 
@@ -98,7 +102,7 @@ interface StatsPlus extends Stats {
 	fullpath: string
 }
 
-function convertBytes(bytes) {
+export function convertBytes(bytes) {
 	const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
 
 	if (bytes == 0) {
