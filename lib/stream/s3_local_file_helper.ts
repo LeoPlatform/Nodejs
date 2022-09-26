@@ -1,5 +1,7 @@
-import { writeFileSync, readdirSync, statSync, unlinkSync, PathLike, Stats, mkdirSync } from "fs";
-import path from "path";
+import { readdirSync, statSync, unlinkSync, Stats, mkdirSync } from "fs";
+import path, { dirname } from "path";
+
+const logger = require("leo-logger")("leo-s3-local-helper");
 
 const BASE_DIR = "/tmp/rstream-sdk";
 
@@ -10,50 +12,57 @@ export function tryPurgeS3Files(
 	directory: string = BASE_DIR
 ) {
 
-	let startTime = Date.now();
-	let cachedFiles = getAllFiles(directory).sort((a, b) => a.mtimeMs - b.mtimeMs);
+	try {
+		verifyLocalDirectory(directory);
+		let startTime = Date.now();
+		let cachedFiles = getAllFiles(directory).sort((a, b) => a.mtimeMs - b.mtimeMs);
 
-	let startEidTimestamp = parseInt(start.replace(/^z\/\d+\/\d+\/\d+\/\d+\/\d+\//g, "").split("-")[0]) || 0;
-	let endEidTimestamp = parseInt(end.replace(/^z\/\d+\/\d+\/\d+\/\d+\/\d+\//g, "").split("-")[0]) || startEidTimestamp;
+		let startEidTimestamp = parseInt(start.replace(/^z\/\d+\/\d+\/\d+\/\d+\/\d+\//g, "").split("-")[0]) || 0;
+		let endEidTimestamp = parseInt(end.replace(/^z\/\d+\/\d+\/\d+\/\d+\/\d+\//g, "").split("-")[0]) || startEidTimestamp;
 
-	//let maxStorage = (512 * 1024 * 1024) * 0.6;
-
-	let size = 0;
-	let saved = 0;
-	let purgeSize = 0;
-	let deleted = 0;
-	let toDelete = [];
-	for (const file of cachedFiles) {
-		let eidTimestamp = parseInt((file.filename.match(/^\d+-\d+/) || [])[0]);
-		if (!eidTimestamp || eidTimestamp < startEidTimestamp || (eidTimestamp > endEidTimestamp && size > maxStorage)) {
-			unlinkSync(file.fullpath);
-			deleted++;
-			purgeSize += file.size;
-			console.log("Would delete:", file.fullpath, eidTimestamp, startEidTimestamp, endEidTimestamp, size, maxStorage, eidTimestamp < startEidTimestamp, eidTimestamp > endEidTimestamp && size > maxStorage);
-			toDelete.push({
-				path: file.fullpath,
-				eidTimestamp,
-				startEidTimestamp,
-				fileSize: file.size,
-				totalSize: size,
-				maxStorage,
-				noEid: !eidTimestamp,
-				'eid<start': eidTimestamp < startEidTimestamp,
-				'eid>end&noSpace': eidTimestamp > endEidTimestamp && size > maxStorage
-			});
-		} else {
-			size += file.size;
-			saved++;
+		let size = 0;
+		let saved = 0;
+		let purgeSize = 0;
+		let deleted = 0;
+		let toDelete = [];
+		for (const file of cachedFiles) {
+			let eidTimestamp = parseInt((file.filename.match(/^\d+-\d+/) || [])[0]);
+			if (!eidTimestamp || eidTimestamp < startEidTimestamp || (eidTimestamp > endEidTimestamp && size > maxStorage)) {
+				unlinkSync(file.fullpath);
+				deleted++;
+				purgeSize += file.size;
+				logger.debug("Would delete:", file.fullpath, eidTimestamp, startEidTimestamp, endEidTimestamp, size, maxStorage, eidTimestamp < startEidTimestamp, eidTimestamp > endEidTimestamp && size > maxStorage);
+				toDelete.push({
+					path: file.fullpath,
+					eidTimestamp,
+					startEidTimestamp,
+					fileSize: file.size,
+					totalSize: size,
+					maxStorage,
+					noEid: !eidTimestamp,
+					'eid<start': eidTimestamp < startEidTimestamp,
+					'eid>end&noSpace': eidTimestamp > endEidTimestamp && size > maxStorage
+				});
+			} else {
+				size += file.size;
+				saved++;
+			}
 		}
-	}
-	console.log(`Purged files: ${deleted} (${convertBytes(purgeSize)}), Remaining files: ${saved} (${convertBytes(size)}), duration: ${Date.now() - startTime}`);
-	if (toDelete.length > 0) {
-		console.log("Purge Summary:", JSON.stringify(toDelete, null, 2));
+		logger.debug(`Purged files: ${deleted} (${convertBytes(purgeSize)}), Remaining files: ${saved} (${convertBytes(size)}), duration: ${Date.now() - startTime}`);
+		if (toDelete.length > 0) {
+			logger.debug("Purge Summary:", JSON.stringify(toDelete, null, 2));
+		}
+	} catch (err) {
+		logger.error("Error purging S3 files:", err);
 	}
 }
 
-export function verifyLocalDirectory() {
-	mkdirSync(BASE_DIR, { recursive: true });
+let verified = {};
+export function verifyLocalDirectory(dir = BASE_DIR) {
+	if (!verified[dir]) {
+		mkdirSync(dir, { recursive: true });
+		verified[dir] = true;
+	}
 }
 
 export function buildLocalFilePath(file: S3File, eid = ""): string {
@@ -67,6 +76,7 @@ export function buildLocalFilePath(file: S3File, eid = ""): string {
 	}
 	let eidPart = eid.replace(/^z\/\d+\/\d+\/\d+\/\d+\/\d+\//g, "");
 	let localFilename = path.resolve(`${BASE_DIR}/${bucket}/${eidPart}_${key.replace(/[/\\]/g, "_").replace(extReplace, "")}_${file.range}.${ext || "gz"}`);
+	verifyLocalDirectory(dirname(localFilename));
 	return localFilename;
 }
 
