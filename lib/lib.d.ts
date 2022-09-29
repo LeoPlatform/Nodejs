@@ -2,10 +2,10 @@ import splitLib from "split";
 import stream from 'stream';
 import moment from "moment";
 import { LeoDynamodb } from "./dynamodb";
-import { LeoCron } from "./cron";
+import { Checkpoint, LeoCron } from "./cron";
 import Streams, { BatchOptions, ProcessFunction, } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions, BaseEvent } from "./types";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions, BaseEvent, ReadableQueueStream } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
 
@@ -827,7 +827,7 @@ export declare namespace StreamUtil {
 	 * @todo question is the meant to be used in an ls.pipe? or all by itself?
 	 * @todo example
 	 */
-	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableStream<ReadEvent<T>>;
+	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableQueueStream<T>;
 
 	/**
 	 * Create a pipeline step that takes the events from the previous pipeline step and then writes them

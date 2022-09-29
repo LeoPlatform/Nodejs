@@ -1,5 +1,5 @@
 import { StreamUtil } from "./lib";
-import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions } from "./types";
+import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions, ReadableQueueStream } from "./types";
 import fs from "fs";
 import path from "path";
 import util from "./aws-util";
@@ -27,7 +27,7 @@ export default function (leoStream: LeoStream) {
 	};
 
 	let fromLeo = leoStream.fromLeo.bind(leoStream);
-	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions): ReadableStream<ReadEvent<T>> => {
+	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions): ReadableQueueStream<T> => {
 		queue = refUtil.ref(queue).id;
 		// Look for events that were written to this queue in this process
 		let runtimeQueue = process.env[`RSTREAMS_MOCK_DATA_Q_${queue}`] || "";

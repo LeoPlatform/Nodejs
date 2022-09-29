@@ -1,7 +1,7 @@
 export * from "./lib";
 export * from "./streams";
 import { Context } from "aws-lambda";
-import { RStreamsSdk } from "../index";
+import { Callback, RStreamsSdk } from "../index";
 /// <reference types="node" />
 import stream from 'stream';
 // export interface LeoStreamOptions extends stream.TransformOptions {
@@ -10,6 +10,14 @@ import stream from 'stream';
 //	 cmdFlush?: any;
 //	 hasCommands?: any;
 // }
+
+export interface ReadableQueueStream<T> extends ReadableStream<ReadEvent<T>> {
+	get(): Checkpoint;
+	checkpoint(params: Checkpoint, done: Callback): void;
+	checkpoint(done: Callback): void;
+}
+
+
 /**
  * A ReadableStream produces events as the source of a pipe.  It is an RStreams-specific wrapper
  * interface that inherits from the Node library's fundament `Readable` stream interface,
