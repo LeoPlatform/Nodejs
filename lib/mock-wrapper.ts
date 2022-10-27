@@ -60,6 +60,11 @@ export default function (leoStream: LeoStream) {
 		let timestamp = Date.now();
 		let fileStreams = {};
 		let mockStream = leoStream.through<Event<T>, unknown>((writeData: Event<T>, callback) => {
+			// No queue.  Just a command event so we can skip it
+			if (!writeData || !writeData.event) {
+				return callback();
+			}
+
 			let queue = refUtil.ref(writeData.event).id;
 			// Mark queue to have in memory data from this batch
 			process.env[`RSTREAMS_MOCK_DATA_Q_${queue}`] = settings.batchId;

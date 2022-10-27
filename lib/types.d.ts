@@ -352,7 +352,11 @@ export interface CorrelationId {
 	 */
 	start: string;
 	// todo document: this actually exists and should be start or partial_start
-	// partial_start?: string;
+	/**
+	 * Same as `start` but indicates that the source eid is partial or incomplete.  This indicates to the system to NOT checkpoint on this correlation_id
+	 * Use either `start` or `partial_start` but not both
+	 */
+	partial_start?: string;
 
 	/** 
 	 * The ending ID in the parent source this event derived from.  If the parent was an RStreams queue, this will
@@ -363,7 +367,11 @@ export interface CorrelationId {
 	 */
 	end?: string;
 	// todo document: this actually exists and should be end or partial_end
-	// partial_end?: string;
+	/**
+	 * Same as `end` but indicates that the source eid is partial or incomplete.  This indicates to the system to NOT checkpoint on this correlation_id
+	 * Use either `end` or `partial_end` but not both
+	 */
+	partial_end?: string;
 
 	/**
 	 * If this event is derived from multiple parent events, this is how many.
