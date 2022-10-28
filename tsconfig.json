@@ -13,6 +13,7 @@
 		"jsxFactory": "JSX.createElement",
 		"jsxFragmentFactory": "JSX.Fragment",
 		"baseUrl": ".",
+		"declaration": true,
 		"paths": {
 			"*": [
 				"node_modules/*",
@@ -21,7 +22,8 @@
 		}
 	},
 	"include": [
-		"**/*.ts", "**/*.tsx"
+		"**/*.ts",
+		"**/*.tsx"
 	],
 	"exclude": [
 		"node_modules",
