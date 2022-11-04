@@ -19,7 +19,6 @@ jobs:
       - run: npm ci
       - run: npm i aws-sdk@^2.581.0
       - run: npm run compile --if-present
-      - run: npm run coverage-all
 
       - name: Extract Version from Git Tag
         shell: bash
