@@ -11201,8 +11201,16 @@
 												}
 											],
 											"type": {
-												"type": "intrinsic",
-												"name": "void"
+												"type": "reference",
+												"typeArguments": [
+													{
+														"type": "intrinsic",
+														"name": "void"
+													}
+												],
+												"qualifiedName": "Promise",
+												"package": "typescript",
+												"name": "Promise"
 											}
 										}
 									]
