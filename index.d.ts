@@ -163,7 +163,7 @@ export declare class RStreamsSdk {
 	 * @method
 	 * @todo example
 	 */
-	offloadEvents: <T>(config: OffloadOptions<T> | OffloadBatchOptions<T>) => void;
+	offloadEvents: <T>(config: OffloadOptions<T> | OffloadBatchOptions<T>) => Promise<void>;
 
 	/**
 	 * This is a callback-based version of the [[`RStreamsSdk.putEvent`]] function and should no longer be used.
