@@ -2,6 +2,10 @@ import aws from "./aws-sdk-sync";
 import leolog from "leo-logger";
 import path from "path";
 import fs from "fs";
+
+declare var __webpack_require__;
+declare var __non_webpack_require__;
+const requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
 const logger = leolog("configuration-builder");
 
 export interface ConfigOptions {
@@ -56,7 +60,7 @@ export class ConfigurationBuilder<T> {
 			let validCacheDuration = (+process.env.RSF_CACHE_SECONDS) || 1800;
 			if (duration < validCacheDuration) {
 				try {
-					return module.require(fileCache);
+					return requireFn(fileCache);
 				} catch (e) {
 					// Error getting cache
 				}
@@ -87,7 +91,7 @@ export class ConfigurationBuilder<T> {
 				// get injected without escaping quotes eg.  {"secret":"{"key1":"value1"}"}
 				// TODO: there could be a bug where a valid string starts with { or ends with }
 				// What is the best way to handle this
-				this.data = this.data.replace(/"{/g, '{').replace(/}"/, "}");
+				this.data = this.data.replace(/"{/g, '{').replace(/}"/g, "}");
 				this.data = JSON.parse(this.data);
 			} else {
 				// config is the key to a secret
@@ -133,6 +137,9 @@ export class ConfigurationBuilder<T> {
 	}
 
 	private resolve(root: any, cache: any, options: ConfigOptions): any {
+		if (root == null || typeof root != "object") {
+			return root;
+		}
 		let returnValue = {};
 		Object.getOwnPropertyNames(root).forEach(key => {
 			let value = root[key];
@@ -157,6 +164,8 @@ export class ConfigurationBuilder<T> {
 
 			if (this.isResourceReference(value)) {
 				returnValue[key] = this.resolveReference(value as ResourceReference, cache, options);
+			} else if (value != null && Array.isArray(value)) {
+				returnValue[key] = value.map(v => this.resolve(v, cache, options));
 			} else if (value != null && typeof value === "object") {
 				returnValue[key] = this.resolve(value, cache, options);
 			} else {
