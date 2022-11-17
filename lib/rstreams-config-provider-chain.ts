@@ -5,6 +5,11 @@ import path from "path";
 import awsSdkSync from "./aws-sdk-sync";
 import { ConfigurationResources } from "../index";
 
+declare var __webpack_require__;
+declare var __non_webpack_require__;
+let requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+
+
 export enum ProvidersInputType {
 	Replace,
 	Prepend,
@@ -431,7 +436,6 @@ export class FileTreeConfiguration extends Configuration {
 				let file = path.resolve(dir, filename);
 				if (fs.existsSync(file)) {
 					try {
-						let requireFn = module.require;
 						values = requireFn(file);
 						break outer;
 					} catch (err) {
