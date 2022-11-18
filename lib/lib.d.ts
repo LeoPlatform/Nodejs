@@ -8,7 +8,7 @@ export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./s
 import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions, BaseEvent, ReadableQueueStream } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
-
+import { Options as BackoffOptions } from "backoff";
 
 /**
  * A standard callback function.  If the operation failed, return the first argument only,
@@ -135,7 +135,13 @@ export interface BaseWriteOptions {
 	 * Flag to use the queue name to determine the shard to send events
 	 * @default false
 	 */
-	useQueuePartition?: boolean
+	useQueuePartition?: boolean,
+
+	/**
+	 * Options for kinesis/firehose backoff options
+	 * @default { randomisationFactor: 0, initialDelay: 10, maxDelay:1000 }
+	 */
+	backoff?: BackoffOptions
 }
 
 /**
@@ -150,7 +156,13 @@ export interface WriteOptions extends BaseWriteOptions {
 	 * If true, the checkpoint will be applied even if someone else already checkpointed on the same bot/queue
 	 * since the last time this code checkpointed.  This is only used in advanced fanout cases.
 	 */
-	force?: boolean
+	force?: boolean;
+
+	/**
+	 * Enable/Disable if the stream will use auto checkpointing
+	 * @default true
+	 */
+	autoCheckpoint?: boolean;
 }
 
 /**
