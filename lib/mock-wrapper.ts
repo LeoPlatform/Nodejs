@@ -10,7 +10,10 @@ import uuid from "uuid";
 
 import refUtil from "./reference";
 
-const requireFn = module.require;
+declare var __webpack_require__;
+declare var __non_webpack_require__;
+const requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+
 
 declare type LeoStream = typeof StreamUtil;
 export default function (leoStream: LeoStream) {
