@@ -17,7 +17,7 @@ jobs:
           node-version: 12
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm i aws-sdk@^2.581.0
+      - run: npm i --no-save aws-sdk@^2.581.0
       - run: npm run compile --if-present
 
       - name: Extract Version from Git Tag

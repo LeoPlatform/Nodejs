@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "5.0.21-image-service",
+	"version": "5.0.25-image-service",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
