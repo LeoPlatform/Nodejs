@@ -599,7 +599,8 @@ export interface CheckpointData {
 export interface StatsStream extends stream.Transform {
 	/** Exposes a function to allow the developer to set the checkpoint. */
 	checkpoint: {
-		(callback: (err: CheckpointData) => void): void;
+		(callback: Callback): void;
+		(params: Checkpoint, callback: Callback): void;
 	};
 
 	/** Exposes a function to allow the developer to manually get the checkpoint. */
