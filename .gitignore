@@ -32,3 +32,6 @@ package-lock.json
 *.utest.js
 docs/build/
 /docs/build-docs.js
+
+/docs/build-docs.js
+/scripts/fanout/one-bot-broker-workers/shardId-*
