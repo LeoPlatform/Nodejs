@@ -4,8 +4,8 @@ import { cpus } from "os";
 import { RStreamsSdk } from "../../../index";
 import bigInt from "big-integer";
 import { createHash } from "crypto";
-import { dirname, resolve } from "path";
-import { createWriteStream, fstat, mkdirSync, readdirSync, renameSync, WriteStream } from "fs";
+import { resolve } from "path";
+import { createWriteStream, mkdirSync, readdirSync, renameSync, WriteStream } from "fs";
 
 let sdk = new RStreamsSdk();
 
@@ -218,9 +218,6 @@ async function getStream(shard: string, cache: Record<string, ShardData>, eid: s
 
 	if (data.currentFile.meta.size > tenMB) {
 		await closeStream(shard, data, eid);
-		// await new Promise(resolve => data.currentFile.stream.end(() => resolve(undefined)));
-		// data.files.push(data.currentFile.meta);
-		// data.currentFile = createFileStream(shard, data.files.length);
 	}
 
 	return data.currentFile;
@@ -272,17 +269,6 @@ function getShardDataFromFiles(shardId: string) {
 			bytes: parseInt(bytes) || 0
 		};
 	});
-	//let latest = files.pop();
-	// let [start, end, records, bytes] = latest.split(/[_.]/);
-	// let [startTs, startOffset] = start.split("-").map(i => parseInt(i));
-	// let [endTs, endOffset] = end.split("-").map(i => parseInt(i));
-
-	// if (!endTs) {
-	// 	endTs = startTs;
-	// 	endOffset = startOffset;
-	// }
-
-	// let eid = sdk.streams.eventIdFromTimestamp(endTs, "full", endOffset);
 
 	return files.reduce((summary, file) => {
 		summary.eid = file.eid;
