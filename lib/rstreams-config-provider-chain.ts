@@ -61,7 +61,7 @@ export enum ProvidersInputType {
  *   @see defaultProviders
  */
 
-type Provider = (() => Configuration) | Configuration | ConfigurationResources;
+export type Provider = (() => Configuration) | Configuration | ConfigurationResources;
 
 export class ConfigProviderChain extends Configuration {
 	providers: Provider[];
