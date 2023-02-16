@@ -1103,6 +1103,22 @@ export declare namespace StreamUtil {
 	 */
 	const batch: typeof Streams.batch;
 
+
+	/**
+	 * This creates a pipeline step to tell the SDK to micro-batch events received in one pipeline step
+	 * before sending them to the next pipeline step.  It's useful to control how many events arrive all
+	 * at once, roughly, to the next pipeline step.  It can be helpful for a pipeline step to receive
+	 * a micro-batch of events, say 100 at a time, instead of 1 at a time to leverage economies of scale
+	 * when writing to a database, e.g. doing one query to the database to get 100 records back all at once
+	 * instead of having to do a query to the database for each event as it comes in.
+	 * 
+	 * @typeParam T The type of the data being batched from the previous pipeline step before sending to the next pipeline step
+	 * @param opts If a number, then this is how many events to batch up before sending along.  If [[`BatchOptions`]] then
+	 *   this is fine-grained control to ensure events keep flowing smoothly whether there are a few or many at a given moment.
+	 * @returns The pipeline step that is ready to be used in a pipeline
+	 */
+	const batchFilter: typeof Streams.batchFilter;
+
 	/**
 	 * This creates a pipeline step that will create a CSV file from the events that flow into this step.
 	 * Underneath the covers it uses the popular [fast-csv](https://c2fo.github.io/fast-csv) node library.

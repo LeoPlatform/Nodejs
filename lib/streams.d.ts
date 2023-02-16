@@ -524,6 +524,22 @@ export function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue:
  */
 export function batch<T>(opts: BatchOptions | number): TransformStream<T, ReadEvent<T[]>>;
 
+
+/**
+ * This creates a pipeline step to tell the SDK to micro-batch events received in one pipeline step
+ * before sending them to the next pipeline step.  It's useful to control how many events arrive all
+ * at once, roughly, to the next pipeline step.  It can be helpful for a pipeline step to receive
+ * a micro-batch of events, say 100 at a time, instead of 1 at a time to leverage economies of scale
+ * when writing to a database, e.g. doing one query to the database to get 100 records back all at once
+ * instead of having to do a query to the database for each event as it comes in.
+ * 
+ * @typeParam T The type of the data being batched from the previous pipeline step before sending to the next pipeline step
+ * @param opts If a number, then this is how many events to batch up before sending along.  If [[`BatchOptions`]] then
+ *   this is fine-grained control to ensure events keep flowing smoothly whether there are a few or many at a given moment.
+ * @returns The pipeline step that is ready to be used in a pipeline
+ */
+export function batchFilter<T>(opts: BatchOptions & { filter?: (data: T) => boolean } | number): TransformStream<T, ReadEvent<T[]> & { start_eid: string; units?: number }>;
+
 export function passthrough<T, U>(opts?: stream.TransformOptions): TransformStream<T, U>;
 //export function through(transform?: through2.TransformFunction, flush?: through2.FlushCallback): stream.Transform;
 
@@ -616,6 +632,19 @@ export function writeWrapped<T>(func: CommandWrapFunction<T, any>, flush?: throu
  * @todo question Why aren't there types on these args?
  */
 export function buffer(opts, each, emit, flush): stream.Transform;
+
+
+/**
+ * 
+ * @param opts 
+ * @param each 
+ * @param emit 
+ * @param flush
+ * @todo unclear
+ * @todo incomplete 
+ * @todo question Why aren't there types on these args?
+ */
+export function buffer2(opts, each, emit, flush): stream.Transform;
 
 //cmdFlush(obj, done):stream.Transform;
 

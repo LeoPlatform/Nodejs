@@ -4,8 +4,12 @@ import sinonchai from "sinon-chai";
 import utilFn from "../lib/stream/leo-stream";
 import streams from "../lib/streams";
 import moment from "moment";
+import { ReadEvent } from "../lib/types";
 chai.use(sinonchai);
 let util = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
+export function deepEqualRemoveUndefined<T extends Record<any, any>>(actual: T, expected: T, message?: string) {
+	return assert.deepEqual(JSON.parse(JSON.stringify(actual)), JSON.parse(JSON.stringify(expected)), message);
+}
 
 let mockSdkConfig = {
 	Region: "mock-Region",
@@ -904,7 +908,693 @@ describe("Streams", function () {
 			]);
 		});
 	});
+
+	describe("buffer", function () {
+		beforeEach(() => {
+		});
+		afterEach(() => {
+		});
+		interface SampleData {
+			some: string;
+		}
+		it("size constrained", async function () {
+			let chunk = [];
+			let chunks = [];
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]),
+				streams.buffer({
+					label: "batch-test",
+					size: 2,
+				}, (obj, callback) => {
+					chunk.push(obj);
+					callback(null, {
+						size: 1,
+					});
+				}, (callback) => {
+					chunks.push(chunk.splice(0));
+					callback();
+				}, (callback) => {
+					callback();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				[{
+					some: "data1"
+				}, {
+					some: "data2"
+				}],
+				[{
+					some: "data3"
+				}, {
+					some: "data4"
+				}],
+				[{
+					some: "data5"
+				}, {
+					some: "data6"
+				}]
+			]);
+		});
+
+		it("record constrained", async function () {
+			let chunk = [];
+			let chunks = [];
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]),
+				streams.buffer({
+					label: "batch-test",
+					//size: 2,
+					records: 3,
+				}, (obj, callback) => {
+					chunk.push(obj);
+					callback(null, {
+						records: 1,
+					});
+				}, (callback) => {
+					chunks.push(chunk.splice(0));
+					callback();
+				}, (callback) => {
+					callback();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				[{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}],
+				[{
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]
+			]);
+		});
+	});
+
+	describe("buffer2", function () {
+		beforeEach(() => {
+		});
+		afterEach(() => {
+		});
+		interface SampleData {
+			some: string;
+		}
+		it("size constrained", async function () {
+			let chunk = [];
+			let chunks = [];
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]),
+				streams.buffer2({
+					label: "batch-test",
+					size: 2,
+				}, (obj, callback) => {
+					chunk.push(obj);
+					callback(null, {
+						size: 1,
+					});
+				}, (callback, data) => {
+					chunks.push({
+						chunk: chunk.splice(0),
+						data: data
+					});
+					callback();
+				}, (callback) => {
+					callback();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				{
+					chunk: [{
+						some: "data1"
+					}, {
+						some: "data2"
+					}],
+					data: {
+						isLast: false,
+						records: 2,
+						size: 2
+					}
+				},
+				{
+					chunk: [{
+						some: "data3"
+					}, {
+						some: "data4"
+					}], data: {
+						isLast: false,
+						records: 2,
+						size: 2
+					}
+				},
+				{
+					chunk: [{
+						some: "data5"
+					}, {
+						some: "data6"
+					}],
+					data: {
+						isLast: false,
+						records: 2,
+						size: 2
+					}
+				}
+			]);
+		});
+
+		it("record constrained", async function () {
+			let chunk = [];
+			let chunks = [];
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]),
+				streams.buffer2({
+					label: "batch-test",
+					//size: 2,
+					records: 3,
+				}, (obj, callback) => {
+					chunk.push(obj);
+					callback(null, {
+						records: 1,
+					});
+				}, (callback, data) => {
+					chunks.push({
+						chunk: chunk.splice(0),
+						data: data
+					});
+					callback();
+				}, (callback) => {
+					callback();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				{
+					chunk: [{
+						some: "data1"
+					}, {
+						some: "data2"
+					}, {
+						some: "data3"
+					}],
+					data: {
+						isLast: false,
+						records: 3,
+						size: 3
+					}
+				},
+				{
+					chunk: [{
+						some: "data4"
+					}, {
+						some: "data5"
+					}, {
+						some: "data6"
+					}],
+					data: {
+						isLast: false,
+						records: 3,
+						size: 3
+					}
+				}
+			]);
+		});
+
+		it("record constrained - size 0", async function () {
+			let chunk = [];
+			let chunks = [];
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}, {
+					some: "data7"
+				}]),
+				streams.buffer2({
+					label: "batch-test",
+					//size: 2,
+					records: 3,
+				}, (obj, callback) => {
+					chunk.push(obj);
+					callback(null, {
+						records: 1,
+						size: 0
+					});
+				}, (callback, data) => {
+					chunks.push({
+						chunk: chunk.splice(0),
+						data: data
+					});
+					callback();
+				}, (callback) => {
+					callback();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				{
+					chunk: [{
+						some: "data1"
+					}, {
+						some: "data2"
+					}, {
+						some: "data3"
+					}],
+					data: {
+						isLast: false,
+						records: 3,
+						size: 0
+					}
+				},
+				{
+					chunk: [{
+						some: "data4"
+					}, {
+						some: "data5"
+					}, {
+						some: "data6"
+					}],
+					data: {
+						isLast: false,
+						records: 3,
+						size: 0
+					}
+				},
+				{
+					chunk: [{
+						some: "data7"
+					}],
+					data: {
+						isLast: true,
+						records: 1,
+						size: 0
+					}
+				}
+			]);
+		});
+	});
+
+	describe("batchFilter", function () {
+		beforeEach(() => {
+		});
+		afterEach(() => {
+		});
+		interface SampleData {
+			some: string;
+		}
+		it("record constrained no filter", async function () {
+			let chunks = [];
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]),
+				streams.batchFilter({
+					count: 2,
+				}),
+				streams.through((data, done) => {
+					chunks.push(data);
+					done();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				{
+					eid: undefined,
+					start_eid: undefined,
+					event: undefined,
+					event_source_timestamp: undefined,
+					id: undefined,
+					timestamp: undefined,
+					bytes: 0,
+					units: 2,
+					correlation_id: {
+						end: undefined,
+						start: undefined,
+						source: undefined,
+						units: 2
+					},
+					payload: [{
+						some: "data1"
+					}, {
+						some: "data2"
+					}]
+				}, {
+					eid: undefined,
+					start_eid: undefined,
+					event: undefined,
+					event_source_timestamp: undefined,
+					id: undefined,
+					timestamp: undefined,
+					bytes: 0,
+					units: 2,
+					correlation_id: {
+						end: undefined,
+						start: undefined,
+						source: undefined,
+						units: 2
+					},
+					payload: [{
+						some: "data3"
+					}, {
+						some: "data4"
+					}]
+				}, {
+					eid: undefined,
+					start_eid: undefined,
+					event: undefined,
+					event_source_timestamp: undefined,
+					id: undefined,
+					timestamp: undefined,
+					bytes: 0,
+					units: 2,
+					correlation_id: {
+						end: undefined,
+						start: undefined,
+						source: undefined,
+						units: 2
+					},
+					payload: [{
+						some: "data5"
+					}, {
+						some: "data6"
+					}]
+				},
+			]);
+		});
+
+		it("record constrained filter evens", async function () {
+			let chunks = [];
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					some: "data1"
+				}, {
+					some: "data2"
+				}, {
+					some: "data3"
+				}, {
+					some: "data4"
+				}, {
+					some: "data5"
+				}, {
+					some: "data6"
+				}]),
+				streams.batchFilter({
+					count: 2,
+					filter: (obj: any) => {
+						let num = parseInt(obj.some.replace("data", ""));
+						return num % 2 == 0;
+					}
+				}),
+				streams.through((data, done) => {
+					chunks.push(data);
+					done();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				{
+					eid: undefined,
+					start_eid: undefined,
+					event: undefined,
+					event_source_timestamp: undefined,
+					id: undefined,
+					timestamp: undefined,
+					bytes: 0,
+					units: 4,
+					correlation_id: {
+						end: undefined,
+						start: undefined,
+						source: undefined,
+						units: 4
+					},
+					payload: [{
+						some: "data2"
+					}, {
+						some: "data4"
+					}]
+				}, {
+					eid: undefined,
+					start_eid: undefined,
+					event: undefined,
+					event_source_timestamp: undefined,
+					id: undefined,
+					timestamp: undefined,
+					bytes: 0,
+					units: 2,
+					correlation_id: {
+						end: undefined,
+						start: undefined,
+						source: undefined,
+						units: 2
+					},
+					payload: [{
+						some: "data6"
+					}]
+				},
+			]);
+		});
+
+		it("record constrained filter event wrapper", async function () {
+			let chunks = [];
+			let now = 1652216325999;
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-01", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 1, payload: { some: "data1" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-02", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 2, payload: { some: "data2" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-03", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 3, payload: { some: "data3" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-04", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 4, payload: { some: "data4" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-05", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 5, payload: { some: "data5" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-06", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 6, payload: { some: "data6" }
+				}]),
+				streams.batchFilter({
+					count: 2,
+					filter: (obj: ReadEvent<any>) => {
+						let num = parseInt(obj.payload.some.replace("data", ""));
+						return num % 2 == 0;
+					}
+				}),
+				streams.through((data, done) => {
+					chunks.push(data);
+					done();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				{
+					start_eid: "z/2022/12/12/25/23/1652216325999-01",
+					eid: "z/2022/12/12/25/23/1652216325999-04",
+					event: "queue_name",
+					event_source_timestamp: 1652216325899,
+					id: "bot_id",
+					timestamp: 1652216326003,
+					bytes: 0,
+					units: 4,
+					correlation_id: {
+						end: undefined,
+						start: undefined,
+						source: undefined,
+						units: 4
+					},
+					payload: [{
+						eid: "z/2022/12/12/25/23/1652216325999-02",
+						event: "queue_name",
+						event_source_timestamp: 1652216325899,
+						id: "bot_id",
+						payload: {
+							some: "data2",
+						},
+						timestamp: 1652216326001
+					}, {
+						eid: "z/2022/12/12/25/23/1652216325999-04",
+						event: "queue_name",
+						event_source_timestamp: 1652216325899,
+						id: "bot_id",
+						payload: {
+							some: "data4",
+						},
+						timestamp: 1652216326003
+					}]
+				}, {
+					start_eid: "z/2022/12/12/25/23/1652216325999-05",
+					eid: "z/2022/12/12/25/23/1652216325999-06",
+					event: "queue_name",
+					event_source_timestamp: 1652216325899,
+					id: "bot_id",
+					timestamp: 1652216326005,
+					bytes: 0,
+					units: 2,
+					correlation_id: {
+						end: undefined,
+						start: undefined,
+						source: undefined,
+						units: 2
+					},
+					payload: [{
+						eid: "z/2022/12/12/25/23/1652216325999-06",
+						event: "queue_name",
+						event_source_timestamp: 1652216325899,
+						id: "bot_id",
+						payload: {
+							some: "data6",
+						},
+						timestamp: 1652216326005
+					}]
+				},
+			]);
+		});
+
+		it("record constrained filter cp correlation", async function () {
+			let chunks = [];
+			let now = 1652216325999;
+			await streams.pipeAsync(
+				util.eventstream.readArray([{
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-01", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 1, payload: { some: "data1" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-02", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 2, payload: { some: "data2" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-03", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 3, payload: { some: "data3" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-04", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 4, payload: { some: "data4" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-05", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 5, payload: { some: "data5" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-06", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 6, payload: { some: "data6" }
+				}, {
+					id: "bot_id", eid: "z/2022/12/12/25/23/1652216325999-07", event: "queue_name", event_source_timestamp: now - 100, timestamp: now + 7, payload: { some: "data7" }
+				}]),
+				streams.batchFilter({
+					count: 2,
+					filter: (obj: ReadEvent<any>) => {
+						let num = parseInt(obj.payload.some.replace("data", ""));
+						return num % 3 == 0;
+					}
+				}),
+				streams.through((batchedEvents, done) => {
+					chunks.push({
+						payload: {},
+						correlation_id: {
+							source: "some_queue",
+							start: batchedEvents.start_eid,
+							end: batchedEvents.eid,
+							units: batchedEvents.units || 1,
+						}
+					});
+					done();
+				}),
+				streams.devnull()
+			);
+
+			assert.deepEqual(chunks, [
+				{
+					correlation_id: {
+						source: "some_queue",
+						end: "z/2022/12/12/25/23/1652216325999-06",
+						start: "z/2022/12/12/25/23/1652216325999-01",
+						units: 6
+					},
+					payload: {}
+				}, {
+
+					correlation_id: {
+						source: "some_queue",
+						end: "z/2022/12/12/25/23/1652216325999-07",
+						start: "z/2022/12/12/25/23/1652216325999-07",
+						units: 1
+					},
+					payload: {}
+				},
+			]);
+		});
+
+	});
 });
+
 function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => { setTimeout(() => resolve(), ms); });
 }

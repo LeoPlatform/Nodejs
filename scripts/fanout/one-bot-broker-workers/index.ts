@@ -2,6 +2,7 @@ import { cpus } from "os";
 import { Event } from "../../../lib/types";
 import wrapper, { getId } from "./fanout-wrapper";
 import { RStreamsSdk } from "../../../index";
+import { promisify } from "util";
 
 let sdk = new RStreamsSdk();
 
@@ -23,8 +24,9 @@ export const handler = wrapper(async function (event, context) {
 
 	console.log(id, "Processing");
 	let count = 0;
+	let reader;
 	await sdk.streams.pipeAsync(
-		sdk.read("JUNK", queue, {
+		reader = sdk.read("JUNK", queue, {
 			fast_s3_read: true,
 			//start: sdk.streams.eventIdFromTimestamp(Date.now() - (1000 * 60 * 60 * 24 * 2)),
 			_parse: (data) => {
@@ -41,16 +43,17 @@ export const handler = wrapper(async function (event, context) {
 		sdk.streams.throughAsync(async (event) => {
 			count++;
 			if (count % 100 === 0) {
-				console.log(id, event.eid);
+				console.log(id, count, event.eid);
 			}
 		}),
 		sdk.streams.devnull()
 	);
+	await promisify(reader.checkpoint).bind(reader)();
 	console.log(id, "total:", count);
 }, {
 	instances() {
 		//return cpus().length;
-		return 10;
+		return 1;
 	},
 	eventPartition(event: Event<OldNew<Order>>) {
 		return event.payload?.new?.suborder_id || event.payload?.old?.suborder_id;
