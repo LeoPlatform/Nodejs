@@ -213,7 +213,7 @@ describe('lib/event-trace.ts', function () {
 						"server_id": "bot:clint-fanout2-bot-2",
 						"type": "bot",
 						"has_processed": false,
-						"label": undefined,
+						"label": "bot:clint-fanout2-bot-2",
 						"lag": -2103390466,
 						"checkpoint": {
 							"checkpoint": "z/2021/12/07/23/20/1638919232301-0000000",
@@ -470,7 +470,7 @@ describe('lib/event-trace.ts', function () {
 						"server_id": "bot:clint-fanout2-bot-2",
 						"type": "bot",
 						"has_processed": true,
-						"label": undefined,
+						"label": "bot:clint-fanout2-bot-2",
 						"lag": 0,
 						"checkpoint": {
 							"checkpoint": "z/2021/12/07/23/20/1638919232301-0000000",
