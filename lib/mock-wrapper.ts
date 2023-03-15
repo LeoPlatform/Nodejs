@@ -1,5 +1,5 @@
 import { StreamUtil } from "./lib";
-import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions } from "./types";
+import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions, ReadableQueueStream } from "./types";
 import fs from "fs";
 import path from "path";
 import util from "./aws-util";
@@ -10,7 +10,10 @@ import uuid from "uuid";
 
 import refUtil from "./reference";
 
-const requireFn = module.require;
+declare var __webpack_require__;
+declare var __non_webpack_require__;
+const requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+
 
 declare type LeoStream = typeof StreamUtil;
 export default function (leoStream: LeoStream) {
@@ -27,7 +30,7 @@ export default function (leoStream: LeoStream) {
 	};
 
 	let fromLeo = leoStream.fromLeo.bind(leoStream);
-	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions): ReadableStream<ReadEvent<T>> => {
+	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions): ReadableQueueStream<T> => {
 		queue = refUtil.ref(queue).id;
 		// Look for events that were written to this queue in this process
 		let runtimeQueue = process.env[`RSTREAMS_MOCK_DATA_Q_${queue}`] || "";
@@ -60,6 +63,11 @@ export default function (leoStream: LeoStream) {
 		let timestamp = Date.now();
 		let fileStreams = {};
 		let mockStream = leoStream.through<Event<T>, unknown>((writeData: Event<T>, callback) => {
+			// No queue.  Just a command event so we can skip it
+			if (!writeData || !writeData.event) {
+				return callback();
+			}
+
 			let queue = refUtil.ref(writeData.event).id;
 			// Mark queue to have in memory data from this batch
 			process.env[`RSTREAMS_MOCK_DATA_Q_${queue}`] = settings.batchId;
