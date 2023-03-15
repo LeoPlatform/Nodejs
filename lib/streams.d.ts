@@ -39,6 +39,26 @@ declare interface ProcessFunctionOptions extends ProcessCallbackOptions {
 	 * @default false
 	 */
 	partial?: boolean;
+
+	/**
+	 * Overriding the default queue to send the event to
+	 */
+	queue?: string;
+	/**
+	 * Overriding the default event_source_timestamp from the source event
+	 */
+	event_source_timestamp?: number;
+
+
+	/**
+	 * Overriding the source eid to use for correlation
+	 */
+	eid?: string;
+
+	/**
+	 * Overriding the default units from the source event
+	 */
+	units?: number;
 }
 
 /**
