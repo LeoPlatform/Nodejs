@@ -1,6 +1,6 @@
 
 import Pumpify from "pumpify";
-import stream from "stream";
+import stream, { Stream } from "stream";
 import { Callback, EnrichOptions, EnrichBatchOptions, OffloadOptions, OffloadBatchOptions, ReadOptions, StreamUtil, ToCheckpointOptions, WriteOptions } from "./lib/lib";
 import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
@@ -8,6 +8,7 @@ import AWS, { Credentials } from "aws-sdk";
 import { Event } from "./lib/types";
 import ConfigurationProvider from "./lib/rstreams-configuration";
 import { ReadableStream } from "./lib/types";
+import { StreamUtilV2 } from "./lib/stream/leo-stream-v2";
 export * from "./lib/types";
 
 /**
@@ -104,7 +105,7 @@ export declare class RStreamsSdk {
 	 * @return Rstreams Used to get the leo stream to do more advanced processing of the streams.
 	 * @todo question do we still need this? can/should we put all useful things in this interface?
 	 */
-	streams: typeof StreamUtil;
+	streams: typeof StreamUtil & StreamUtilV2;
 
 	/** @method */
 	load: typeof StreamUtil.load;
@@ -244,22 +245,6 @@ export declare class RStreamsSdk {
 	 * @method
 	 */
 	createSource: <T, R = any>(fn: CreateSourceFunction<T, R>, opt?: CreateSourceOptions, state?: R) => ReadableStream<T>;
-}
-
-/**
- * Async function that you write that takes the current state R and returns an array of data tpye T
- */
-export declare type CreateSourceFunction<T, R> = (state: R) => Promise<T[] | undefined>;
-
-/**
- * Options for the function [[`RStreamsSdk.createSource`]]
- */
-export interface CreateSourceOptions {
-	/** max number or records to emit before ending the stream */
-	records?: number;
-
-	/** max number of milliseconds to wait before closing the stream */
-	milliseconds?: number;
 }
 
 export interface AwsResourceConfig {

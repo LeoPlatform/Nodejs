@@ -41,7 +41,7 @@ describe("lib/cron.js", function () {
 
 			await new Promise((resolve, reject) => cron.trigger({
 				id: "MOCK_CRON_ID"
-			}, (err) => { err ? reject(err) : resolve(undefined) }));
+			}, (err) => { err ? reject(err) : resolve(undefined); }));
 
 			expect(update).called;
 			assert.deepEqual(update.getCall(0).args[0],
@@ -84,7 +84,7 @@ describe("lib/cron.js", function () {
 			try {
 				await new Promise((resolve, reject) => cron.trigger({
 					id: "MOCK_CRON_ID"
-				}, (err) => { err ? reject(err) : resolve(undefined) }));
+				}, (err) => { err ? reject(err) : resolve(undefined); }));
 			} catch (err) {
 				error = err;
 			}
@@ -698,7 +698,7 @@ describe("lib/cron.js", function () {
 				}
 			);
 
-			assert.isNotNull(error)
+			assert.isNotNull(error);
 			assert.equal(error.message, "Update Error");
 		});
 	});
@@ -1534,7 +1534,7 @@ describe("lib/cron.js", function () {
 				}
 			);
 			assert.isNotNull(error);
-			assert.equal(error.message, "Some Error")
+			assert.equal(error.message, "Some Error");
 		});
 	});
 
@@ -1868,7 +1868,7 @@ describe("lib/cron.js", function () {
 				},
 			);
 
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("Read without expected", async function () {
@@ -1938,7 +1938,7 @@ describe("lib/cron.js", function () {
 					"ConditionExpression": "attribute_not_exists(#checkpoints.#type.#event.#checkpoint)"
 				},
 			);
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("different checkpoint location", async function () {
@@ -2000,7 +2000,7 @@ describe("lib/cron.js", function () {
 					"UpdateExpression": "set #checkpoints.#type.#event = :value",
 				},
 			);
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("Read undefined value", async function () {
@@ -2061,7 +2061,7 @@ describe("lib/cron.js", function () {
 				},
 			);
 
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("Stale Checkpoint", async function () {
