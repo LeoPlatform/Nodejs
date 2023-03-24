@@ -9,6 +9,8 @@ import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, Corr
 import * as es from "event-stream";
 import zlib from "zlib";
 import { Options as BackoffOptions } from "backoff";
+import { Context } from "aws-lambda";
+import { ConfigurationResources, Cron } from "../index";
 
 /**
  * A standard callback function.  If the operation failed, return the first argument only,
@@ -642,6 +644,16 @@ export interface CreateCorrelationOptions {
 	partial: boolean;
 }
 
+
+export interface ConfigurationObject {
+	registry?: {
+		context?: Context,
+		__cron?: Cron
+	},
+	resources: ConfigurationResources
+}
+
+
 /**
  * This namespace encompasses the majority of the functionality of the SDK.
  * It might be helpful to start at [[RStreamsSdk]] which exposes functionality from this namespace
@@ -650,6 +662,9 @@ export interface CreateCorrelationOptions {
  * @todo question We have StreamUtil and Streams which is streams.d.ts.  Why?
  */
 export declare namespace StreamUtil {
+
+	const configuration: ConfigurationObject;
+
 
 	/**
 	 * Helper function to turn a timestamp into an RStreams event ID.
@@ -1185,4 +1200,21 @@ export declare namespace StreamUtil {
 	function createCorrelation<T>(startEvent: ReadEvent<T>, endEvent: ReadEvent<T>, units: number, opts?: CreateCorrelationOptions): CorrelationId;
 	function createCorrelation<T>(events: ReadEvent<T>[], opts?: CreateCorrelationOptions): CorrelationId;
 
+}
+
+
+/**
+ * Async function that you write that takes the current state R and returns an array of data tpye T
+ */
+export declare type CreateSourceFunction<T, R> = (state: R) => Promise<T[] | undefined>;
+
+/**
+ * Options for the function [[`RStreamsSdk.createSource`]]
+ */
+export interface CreateSourceOptions<R = any> {
+	/** max number or records to emit before ending the stream */
+	records?: number;
+
+	/** max number of milliseconds to wait before closing the stream */
+	milliseconds?: number;
 }

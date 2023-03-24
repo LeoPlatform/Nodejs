@@ -19,6 +19,7 @@
 		"lint": "eslint ."
 	},
 	"dependencies": {
+		"@types/async": "^3.2.18",
 		"async": "2.6.4",
 		"backoff": "2.5.0",
 		"big-integer": "^1.6.51",

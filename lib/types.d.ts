@@ -12,6 +12,9 @@ import stream from 'stream';
 // }
 
 export interface ReadableQueueStream<T> extends ReadableStream<ReadEvent<T>> {
+	throttledWrite(obj: ReadEvent<T>, callback: Callback): void;
+	write(obj: ReadEvent<T>): boolean;
+	end(): void;
 	get(): Checkpoint;
 	checkpoint(params: Checkpoint, done: Callback): void;
 	checkpoint(done: Callback): void;
@@ -312,7 +315,7 @@ export interface WriteEvent<T> extends Event<T> {
  * @todo question shouldn't we deprecate `id` or `eid`; why have both?
  */
 export interface ReadEvent<T> extends Event<T> {
-	/** The ID of the bot that wrote this event to the queue (a dup of id for legacy purposes) */
+	/** The sequenced event id for this event. */
 	eid: string;
 
 	/** The RStreams queue-specific data that this event exists to wrap */
@@ -466,6 +469,7 @@ export interface RSFQueueBotInvocationEvent extends RSFBotInvocationEvent {
  * about a bot.
  */
 export interface Cron {
+	maxeid?: string;
 	/** The ID of the bot */
 	id: string;
 
@@ -497,6 +501,8 @@ export interface Cron {
 	checkpoints?: Checkpoints;
 	// pub botName: string;
 	//pub instances: string
+
+	starteid?: Record<string, string>;
 }
 
 /**

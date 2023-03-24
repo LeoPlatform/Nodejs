@@ -188,9 +188,9 @@ describe('lib.stream.s3_local_file_helper', function () {
 				uncompressed: true
 			}, "z/2022/09/07/00/47/1662511674513-0000003");
 
-			assert.equal(path1, "/tmp/rstream-sdk/my-bucket/1662511674511-0000001_key_goes_here_suff1_0-1000.gz");
-			assert.equal(path2, "/tmp/rstream-sdk/my-bucket/1662511674512-0000002_key_goes_here_suff2_0-1001.gz");
-			assert.equal(path3, "/tmp/rstream-sdk/my-bucket/1662511674513-0000003_key_goes_here_suff2_0-1002.jsonl");
+			assert.equal(path1, "/tmp/rstreams-sdk/my-bucket/1662511674511-0000001_key_goes_here_suff1_0-1000.gz");
+			assert.equal(path2, "/tmp/rstreams-sdk/my-bucket/1662511674512-0000002_key_goes_here_suff2_0-1001.gz");
+			assert.equal(path3, "/tmp/rstreams-sdk/my-bucket/1662511674513-0000003_key_goes_here_suff2_0-1002.jsonl");
 
 		});
 

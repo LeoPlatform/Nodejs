@@ -14,6 +14,7 @@
 		"jsxFragmentFactory": "JSX.Fragment",
 		"baseUrl": ".",
 		"declaration": true,
+		"skipLibCheck": true,
 		"paths": {
 			"*": [
 				"node_modules/*",

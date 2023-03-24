@@ -503,13 +503,14 @@ describe("Streams", function () {
 				);
 			});
 
-			assert.deepEqual(logs, [
-				["counter 1 0 "],
-				["counter 2 0 "],
-				["counter 3 0 "],
-				["counter 4 0 "],
-				["counter 5 0 "],
-				["counter 6 0 "]
+			assert.deepEqual(logs.map(a => a.map(b => b.replace(/ RPS: .*? /, " "))), [
+				["counter 1 0ms "],
+				["counter 2 0ms "],
+				["counter 3 0ms "],
+				["counter 4 0ms "],
+				["counter 5 0ms "],
+				["counter 6 0ms "],
+				["counter 6 0ms "]
 			]);
 			assert.deepEqual(data, [
 				{ some: "data1" },
@@ -549,10 +550,11 @@ describe("Streams", function () {
 				);
 			});
 
-			assert.deepEqual(logs, [
-				["counter 2 0 "],
-				["counter 4 0 "],
-				["counter 6 0 "]
+			assert.deepEqual(logs.map(a => a.map(b => b.replace(/ RPS: .*? /, " "))), [
+				["counter 2 0ms "],
+				["counter 4 0ms "],
+				["counter 6 0ms "],
+				["counter 6 0ms "]
 			]);
 			assert.deepEqual(data, [
 				{ some: "data1" },
@@ -592,10 +594,11 @@ describe("Streams", function () {
 				);
 			});
 
-			assert.deepEqual(logs, [
-				["2 0 "],
-				["4 0 "],
-				["6 0 "]
+			assert.deepEqual(logs.map(a => a.map(b => b.replace(/ RPS: .*? /, " "))), [
+				["2 0ms "],
+				["4 0ms "],
+				["6 0ms "],
+				["6 0ms "]
 			]);
 			assert.deepEqual(data, [
 				{ some: "data1" },

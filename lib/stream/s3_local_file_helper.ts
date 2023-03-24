@@ -3,7 +3,7 @@ import path, { dirname } from "path";
 
 const logger = require("leo-logger")("leo-s3-local-helper");
 
-const BASE_DIR = "/tmp/rstream-sdk";
+const BASE_DIR = "/tmp/rstreams-sdk";
 
 export function tryPurgeS3Files(
 	start: string,
@@ -84,7 +84,7 @@ export function buildLocalFilePath(file: S3File, eid = ""): string {
 	return localFilename;
 }
 
-interface S3File {
+export interface S3File {
 	Bucket?: string;
 	Key?: string;
 
