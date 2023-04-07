@@ -74,7 +74,7 @@ export class ConfigurationBuilder<T> {
 			g.rstreams_project_config_cache = {};
 		}
 
-		if (this.data == null) {
+		if (this.data == null || this.data == "") {
 			if (process.env.RSF_CONFIG) {
 				this.data = process.env.RSF_CONFIG;
 			} else if ((process as any).rsf_config) {
