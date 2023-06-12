@@ -46,7 +46,7 @@ export interface ResourceReference {
 export declare type ConfigurationData = ResourceReference | number | string | { [key: string]: ConfigurationData };
 
 export class ConfigurationBuilder<T> {
-	constructor(private data: ConfigurationData) { }
+	constructor(private data?: ConfigurationData) { }
 
 	build(options: ConfigOptions = {}): T {
 		logger.time("get-config");
@@ -74,7 +74,7 @@ export class ConfigurationBuilder<T> {
 			g.rstreams_project_config_cache = {};
 		}
 
-		if (this.data == null) {
+		if (this.data == null || this.data == "") {
 			if (process.env.RSF_CONFIG) {
 				this.data = process.env.RSF_CONFIG;
 			} else if ((process as any).rsf_config) {

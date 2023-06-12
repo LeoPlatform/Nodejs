@@ -58,6 +58,13 @@ export default function (leoStream: LeoStream) {
 		return mockStream;
 	};
 
+	let oldLoad = leoStream.load.bind(leoStream);
+	leoStream.load = <T>(id: string, queue: string, opts?: BaseWriteOptions): TransformStream<Event<T>, unknown> => {
+		if (opts && opts.useS3) {
+			delete opts.useS3;
+		}
+		return oldLoad(id, queue, opts);
+	};
 	leoStream.toLeo = <T>(botId: string, config?: BaseWriteOptions): TransformStream<Event<T>, unknown> => {
 		let records = 0;
 		let timestamp = Date.now();
@@ -110,11 +117,19 @@ export default function (leoStream: LeoStream) {
 		return mockStream;
 	};
 
+	let fromS3 = leoStream.fromS3.bind(leoStream);
 	leoStream.fromS3 = (file: {
 		bucket: string,
 		key: string;
 		range?: string;
 	}): stream.Readable => {
+		let runtimeQueue = process.env[`RSTREAMS_MOCK_DATA_Q_${file.key.split("/")[1] ?? ""}`] || "";
+
+		// Allow for a queue to to the actual data
+		if (runtimeQueue === "passthrough") {
+			return fromS3(file);
+		}
+
 		let Bucket = path.resolve(settings.s3Directory, file.bucket);
 		let Key = file.key;
 		// let Range = file.range || undefined;
