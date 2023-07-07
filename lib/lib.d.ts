@@ -5,7 +5,7 @@ import { LeoDynamodb } from "./dynamodb";
 import { Checkpoint, LeoCron } from "./cron";
 import Streams, { BatchOptions, ProcessFunction, } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions, BaseEvent, ReadableQueueStream } from "./types";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions, BaseEvent, ReadableQueueStream, JoinExternalFetcher } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
 import { Options as BackoffOptions } from "backoff";
@@ -1158,5 +1158,10 @@ export declare namespace StreamUtil {
 	function createCorrelation<T>(event: ReadEvent<T>, opts?: CreateCorrelationOptions): CorrelationId;
 	function createCorrelation<T>(startEvent: ReadEvent<T>, endEvent: ReadEvent<T>, units: number, opts?: CreateCorrelationOptions): CorrelationId;
 	function createCorrelation<T>(events: ReadEvent<T>[], opts?: CreateCorrelationOptions): CorrelationId;
+
+	/**
+	 * @returns The pipeline step that joins an external data source with events
+	 */
+	export function joinExternal<T, R>(fetcher: JoinExternalFetcher<T, T & { joinData: R }>): TransformStream<T, T & { joinData: R }>;
 
 }

@@ -46,7 +46,7 @@ export interface ResourceReference {
 export declare type ConfigurationData = ResourceReference | number | string | { [key: string]: ConfigurationData };
 
 export class ConfigurationBuilder<T> {
-	constructor(private data: ConfigurationData) { }
+	constructor(private data?: ConfigurationData) { }
 
 	build(options: ConfigOptions = {}): T {
 		logger.time("get-config");
