@@ -279,6 +279,17 @@ export interface ReadOptions {
 	 */
 	fast_s3_read_parallel_fetch_max_bytes?: number;
 
+
+	/**
+	 * When using the [[`ReadOptions.fast_s3_read`]] feature, this specifies how many retries for S3 timeouts 
+	 * before giving up on preconnecting.
+	 * The default usually is correct.
+	 * 
+	 * @default 1 retry
+	 * @todo inconsistent fast_s3_read_timeout_retry_count
+	 */
+	fast_s3_read_timeout_retry_count?: number;
+
 	/**
 	 * The max number of records, events, the SDK should retrieve each time it retrieves events from the 
 	 * RStreams Bus' Dynamo DB events table.
