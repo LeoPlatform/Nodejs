@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "6.0.12",
+	"version": "6.0.17",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",

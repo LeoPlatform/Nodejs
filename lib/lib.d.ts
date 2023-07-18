@@ -65,6 +65,40 @@ export interface BaseWriteOptions {
 	useS3?: boolean;
 
 	/**
+	 * Options to pass to leoS3 to configure s3 file creation
+	 */
+	s3Opts?: {
+		/**
+		 * prefix to use in the file name.  
+		 * @default Bot Id
+		 */
+		prefix?: string;
+
+		/**
+		 * Time allowed before closing an s3 file
+		 * @default 10s
+		 */
+		time?: moment.DurationInputArg1;
+
+		/**
+		 * Time allowed before closing a chunk of an s3 file
+		 * @default this.time
+		 */
+		chunkTime?: moment.DurationInputArg1;
+
+		/**
+		 * Max number of chunk sections to allow in an S3 file
+		 */
+		sectionCount?: number;
+
+		/**
+		 * Include the duration to create the first chunk in the allowed S3 file time
+		 * @default true
+		 */
+		addBufferDuration?: boolean;
+	}
+
+	/**
 	 * If true, firehose will be used.  Firehose batches events sent to it to an S3 file in 1 minute
 	 * increments, which of course adds at least a one minute latency. However, firehose can take a vast number 
 	 * of concurrent writes compared to kinesis.  So, use this when you have a giant number of concurrent events 
