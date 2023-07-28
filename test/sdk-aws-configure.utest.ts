@@ -2,15 +2,8 @@ import { RStreamsSdk, ReadEvent } from "../index";
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
-import AWS, { Credentials, Kinesis } from "aws-sdk";
-import { gzipSync, gunzipSync } from "zlib";
-//import { StreamUtil } from "../lib/lib";
-import streams from "../lib/streams";
-import fs, { WriteStream } from "fs";
-import zlib from "zlib";
-import util from "../lib/aws-util";
-import awsSdkSync from "../lib/aws-sdk-sync";
-import { ReadableStream } from "../lib/types";
+import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
+import { NodeHttpHandler, NodeHttpHandlerOptions } from "@aws-sdk/node-http-handler";
 chai.use(sinonchai);
 
 let mockSdkConfig = {
@@ -40,19 +33,20 @@ describe('index/aws-configs', function () {
 	describe("sdk AWS config", function () {
 
 		describe("dynamodb", () => {
-			it("default", () => {
+			it("default", async () => {
 				let sdk = new RStreamsSdk();
 
-				let config = (sdk.aws.dynamodb.docClient["service"] as AWS.DynamoDB).config;
+				let config = sdk.aws.dynamodb.docClient.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.maxRetries, 2);
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 5000);
-				assert.equal(config.httpOptions.connectTimeout, 2000);
+				assert.equal(await config.maxAttempts(), 3);
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, 5000);
+				assert.equal(httpOptions.connectionTimeout, 2000);
 
 			});
 
-			it("custom", () => {
+			it("custom", async () => {
 				let sdk = new RStreamsSdk(undefined, {
 					dynamodbConfig: {
 						maxRetries: 10,
@@ -63,31 +57,33 @@ describe('index/aws-configs', function () {
 					}
 				});
 
-				let config = (sdk.aws.dynamodb.docClient["service"] as AWS.DynamoDB).config;
+				let config = sdk.aws.dynamodb.docClient.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.maxRetries, 10);
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 1000);
-				assert.equal(config.httpOptions.connectTimeout, 100);
+				assert.equal(await config.maxAttempts(), 11);
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, 1000);
+				assert.equal(httpOptions.connectionTimeout, 100);
 
 			});
 		});
 
 		describe("kinesis", () => {
-			it("default", () => {
+			it("default", async () => {
 				let sdk = new RStreamsSdk();
 				let config = sdk.aws.kinesis.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "kinesis.mock-Region.amazonaws.com");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 120000);
+				assert.equal(await config.region(), "mock-Region");
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, undefined);
 
 			});
 
-			it("custom", () => {
+			it("custom", async () => {
 				let sdk = new RStreamsSdk(undefined, {
 					kinesisConfig: {
-						endpoint: "some-custom-kinesis-endpoint",
+						endpoint: "http://some-custom-kinesis-endpoint",
 						maxRetries: 10,
 						httpOptions: {
 							timeout: 1000,
@@ -98,29 +94,33 @@ describe('index/aws-configs', function () {
 
 				let config = sdk.aws.kinesis.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "some-custom-kinesis-endpoint");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 1000);
-				assert.equal(config.httpOptions.connectTimeout, 100);
+				assert.equal((await config.endpoint()).hostname, "some-custom-kinesis-endpoint" as any);
+
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, 1000);
+				assert.equal(httpOptions.connectionTimeout, 100);
 
 			});
 		});
 
 		describe("firehose", () => {
-			it("default", () => {
+			it("default", async () => {
 				let sdk = new RStreamsSdk();
 				let config = sdk.aws.firehose.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "firehose.mock-Region.amazonaws.com");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 120000);
+				assert.equal(await config.region(), "mock-Region");
+
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, undefined);
 
 			});
 
-			it("custom", () => {
+			it("custom", async () => {
 				let sdk = new RStreamsSdk(undefined, {
 					firehoseConfig: {
-						endpoint: "some-custom-firehose-endpoint",
+						endpoint: "http://some-custom-firehose-endpoint",
 						maxRetries: 10,
 						httpOptions: {
 							timeout: 1000,
@@ -131,30 +131,32 @@ describe('index/aws-configs', function () {
 
 				let config = sdk.aws.firehose.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "some-custom-firehose-endpoint");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 1000);
-				assert.equal(config.httpOptions.connectTimeout, 100);
+				assert.equal((await config.endpoint()).hostname, "some-custom-firehose-endpoint");
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, 1000);
+				assert.equal(httpOptions.connectionTimeout, 100);
 
 			});
 		});
 
 		describe("s3", () => {
-			it("default", () => {
+			it("default", async () => {
 				let sdk = new RStreamsSdk();
 				let config = sdk.aws.s3.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "s3.amazonaws.com");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 120000);
-				assert.equal(config.httpOptions?.agent["keepAlive"], true);
+				assert.equal(await config.region(), "us-east-1");
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, undefined);
+				assert.equal(httpOptions?.httpsAgent["keepAlive"], true);
 
 			});
 
-			it("custom", () => {
+			it("custom", async () => {
 				let sdk = new RStreamsSdk({
 					s3Config: {
-						endpoint: "some-custom-s3-endpoint",
+						endpoint: "https://some-custom-s3-endpoint",
 						maxRetries: 10,
 						httpOptions: {
 							timeout: 1000,
@@ -165,21 +167,22 @@ describe('index/aws-configs', function () {
 
 				let config = sdk.aws.s3.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "some-custom-s3-endpoint");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 1000);
-				assert.equal(config.httpOptions.connectTimeout, 100);
-				assert.equal((config.httpOptions?.agent as any)?.keepAlive, true);
+				assert.equal((await config.endpoint()).hostname, "some-custom-s3-endpoint");
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, 1000);
+				assert.equal(httpOptions.connectionTimeout, 100);
+				assert.equal((httpOptions?.httpsAgent as any)?.keepAlive, true);
 
 			});
 		});
 
 		describe("constructors", () => {
 
-			it("just aws config", () => {
+			it("just aws config", async () => {
 				let sdk = new RStreamsSdk({
 					s3Config: {
-						endpoint: "some-custom-s3-endpoint",
+						endpoint: "https://some-custom-s3-endpoint",
 						maxRetries: 10,
 						httpOptions: {
 							timeout: 1000,
@@ -190,11 +193,12 @@ describe('index/aws-configs', function () {
 
 				let config = sdk.aws.s3.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "some-custom-s3-endpoint");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 1000);
-				assert.equal(config.httpOptions.connectTimeout, 100);
-				assert.equal((config.httpOptions?.agent as any)?.keepAlive, true);
+				assert.equal((await config.endpoint()).hostname, "some-custom-s3-endpoint");
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, 1000);
+				assert.equal(httpOptions.connectionTimeout, 100);
+				assert.equal((httpOptions?.httpsAgent as any)?.keepAlive, true);
 
 				assert.deepEqual(sdk.configuration.resources, {
 					LeoCron: "mock-LeoCron",
@@ -214,10 +218,10 @@ describe('index/aws-configs', function () {
 
 			});
 
-			it("undefined, aws config", () => {
+			it("undefined, aws config", async () => {
 				let sdk = new RStreamsSdk(undefined, {
 					s3Config: {
-						endpoint: "some-custom-s3-endpoint",
+						endpoint: "https://some-custom-s3-endpoint",
 						maxRetries: 10,
 						httpOptions: {
 							timeout: 1000,
@@ -228,11 +232,12 @@ describe('index/aws-configs', function () {
 
 				let config = sdk.aws.s3.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "some-custom-s3-endpoint");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 1000);
-				assert.equal(config.httpOptions.connectTimeout, 100);
-				assert.equal((config.httpOptions?.agent as any)?.keepAlive, true);
+				assert.equal((await config.endpoint()).hostname, "some-custom-s3-endpoint");
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, 1000);
+				assert.equal(httpOptions.connectionTimeout, 100);
+				assert.equal((httpOptions?.httpsAgent as any)?.keepAlive, true);
 
 				assert.deepEqual(sdk.configuration.resources, {
 					LeoCron: "mock-LeoCron",
@@ -252,10 +257,10 @@ describe('index/aws-configs', function () {
 
 			});
 
-			it("sdk config, aws config", () => {
+			it("sdk config, aws config", async () => {
 				let sdk = new RStreamsSdk(mockSdkConfig, {
 					s3Config: {
-						endpoint: "some-custom-s3-endpoint",
+						endpoint: "https://some-custom-s3-endpoint",
 						maxRetries: 10,
 						httpOptions: {
 							timeout: 1000,
@@ -266,11 +271,12 @@ describe('index/aws-configs', function () {
 
 				let config = sdk.aws.s3.config;
 				assert.exists(config, "should have a config");
-				assert.equal(config.endpoint, "some-custom-s3-endpoint");
-				assert.exists(config.httpOptions, "should have httpOptions");
-				assert.equal(config.httpOptions.timeout, 1000);
-				assert.equal(config.httpOptions.connectTimeout, 100);
-				assert.equal((config.httpOptions?.agent as any)?.keepAlive, true);
+				assert.equal((await config.endpoint()).hostname, "some-custom-s3-endpoint");
+				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
+				assert.exists(httpOptions, "should have httpOptions");
+				assert.equal(httpOptions.requestTimeout, 1000);
+				assert.equal(httpOptions.connectionTimeout, 100);
+				assert.equal((httpOptions?.httpsAgent as any)?.keepAlive, true);
 
 				assert.deepEqual(sdk.configuration.resources, {
 					LeoCron: "mock-LeoCron",

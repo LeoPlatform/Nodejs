@@ -1,12 +1,8 @@
-import util from "util";
-import RSTREAMS_CONFIG, { ConfigurationResources } from "../index";
+import { ConfigurationResources } from "../index";
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
-import { trace as eventTrace } from "../lib/event-trace";
-import moment from "moment";
 import ConfigProviderChain, { AWSSecretsConfiguration, EnvironmentConfiguration, FileTreeConfiguration, LeoConfiguration, ObjectConfiguration, ProvidersInputType } from "../lib/rstreams-config-provider-chain";
 
-import AWS from "aws-sdk";
 import awsSdkSync from "../lib/aws-sdk-sync";
 
 

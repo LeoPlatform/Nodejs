@@ -1,6 +1,3 @@
-import AWS from "aws-sdk";
-
-
 const abort = {};
 function update(obj1, obj2) {
 	each(obj2, function iterator(key, item) {
@@ -71,11 +68,7 @@ export const date = {
 	 *   requests.
 	 */
 	getDate: function getDate() {
-		if (AWS.config.systemClockOffset) { // use offset when non-zero
-			return new Date(new Date().getTime() + AWS.config.systemClockOffset);
-		} else {
-			return new Date();
-		}
+		return new Date();
 	}
 };
 

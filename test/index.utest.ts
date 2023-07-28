@@ -1,17 +1,24 @@
+
+import { AwsCredentialIdentity, } from "@smithy/types";
 import RStreamsSdk, { ReadEvent } from "../index";
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
-import AWS, { Credentials, Kinesis } from "aws-sdk";
+import { ListBucketsOutput, S3 } from "@aws-sdk/client-s3";
+import { Kinesis, PutRecordsCommandOutput } from "@aws-sdk/client-kinesis";
+import { Firehose, PutRecordBatchOutput } from "@aws-sdk/client-firehose";
+import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 import { gzipSync, gunzipSync } from "zlib";
-//import { StreamUtil } from "../lib/lib";
 import streams from "../lib/streams";
 import fs, { WriteStream } from "fs";
 import zlib from "zlib";
 import util from "../lib/aws-util";
 import awsSdkSync from "../lib/aws-sdk-sync";
-import { ReadableStream } from "../lib/types";
+import { Upload } from "@aws-sdk/lib-storage";
+import { STSClient } from "@aws-sdk/client-sts";
 chai.use(sinonchai);
+
+const AwsMocks = [];
 
 let mockSdkConfig = {
 	Region: "mock-Region",
@@ -40,9 +47,11 @@ describe('index', function () {
 	let sandbox: sinon.SinonSandbox;
 	beforeEach(() => {
 		sandbox = sinon.createSandbox();
+		AwsMocks.forEach(m => m.reset());
 	});
 	afterEach(() => {
 		sandbox.restore();
+		AwsMocks.forEach(m => m.restore());
 		envVars.forEach(field => {
 			delete process.env[field];
 			delete process[field];
@@ -65,7 +74,7 @@ describe('index', function () {
 	describe('sdk.read/write', function () {
 
 		it('AWS Mock Test', async function () {
-			let response1: AWS.S3.ListBucketsOutput = {
+			let response1: ListBucketsOutput = {
 				Buckets: [
 					{ Name: 'Some-Bucket', CreationDate: new Date("2021-03-01T23:34:09.000Z") },
 					{ Name: 'Some-Other-Bucket', CreationDate: new Date("2012-12-05T23:00:08.000Z") },
@@ -75,7 +84,7 @@ describe('index', function () {
 					ID: '123'
 				}
 			};
-			let response2: AWS.S3.ListBucketsOutput = {
+			let response2: ListBucketsOutput = {
 				Buckets: [
 					{ Name: 'Different-Bucket', CreationDate: new Date("2021-03-01T23:34:09.000Z") },
 				],
@@ -85,24 +94,15 @@ describe('index', function () {
 				}
 			};
 
-			function AWSRequest(response: AWS.S3.ListBucketsOutput) {
-				return { promise: async () => response };
-			}
-
-			let listBuckets = sandbox.stub()
-				.onFirstCall().returns(AWSRequest(response1)) // Promise call 1
-				.onSecondCall().returns(AWSRequest(response2)) // Promise call 2
-				.onThirdCall().callsArgWith(0, null, response2); // Callback call 3
-
-			sandbox.stub(AWS, 'S3').returns({ listBuckets }); // Stub the S3 service
+			sandbox.stub(S3.prototype, "listBuckets")
+				.onFirstCall().resolves(response1)
+				.onSecondCall().resolves(response2);
 
 
 			// Create a service and call it 3 times
-			let s3 = new AWS.S3();
-			assert.deepEqual(await s3.listBuckets().promise(), response1);
-			assert.deepEqual(await s3.listBuckets().promise(), response2);
-			assert.deepEqual(await new Promise((resolve, reject) => { s3.listBuckets((err, data) => err ? reject(err) : resolve(data)); }), response2);
-			expect(listBuckets).to.be.callCount(3);
+			let s3 = new S3({});
+			assert.deepEqual(await s3.listBuckets({}), response1);
+			assert.deepEqual(await s3.listBuckets({}), response2);
 
 		});
 
@@ -146,7 +146,7 @@ describe('index', function () {
 				query.onCall(index).callsArgWith(1, null, data);
 			});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query } as unknown as DynamoDBDocument);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -185,21 +185,17 @@ describe('index', function () {
 			let queue = "mock-out-queue";
 			let botId = "mock-bot-id";
 
-			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+			let kinesisPutRecordsResponse: Partial<PutRecordsCommandOutput> = {
 				Records: [{
 					SequenceNumber: "0",
 					ShardId: "shard-0"
 				}]
 			};
-			let kinesisPutRecords = sandbox.stub();
-			kinesisPutRecords
-				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
-			let firehosePutRecordBatch = sandbox.stub();
+			let kinesisPutRecords = sandbox.stub(Kinesis.prototype, "putRecords")
+				.callsArgWith(1, null, kinesisPutRecordsResponse);
 
-			//sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			let firehosePutRecordBatch = sandbox.stub(Firehose.prototype, 'putRecordBatch').callsArgWith(1, "Shouldn't call firehose");
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -233,7 +229,7 @@ describe('index', function () {
 			assert.deepEqual(kinesisPutRecords.getCall(0).args[0], {
 				"Records": [
 					{
-						"Data": zlib.gunzipSync(Buffer.from(expectedData, "base64")).toString(),
+						"Data": zlib.gunzipSync(Buffer.from(expectedData, "base64")).toString() as unknown as Uint8Array,
 						"ExplicitHashKey": "0",
 						"PartitionKey": "0"
 					}
@@ -252,7 +248,7 @@ describe('index', function () {
 
 			let firehosePutRecordBatch = sandbox.stub();
 
-			let firehosePutRecordBatchRespone: AWS.Firehose.Types.PutRecordBatchOutput = {
+			let firehosePutRecordBatchRespone: PutRecordBatchOutput = {
 				FailedPutCount: 0,
 				RequestResponses: [{
 					RecordId: "mock-record-id",
@@ -263,9 +259,8 @@ describe('index', function () {
 			firehosePutRecordBatch
 				.callsArgWith(1, null, firehosePutRecordBatchRespone);
 
-			//sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			sandbox.stub(Kinesis.prototype, 'putRecords').callsFake(kinesisPutRecords);
+			sandbox.stub(Firehose.prototype, 'putRecordBatch').callsFake(firehosePutRecordBatch);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -310,7 +305,7 @@ describe('index', function () {
 			let queue = "mock-out-queue";
 			let botId = "mock-bot-id";
 
-			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+			let kinesisPutRecordsRespone: Partial<PutRecordsCommandOutput> = {
 				Records: [{
 					SequenceNumber: "0",
 					ShardId: "shard-0"
@@ -322,14 +317,9 @@ describe('index', function () {
 
 			let firehosePutRecordBatch = sandbox.stub();
 
-			let s3Upload = (obj: { Body: ReadableStream<any>; }, callback: (arg0: Error) => void) => {
-				ls.pipe(obj.Body, ls.devnull(), (e) => callback(e));
-			};
-
-
-			sandbox.stub(AWS, 'S3').returns({ upload: s3Upload });
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			sandbox.stub(Upload.prototype, "done").resolves();
+			sandbox.stub(Kinesis.prototype, "putRecords").callsFake(kinesisPutRecords);
+			sandbox.stub(Firehose.prototype, "putRecordBatch").callsFake(firehosePutRecordBatch);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -418,7 +408,7 @@ describe('index', function () {
 			let queue = "mock-out-queue";
 			let botId = "mock-bot-id";
 
-			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+			let kinesisPutRecordsRespone: Partial<PutRecordsCommandOutput> = {
 				Records: [{
 					SequenceNumber: "0",
 					ShardId: "shard-0"
@@ -429,14 +419,11 @@ describe('index', function () {
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
 			let firehosePutRecordBatch = sandbox.stub();
-			let s3Upload = (obj: { Body: ReadableStream<any>; }, callback: (arg0: Error) => void) => {
-				ls.pipe(obj.Body, ls.devnull(), (e) => callback(e));
-			};
 
 
-			sandbox.stub(AWS, 'S3').returns({ upload: s3Upload });
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			sandbox.stub(Upload.prototype, "done").resolves();
+			sandbox.stub(Kinesis.prototype, "putRecords").callsFake(kinesisPutRecords);
+			sandbox.stub(Firehose.prototype, "putRecordBatch").callsFake(firehosePutRecordBatch);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -509,7 +496,7 @@ describe('index', function () {
 			let queue = "mock-out-queue";
 			let botId = "mock-bot-id";
 
-			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+			let kinesisPutRecordsRespone: Partial<PutRecordsCommandOutput> = {
 				Records: [{
 					SequenceNumber: "0",
 					ShardId: "shard-0"
@@ -520,14 +507,10 @@ describe('index', function () {
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
 			let firehosePutRecordBatch = sandbox.stub();
-			let s3Upload = (obj: { Body: ReadableStream<any>; }, callback: (arg0: Error) => void) => {
-				ls.pipe(obj.Body, ls.devnull(), (e) => callback(e));
-			};
 
-
-			sandbox.stub(AWS, 'S3').returns({ upload: s3Upload });
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			sandbox.stub(Upload.prototype, "done").resolves();
+			sandbox.stub(Kinesis.prototype, "putRecords").callsFake(kinesisPutRecords);
+			sandbox.stub(Firehose.prototype, "putRecordBatch").callsFake(firehosePutRecordBatch);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -619,7 +602,7 @@ describe('index', function () {
 			let queue = "mock-out-queue";
 			let botId = "mock-bot-id";
 
-			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+			let kinesisPutRecordsRespone: Partial<PutRecordsCommandOutput> = {
 				Records: [{
 					SequenceNumber: "0",
 					ShardId: "shard-0"
@@ -630,14 +613,10 @@ describe('index', function () {
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
 			let firehosePutRecordBatch = sandbox.stub();
-			let s3Upload = (obj: { Body: ReadableStream<any>; }, callback: (arg0: Error) => void) => {
-				ls.pipe(obj.Body, ls.devnull(), (e) => callback(e));
-			};
 
-
-			sandbox.stub(AWS, 'S3').returns({ upload: s3Upload });
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-			sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+			sandbox.stub(Upload.prototype, "done").resolves();
+			sandbox.stub(Kinesis.prototype, "putRecords").callsFake(kinesisPutRecords);
+			sandbox.stub(Firehose.prototype, "putRecordBatch").callsFake(firehosePutRecordBatch);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;
@@ -819,19 +798,26 @@ describe('index', function () {
 				"mfa_serial = arn:aws:iam::mock-account:mfa/mock-user\n" +
 				"role_arn = arn:aws:iam::mock-account:role/mock-role"
 			).onSecondCall().callsFake(() => JSON.stringify({
+				RoleArn: "arn:aws:iam::mock-account:role/mock-role",
 				Credentials: {
-					Expiration: Date.now() + 100000
+					Expiration: Date.now() + 10000
 				}
 			}));
 
 			let fakeCredentials = {
-				fake: "values-1"
+				AccessKeyId: "123456",
+				SecretAccessKey: "789",
+				SessionToken: "456",
+				Expiration: "123",
 			};
-			sandbox.stub(AWS, "STS").returns({
-				credentialsFrom: sandbox.stub().callsFake(() => fakeCredentials)
-			});
+			sandbox.stub(STSClient.prototype, "send").callsFake(() => Promise.resolve({
+				AccessKeyId: "123456",
+				SecretAccessKey: "789",
+				SessionToken: "456",
+				Expiration: "123",
+			}));
 			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
+			assert.equal(await (sdk.configuration.credentials as any)(), fakeCredentials as unknown as AwsCredentialIdentity);
 		});
 
 		it("should read an aws profile w/ INI", async function () {
@@ -853,9 +839,9 @@ describe('index', function () {
 			let fakeCredentials = {
 				fake: "values-2"
 			};
-			sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
+			//sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
 			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as AwsCredentialIdentity);
 		});
 
 		it("should read an aws profile w/ INI no file", async function () {
@@ -869,9 +855,9 @@ describe('index', function () {
 			let fakeCredentials = {
 				fake: "values-3"
 			};
-			sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
+			//sandbox.stub(AWS, "SharedIniFileCredentials").returns(fakeCredentials);
 			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as Credentials);
+			assert.equal(sdk.configuration.credentials, fakeCredentials as unknown as AwsCredentialIdentity);
 		});
 	});
 
@@ -943,9 +929,9 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
-			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+			let kinesisPutRecordsRespone: Partial<PutRecordsCommandOutput> = {
 				Records: [{
 					SequenceNumber: "0",
 					ShardId: "shard-0"
@@ -955,7 +941,7 @@ describe('index', function () {
 			kinesisPutRecords
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+			sandbox.stub(Kinesis.prototype, 'putRecords').callsFake(kinesisPutRecords);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			sdk.enrich<InData, OutData>({
@@ -1085,9 +1071,9 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
-			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+			let kinesisPutRecordsRespone: Partial<PutRecordsCommandOutput> = {
 				Records: [{
 					SequenceNumber: "0",
 					ShardId: "shard-0"
@@ -1097,7 +1083,7 @@ describe('index', function () {
 			kinesisPutRecords
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+			sandbox.stub(Kinesis.prototype, 'putRecords').callsFake(kinesisPutRecords);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			await sdk.enrichEvents<InData, OutData>({
@@ -1225,9 +1211,9 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
-			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+			let kinesisPutRecordsRespone: Partial<PutRecordsCommandOutput> = {
 				Records: [{
 					SequenceNumber: "0",
 					ShardId: "shard-0"
@@ -1237,7 +1223,7 @@ describe('index', function () {
 			kinesisPutRecords
 				.callsArgWith(1, null, kinesisPutRecordsRespone);
 
-			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+			sandbox.stub(Kinesis.prototype, 'putRecords').callsFake(kinesisPutRecords);
 
 			let sdk = RStreamsSdk(mockSdkConfig);
 			await sdk.enrichEvents<InData, OutData>({
@@ -1395,7 +1381,7 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
 
 			let sdk = RStreamsSdk(mockSdkConfig);
@@ -1521,7 +1507,7 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
 
 			let sdk = RStreamsSdk(mockSdkConfig);
@@ -1641,7 +1627,7 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
 
 			let sdk = RStreamsSdk(mockSdkConfig);
@@ -1767,7 +1753,7 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
 
 			let i = 0;
@@ -1894,7 +1880,7 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
 
 			let i = 0;
@@ -2021,7 +2007,7 @@ describe('index', function () {
 			let update = sandbox.stub()
 				.onFirstCall().callsArgWith(1, null, updateResponse);
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query, update } as unknown as DynamoDBDocument);
 
 
 			let batchSizes = [];

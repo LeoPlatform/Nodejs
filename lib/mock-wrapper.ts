@@ -5,9 +5,7 @@ import path from "path";
 import util from "./aws-util";
 import stream from "stream";
 import { Callback, CronData, Milliseconds, ReportCompleteOptions } from "./cron";
-import { AWSError } from "aws-sdk";
 import uuid from "uuid";
-
 import refUtil from "./reference";
 
 declare var __webpack_require__;

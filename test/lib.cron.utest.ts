@@ -1,10 +1,10 @@
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
-import AWS from "aws-sdk";
 import cronLib, { Checkpoint } from "../lib/cron";
 import moment from "moment";
 import zlib from "zlib";
 import { ref } from "../lib/reference";
+import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 
 describe("lib/cron.js", function () {
 
@@ -28,7 +28,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 			sandbox.stub(Date, "now").returns(1650907126722);
 
 			let cron = cronLib({
@@ -41,7 +41,7 @@ describe("lib/cron.js", function () {
 
 			await new Promise((resolve, reject) => cron.trigger({
 				id: "MOCK_CRON_ID"
-			}, (err) => { err ? reject(err) : resolve(undefined) }));
+			}, (err) => { err ? reject(err) : resolve(undefined); }));
 
 			expect(update).called;
 			assert.deepEqual(update.getCall(0).args[0],
@@ -70,7 +70,7 @@ describe("lib/cron.js", function () {
 					cb(returnError);
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -84,7 +84,7 @@ describe("lib/cron.js", function () {
 			try {
 				await new Promise((resolve, reject) => cron.trigger({
 					id: "MOCK_CRON_ID"
-				}, (err) => { err ? reject(err) : resolve(undefined) }));
+				}, (err) => { err ? reject(err) : resolve(undefined); }));
 			} catch (err) {
 				error = err;
 			}
@@ -103,7 +103,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -142,7 +142,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -181,7 +181,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -226,7 +226,7 @@ describe("lib/cron.js", function () {
 					cb(returnError);
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -255,7 +255,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -286,7 +286,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -338,7 +338,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -390,7 +390,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update, put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update, put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -454,7 +454,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update, put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update, put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -549,7 +549,7 @@ describe("lib/cron.js", function () {
 					cb(new Error("Put error"));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update, put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update, put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -648,7 +648,7 @@ describe("lib/cron.js", function () {
 					}));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -698,7 +698,7 @@ describe("lib/cron.js", function () {
 				}
 			);
 
-			assert.isNotNull(error)
+			assert.isNotNull(error);
 			assert.equal(error.message, "Update Error");
 		});
 	});
@@ -712,7 +712,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -743,7 +743,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -802,7 +802,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -863,7 +863,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -926,7 +926,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -992,7 +992,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1060,7 +1060,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1131,7 +1131,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1196,7 +1196,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1266,7 +1266,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1336,7 +1336,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1403,7 +1403,7 @@ describe("lib/cron.js", function () {
 					cb(Object.assign(new Error("Some Error"), { errorType: "ConditionalCheckFailedException" }));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1470,7 +1470,7 @@ describe("lib/cron.js", function () {
 					cb(Object.assign(new Error("Some Error"), { errorType: "Other" }));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1534,7 +1534,7 @@ describe("lib/cron.js", function () {
 				}
 			);
 			assert.isNotNull(error);
-			assert.equal(error.message, "Some Error")
+			assert.equal(error.message, "Some Error");
 		});
 	});
 
@@ -1547,7 +1547,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ put: put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1592,7 +1592,7 @@ describe("lib/cron.js", function () {
 					cb(new Error("Put Error"));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ put: put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1648,7 +1648,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ delete: deleteFn });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ delete: deleteFn } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1689,7 +1689,7 @@ describe("lib/cron.js", function () {
 					cb(new Error("Delete Error"));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ delete: deleteFn });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ delete: deleteFn } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1750,7 +1750,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -1806,7 +1806,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 			let botid = "MockBotId";
 			let queue = "MockQueue";
 
@@ -1868,7 +1868,7 @@ describe("lib/cron.js", function () {
 				},
 			);
 
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("Read without expected", async function () {
@@ -1878,7 +1878,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 			let botid = "MockBotId";
 			let queue = "MockQueue";
 
@@ -1938,7 +1938,7 @@ describe("lib/cron.js", function () {
 					"ConditionExpression": "attribute_not_exists(#checkpoints.#type.#event.#checkpoint)"
 				},
 			);
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("different checkpoint location", async function () {
@@ -1948,7 +1948,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2000,7 +2000,7 @@ describe("lib/cron.js", function () {
 					"UpdateExpression": "set #checkpoints.#type.#event = :value",
 				},
 			);
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("Read undefined value", async function () {
@@ -2010,7 +2010,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2061,7 +2061,7 @@ describe("lib/cron.js", function () {
 				},
 			);
 
-			assertInMemoryValue("read", queue, "z/123/456/789")
+			assertInMemoryValue("read", queue, "z/123/456/789");
 		});
 
 		it("Stale Checkpoint", async function () {
@@ -2071,7 +2071,7 @@ describe("lib/cron.js", function () {
 					cb(Object.assign(new Error("message"), { code: "ConditionalCheckFailedException" }));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2147,7 +2147,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update, get, put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update, get, put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2267,7 +2267,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update, get, put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update, get, put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2392,7 +2392,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update, get, put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update, get, put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2481,7 +2481,7 @@ describe("lib/cron.js", function () {
 					cb(new Error("Put Error"));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update, get, put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update, get, put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2570,7 +2570,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update, get, put });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update, get, put } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2651,7 +2651,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2716,7 +2716,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ get });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ get } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2763,7 +2763,7 @@ describe("lib/cron.js", function () {
 					});
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ get });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ get } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2800,7 +2800,7 @@ describe("lib/cron.js", function () {
 					cb(new Error("Get Error"));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ get });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ get } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2851,7 +2851,7 @@ describe("lib/cron.js", function () {
 					});
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ get });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ get } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2887,7 +2887,7 @@ describe("lib/cron.js", function () {
 					cb();
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ get });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ get } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {
@@ -2935,7 +2935,7 @@ describe("lib/cron.js", function () {
 					});
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ get });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ get } as unknown as DynamoDBDocument);
 
 			let cron = cronLib({
 				onUpdate: () => { }, resources: {

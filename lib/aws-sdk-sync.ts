@@ -1,5 +1,6 @@
 
-import AWS from "aws-sdk";
+import { S3ClientConfig, ListBucketsOutput } from "@aws-sdk/client-s3";
+import { GetSecretValueRequest, GetSecretValueResponse, SecretsManagerClientConfig } from "@aws-sdk/client-secrets-manager";
 import { spawnSync } from "child_process";
 
 // Build a function to call on a different process
@@ -7,10 +8,10 @@ import { spawnSync } from "child_process";
 // This isn't run within the bundle
 // It is stringified and run in a different process
 export function invoke(service: string, method: string, config: any, params: any) {
-	let AWS = module.require.call(module, "aws-sdk");
 	let hasLogged = false;
 	try {
-		new AWS[service](config)[method](params, (err: any, data: any) => {
+		let serviceLib = module.require.call(module, "@aws-sdk/client-" + service.replace(/[A-Z]/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""));
+		new serviceLib[service](config)[method](params, (err: any, data: any) => {
 			if (!hasLogged) {
 				hasLogged = true;
 				console.log(`RESPONSE::${JSON.stringify({ error: err, response: data })}::RESPONSE`);
@@ -19,7 +20,7 @@ export function invoke(service: string, method: string, config: any, params: any
 	} catch (err: any) {
 		if (err.message.match(/is not a function/)) {
 			err.message = `AWS.${service}.${method} is not a function`;
-		} else if (err.message.match(/is not a constructor/)) {
+		} else if (err.message.match(/is not a constructor/) || err.message.match(/Cannot find module/)) {
 			err.message = `AWS.${service} is not a constructor`;
 		}
 		if (!hasLogged) {
@@ -63,14 +64,14 @@ class Service<T> {
 	}
 }
 
-export class SecretsManager extends Service<AWS.SecretsManager.ClientConfiguration> {
-	getSecretValue(params: AWS.SecretsManager.GetSecretValueRequest): AWS.SecretsManager.GetSecretValueResponse {
+export class SecretsManager extends Service<SecretsManagerClientConfig> {
+	getSecretValue(params: GetSecretValueRequest): GetSecretValueResponse {
 		return this.invoke("getSecretValue", params);
 	}
 }
 
-export class S3 extends Service<AWS.S3.ClientConfiguration> {
-	listBuckets(): AWS.S3.ListBucketsOutput {
+export class S3 extends Service<S3ClientConfig> {
+	listBuckets(): ListBucketsOutput {
 		return this.invoke("listBuckets");
 	}
 }
