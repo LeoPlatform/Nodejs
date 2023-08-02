@@ -12,7 +12,7 @@ declare var __webpack_require__;
 declare var __non_webpack_require__;
 const requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
 
-
+type AWSError = any;
 declare type LeoStream = typeof StreamUtil;
 export default function (leoStream: LeoStream) {
 	if (process.env.RSTREAMS_MOCK_DATA == null || (leoStream as any).mocked) {
