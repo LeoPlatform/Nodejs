@@ -1,12 +1,13 @@
 import https from "https";
-import AWS from "aws-sdk";
 import async from "async";
 import { BatchOptions, JoinExternalFetcher } from "./types";
 import { promisify } from "util";
-
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { BatchGetCommandInput, DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
+import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
 export class DynamodbFetcher<T, R> implements JoinExternalFetcher<T, R> {
 	tableName: string;
-	ddb: AWS.DynamoDB.DocumentClient;
+	ddb: DynamoDBDocument;
 	getDdbKey: (T) => any;
 	batch = 0;
 	public batchOptions?: BatchOptions;
@@ -14,17 +15,20 @@ export class DynamodbFetcher<T, R> implements JoinExternalFetcher<T, R> {
 		this.tableName = tableName;
 		this.getDdbKey = getDdbKey;
 		this.batchOptions = batchOptions;
-		this.ddb = new AWS.DynamoDB.DocumentClient({
+		this.ddb = DynamoDBDocument.from(new DynamoDBClient({
 			region: process.env.AWS_REGION ?? "us-east-1",
-			maxRetries: 2,
-			convertEmptyValues: true,
-			httpOptions: {
-				connectTimeout: 2000,
-				timeout: 5000,
-				agent: new https.Agent({
+			maxAttempts: 3,
+			requestHandler: new NodeHttpHandler({
+				connectionTimeout: 2000,
+				requestTimeout: 5000,
+				httpsAgent: new https.Agent({
 					ciphers: 'ALL',
 				}),
-			},
+			}),
+		}), {
+			marshallOptions: {
+				convertEmptyValues: true
+			}
 		});
 	}
 
@@ -36,7 +40,7 @@ export class DynamodbFetcher<T, R> implements JoinExternalFetcher<T, R> {
 
 	async join(events): Promise<(T & { joinData: R })[]> {
 		let myBatch = this.batch++;
-		let params: AWS.DynamoDB.DocumentClient.BatchGetItemInput = {
+		let params: BatchGetCommandInput = {
 			RequestItems: {
 				[this.tableName]: {
 					Keys: []
@@ -86,7 +90,7 @@ export class DynamodbFetcher<T, R> implements JoinExternalFetcher<T, R> {
 			let self = this;
 			await promisify(async.eachLimit).call(async, work, 10, async function (params) {
 				let myC = c++;
-				let extData = await self.ddb.batchGet(params).promise();
+				let extData = await self.ddb.batchGet(params);
 				extData.Responses?.[self.tableName]?.forEach(entry => {
 					let keyObject = keyFields.reduce((a, field) => { a[field] = entry[field]; return a; }, {});
 					let key = self.keyToString(keyObject);
