@@ -1,4 +1,4 @@
-import { DefaultThemeRenderContext, PageEvent, Reflection, JSX, DeclarationReflection, SignatureReflection, RendererHooks } from 'typedoc';
+import { DefaultThemeRenderContext, PageEvent, Reflection, JSX, DeclarationReflection, SignatureReflection, RendererHooks, RenderTemplate } from 'typedoc';
 
 function hasTypeParameters(reflection) {
 	if (reflection instanceof DeclarationReflection || reflection instanceof SignatureReflection) {
@@ -44,8 +44,12 @@ export function init(rstreamsSiteUrl: string, sdkName: string, sdkNameForBreadcr
 	_sdkNameForBreadcrumb = sdkNameForBreadcrumb;
 }
 
+interface ReflectionExtra {
+	kindString: string
+}
+
 export class RStreamsThemeContext extends DefaultThemeRenderContext {
-	defaultLayout = (props: PageEvent<Reflection>) => {
+	defaultLayout = (_template: RenderTemplate<PageEvent<Reflection & ReflectionExtra>>, props: PageEvent<Reflection & ReflectionExtra> & { legend: { classes: string[], name: string }[][] }) => {
 		let _a;
 		let hidePageHeaderForHomePage = false;
 		if (props.model.name.indexOf(_sdkName) > -1) {
@@ -85,55 +89,56 @@ export class RStreamsThemeContext extends DefaultThemeRenderContext {
 							// Moved from header
 							(
 								JSX.createElement("div", null,
-									JSX.createElement("div", {class: "dflex mt-minus30"},
+									JSX.createElement("div", { class: "dflex mt-minus30" },
 										!!props.model.parent && JSX.createElement("ul", { class: "tsd-breadcrumb fg1" }, this.breadcrumb(props.model)),
-										JSX.createElement("div", { id: "tsd-widgets", class: "mr10", style: hidePageHeaderForHomePage ? 'display:none' : ''},
+										JSX.createElement("div", { id: "tsd-widgets", class: "mr10", style: hidePageHeaderForHomePage ? 'display:none' : '' },
 											JSX.createElement("input", { type: "checkbox", id: "tsd-filter-inherited", checked: true }),
 											JSX.createElement("label", { class: "tsd-widget ws-nowrap dflex align-c ht17", for: "tsd-filter-inherited" }, "Inherited")),
-										JSX.createElement("div", { id: "tsd-widgets2", class: "mr10", style: hidePageHeaderForHomePage ? 'display:none' : ''},
-											JSX.createElement("input", { type: "checkbox", id: "tsd-show-legend", checked: false}),
+										JSX.createElement("div", { id: "tsd-widgets2", class: "mr10", style: hidePageHeaderForHomePage ? 'display:none' : '' },
+											JSX.createElement("input", { type: "checkbox", id: "tsd-show-legend", checked: false }),
 											JSX.createElement("label", { class: "tsd-widget ws-nowrap dflex align-c ht17", for: "tsd-show-legend" }, "Legend"))),
-									JSX.createElement("h1", {class: "mt0 header-color"},
+									JSX.createElement("h1", { class: "mt0 header-color" },
 										props.model.kindString !== "Project" && `${(_a = props.model.kindString) !== null && _a !== void 0 ? _a : ""} `,
 										props.model.name,
 										(hasTypeParameters)(props.model) && (JSX.createElement(JSX.Fragment, null,
 											"<",
-											(join)(", ", (props.model as DeclarationReflection).typeParameters, (item) => item.name),
+											(join)(", ", (props.model as unknown as DeclarationReflection).typeParameters, (item) => item.name),
 											">")),
 										" ",
 										(renderFlags)(props.model.flags),
 									)
 								)
-									
+
 							),
 							(
 								(JSX.createElement(JSX.Fragment, null,
-									JSX.createElement("div", {id: "legend-countainer"}, 
+									JSX.createElement("div", { id: "legend-countainer" },
 										JSX.createElement("h2", null, "Legend"),
 										JSX.createElement("div", { class: "tsd-legend-group" }, props.legend.map((item) => (JSX.createElement("ul", { class: "tsd-legend" }, item.map((item) => (JSX.createElement("li", { class: item.classes.join(" ") },
 											JSX.createElement("span", { class: "tsd-kind-icon" }, item.name)))))))))))
 							),
 							this.hook("content.begin"),
-							props.template(props),
+							(props as any).template(props),
 							this.hook("content.end")),
 						JSX.createElement("div", { class: "col-4 col-menu menu-sticky-wrap menu-highlight" },
-							this.hook("navigation.begin"),
+							this.hook("navigation.begin" as any),
 							this.navigation(props),
-							this.hook("navigation.end")))),
-				this.footer(props),
+							this.hook("navigation.end" as any)))),
+				this.footer(),
 				JSX.createElement("div", { class: "overlay" }),
 				JSX.createElement("script", { src: this.relativeURL("assets/main.js") }),
 				JSX.createElement("script", { src: this.relativeURL("assets/rstreams.js") }),
 				this.analytics(),
-				this.hook("body.end"))))};
+				this.hook("body.end"))));
+	};
 
 	header = (props: PageEvent<Reflection>) => {
 		var _a;
 		return (
 			<div class="toolbarcontainer container dflex align-c">
-				{JSX.createElement("a", { href: this.relativeURL(_rstreamsSiteUrl), class: "title ml10" }, 
+				{JSX.createElement("a", { href: this.relativeURL(_rstreamsSiteUrl), class: "title ml10" },
 					JSX.createElement("img", { src: this.relativeURL("assets/rstreams-logo.png") }))}
-				{JSX.createElement("div", {class: "dflex align-c fg1 flexcenter"},
+				{JSX.createElement("div", { class: "dflex align-c fg1 flexcenter" },
 					JSX.createElement("a", { href: this.relativeURL("index.html"), class: "title sitename header-color" }, "Node SDK"))}
 				<div id="tsd-search" data-base="." class="mr10">
 					<label for="tsd-search-field" style="display:none" class="tsd-widget search">Search</label>
@@ -144,7 +149,7 @@ export class RStreamsThemeContext extends DefaultThemeRenderContext {
 					</ul>
 				</div>
 				{
-					JSX.createElement("div", { id: "tsd-widgets", class: "mr10"},
+					JSX.createElement("div", { id: "tsd-widgets", class: "mr10" },
 						JSX.createElement("div", { id: "tsd-filter" },
 							JSX.createElement("a", { href: "#", class: "tsd-widget menu no-caption", "data-toggle": "menu" }, "Menu"))
 					)
@@ -161,8 +166,10 @@ export class RStreamsThemeContext extends DefaultThemeRenderContext {
 
 		return props.parent ? (JSX.createElement(JSX.Fragment, null,
 			this.breadcrumb(props.parent),
-			JSX.createElement("li", null, props.url ? JSX.createElement("a", { href: this.urlTo(props) }, linkName) : JSX.createElement("span", null, linkName)))) : props.url ? (JSX.createElement("li", null,
-			JSX.createElement("a", { href: this.urlTo(props) }, linkName))) : undefined;
-	}
-	
+			JSX.createElement("li", null,
+				props.url
+					? JSX.createElement("a", { href: this.urlTo(props) }, linkName)
+					: JSX.createElement("span", null, linkName)))) : props.url ? (JSX.createElement("li", null, JSX.createElement("a", { href: this.urlTo(props) }, linkName))) : undefined;
+	};
+
 }

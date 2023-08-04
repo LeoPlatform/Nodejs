@@ -4,9 +4,9 @@
 // Good help: https://techsparx.com/nodejs/typescript/typedoc.html
 
 import { Application, TSConfigReader, TypeDocReader, TypeDocOptions, Converter, Context, ReflectionKind, DefaultThemeRenderContext, DefaultTheme, PageEvent, Reflection } from "typedoc";
-import {replaceInFile} from "replace-in-file";
+import { replaceInFile } from "replace-in-file";
 import * as fs from 'fs/promises';
-import {RStreamsThemeContext,  init as initRstreamsTheme} from './theme/rstreams-theme';
+import { RStreamsThemeContext, init as initRstreamsTheme } from './theme/rstreams-theme';
 import * as path from 'path';
 
 const TYPEDOC_FILE_PATH = './typedoc.json';
@@ -19,9 +19,10 @@ const SDK_NAME_FOR_BREADCRUMB = 'node-sdk';
 
 class MyTheme extends DefaultTheme {
 	private _contextCache?: RStreamsThemeContext;
-	override getRenderContext() {
+	override getRenderContext(pageEvent: PageEvent<Reflection>) {
 		this._contextCache ||= new RStreamsThemeContext(
 			this,
+			pageEvent,
 			this.application.options
 		);
 		return this._contextCache;
@@ -32,16 +33,16 @@ class MyTheme extends DefaultTheme {
  * Build the typedoc doc website using the config in TYPEDOC_FILE_PATH.
  * 
  *    "replaceText": {
-        "replacements": [
-            {
-                "pattern": "rstreams-site-url",
-                "replace": "https://rstreams.org"
-            }
-        ]
-    },
+		"replacements": [
+			{
+				"pattern": "rstreams-site-url",
+				"replace": "https://rstreams.org"
+			}
+		]
+	},
  */
 
-interface RstreamsTypedocConfig extends Partial<TypeDocOptions>{
+interface RstreamsTypedocConfig extends Partial<TypeDocOptions> {
 	replaceText: {
 		replacements: Replacement[]
 	}
@@ -100,9 +101,9 @@ async function buildDocs() {
  */
 async function correctSearchIndexPathAndRemoveBrokenIeScrollCode() {
 	let find = /;p\.href=n\.base\+u\.url/g;
-	const replace = `;const iluw = window.location.pathname || '';n.base = iluw.endsWith('/${PATH_FOR_SERVER}/') || ` + 
-					`iluw.endsWith('/${PATH_FOR_SERVER}/index.html') || iluw.endsWith('/${PATH_FOR_LOCAL}/') || `+ 
-					`iluw.endsWith('/${PATH_FOR_LOCAL}/index.html')  ? './' : '../';p.href=n.base+u.url`;
+	const replace = `;const iluw = window.location.pathname || '';n.base = iluw.endsWith('/${PATH_FOR_SERVER}/') || ` +
+		`iluw.endsWith('/${PATH_FOR_SERVER}/index.html') || iluw.endsWith('/${PATH_FOR_LOCAL}/') || ` +
+		`iluw.endsWith('/${PATH_FOR_LOCAL}/index.html')  ? './' : '../';p.href=n.base+u.url`;
 
 	let fileData: string = await fs.readFile(MAIN_JS_PATH, 'utf8');
 	fileData = fileData.replace(find, replace);
@@ -116,15 +117,15 @@ async function correctSearchIndexPathAndRemoveBrokenIeScrollCode() {
 function onConverterCreateDeclaration(context: Context): void {
 	let tag = null;
 	for (const reflection of context.project.getReflectionsByKind(ReflectionKind.All)) {
-		const { comment } = reflection;
-      
+		const { comment } = reflection as unknown as { comment: Comment & { hasTag: (tag: string) => boolean } };
+
 		if (comment) {
 			if (comment.hasTag('method')) {
 				reflection.kind = ReflectionKind.Method;
-				reflection.comment.removeTags('method');
+				reflection.comment.removeTags('method' as any);
 			} else if (comment.hasTag('function')) {
 				reflection.kind = ReflectionKind.Function;
-				reflection.comment.removeTags('function');
+				reflection.comment.removeTags('function' as any);
 			}
 		}
 	}
@@ -141,6 +142,7 @@ async function postProcess(outDir: string) {
 	const options = {
 		files: outDir + '/**/*.html',
 		from: [/<h3>Properties (\S.+?)<\/h3>/g, /<h2>(.+?\S) Properties<\/h2>/g],
+		// eslint-disable-next-line no-useless-escape
 		to: ['<h3>$1<\/h3>', '<h2>$1<\/h2>'],
 	};
 	await replaceInFile(options);
@@ -154,8 +156,7 @@ async function getTypedocConfig(): Promise<RstreamsTypedocConfig> {
 	return JSON.parse(data.toString());
 }
 
-async function getAllFiles(dirPath: string, arrayOfFiles: string[]): Promise<string[]>
-{
+async function getAllFiles(dirPath: string, arrayOfFiles: string[]): Promise<string[]> {
 	const files = await fs.readdir(dirPath);
 	arrayOfFiles = arrayOfFiles || [];
 
@@ -194,8 +195,8 @@ async function moveFiles(sourceFilePaths: string[], destPath: string) {
 //   return arrayOfFiles
 // }
 
-(async() => {
-	try {    
+(async () => {
+	try {
 		await buildDocs();
 	} catch (ex) {
 		console.log(ex);
