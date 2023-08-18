@@ -213,7 +213,7 @@ export interface WriteOptions extends BaseWriteOptions {
  * 
  * @todo example
  */
-export interface ReadOptions {
+export interface ReadOptions<T = any> {
 	/** @deprecated Don't use. */
 	subqueue?: string;
 
@@ -333,6 +333,8 @@ export interface ReadOptions {
 	 * @todo inconsistent stream_query_limit
 	 */
 	stream_query_limit?: number;
+
+	parser?: (stringEvent: string) => ReadEvent<T>
 }
 
 /**
@@ -484,7 +486,7 @@ export interface EnrichOptions<T, U> extends WriteOptions {
 	start?: string;
 
 	/** Fine-grained control of reading from the source `inQueue` */
-	config?: ReadOptions;
+	config?: ReadOptions<T>;
 
 	/**
 	 * The SDK will invoke this function after reading events from the `inQueue` and will take
@@ -537,7 +539,7 @@ export interface EnrichBatchOptions<T, U> extends EnrichOptions<ReadEvent<T>[], 
  * @see [[`RStreamsSdk.offload`]]
  * @see [[`RStreamsSdk.offloadEvents`]]
  */
-export interface OffloadOptions<T> extends ReadOptions {
+export interface OffloadOptions<T> extends ReadOptions<T> {
 	/** 
 	 * The name of the bot that this code is acting as.  The SDK will use it to query to the bot Dynamo DB 
 	 * table to pull checkpoints and to checkpoint for you. 
@@ -885,7 +887,7 @@ export declare namespace StreamUtil {
 	 * @todo question is the meant to be used in an ls.pipe? or all by itself?
 	 * @todo example
 	 */
-	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableQueueStream<T>;
+	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions<T>): ReadableQueueStream<T>;
 
 	/**
 	 * Create a pipeline step that takes the events from the previous pipeline step and then writes them
