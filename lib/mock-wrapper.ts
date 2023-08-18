@@ -30,7 +30,7 @@ export default function (leoStream: LeoStream) {
 	};
 
 	let fromLeo = leoStream.fromLeo.bind(leoStream);
-	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions): ReadableQueueStream<T> => {
+	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions<T>): ReadableQueueStream<T> => {
 		queue = refUtil.ref(queue).id;
 		// Look for events that were written to this queue in this process
 		let runtimeQueue = process.env[`RSTREAMS_MOCK_DATA_Q_${queue}`] || "";
