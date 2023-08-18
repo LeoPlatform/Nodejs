@@ -334,6 +334,11 @@ export interface ReadOptions<T = any> {
 	 */
 	stream_query_limit?: number;
 
+	/**
+	 * Praser to convert string event objects into json event objects.
+	 * 
+	 * @default: JSON.parse
+	 */
 	parser?: (stringEvent: string) => ReadEvent<T>
 }
 
