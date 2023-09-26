@@ -9,7 +9,7 @@ import { taskModule as parseTaskModule } from "./parse-task-module";
 import * as  streamUtil from "../../streams";
 import { exec } from "child_process";
 import { ReadOptionHooks, StreamRecord, TransformStream } from "../../types";
-
+//import { Worker } from 'worker_threads';
 let logger = require("leo-logger")("leo-stream-helper");
 
 export interface ReadHooksParams {
@@ -32,8 +32,35 @@ export interface ReadHooksParams {
 	};
 }
 
+// function downloadTaskWorker() {
+// 	return new Worker(
+// 		new URL("./download-task-entry.js", "")
+// 	);
+// }
+// function parseTaskWorker() {
+// 	return new Worker(
+// 		new URL("./parse-task-entry.js", "")
+// 	);
+// }
+
+// function getWebpackWorkerFilename(fn, defaultFilename) {
+// 	let webpackFileName = (fn.toString().match(/\((\d+)\)/) || [])[1];
+// 	console.log(fn.toString(), webpackFileName);
+// 	if (webpackFileName) {
+// 		return `${webpackFileName}.js`;
+// 	}
+// 	else {
+// 		return defaultFilename;
+// 	}
+// }
 function verifyTaskModule(taskPath: string, tmpDir: string, taskModule: (req: any) => void, filename: string) {
 	if (taskPath == null) {
+		// if (filename === "download-task-entry.js") {
+		// 	filename = getWebpackWorkerFilename(downloadTaskWorker, filename);
+		// } else if (filename === "parse-task-entry.js") {
+		// 	filename = getWebpackWorkerFilename(parseTaskWorker, filename);
+		// }
+
 		taskPath = path.resolve(__dirname, `./${filename}`);
 		// Check if the entry is available (webpack may package it away)
 		if (!existsSync(taskPath)) {
@@ -134,8 +161,8 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 	let taskId = 0;
 	let downloadThreads = settings.downloadThreads ?? Math.max(1, cpus().length - 1);
 	let parseThreads = settings.parseThreads ?? Math.max(1, cpus().length - 1);
-	settings.downloadTaskPath = verifyTaskModule(settings.downloadTaskPath, settings.tmpDir, downloadTaskModule, "download-task-entry.js");
-	settings.parseTaskPath = verifyTaskModule(settings.parseTaskPath, settings.tmpDir, parseTaskModule, "parse-task-entry.js");
+	let downloadTaskPath = verifyTaskModule(settings.downloadTaskPath, settings.tmpDir, downloadTaskModule, "download-task-entry.js");
+	let parseTaskPath = verifyTaskModule(settings.parseTaskPath, settings.tmpDir, parseTaskModule, "parse-task-entry.js");
 	// if (settings.downloadTaskPath == null) {
 	// 	settings.downloadTaskPath = path.resolve(__dirname, "./download-task-entry.js");
 	// 	// Check if the entry is available (webpack may package it away)
@@ -155,7 +182,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 
 	let pool = new WorkerPool(
 		"Download",
-		settings.downloadTaskPath,
+		downloadTaskPath,
 		downloadThreads,
 		{
 			payloadAtEnd: settings.payloadAtEnd,
@@ -170,7 +197,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 	let workerLink = {};
 	let parsePool = new WorkerPool(
 		"Parse",
-		settings.parseTaskPath,
+		parseTaskPath,
 		settings.parallelParse ? parseThreads : 0,
 		{
 			parser: settings.parseTaskParser?.parser,//"JSON.parse",
@@ -277,8 +304,8 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 			logger.debug(task.id, `Disk Space Required file: ${convertBytes(task.fileSize)} needed: ${convertBytes(diskSpaceNeededToDownload)}, files: ${filesToDownload}, used: ${convertBytes(usedDiskSpace)}`, task.filePath);
 			useDiskSpace(diskSpaceNeededToDownload);
 			let error;
-			pool.runTaskAsync(task)
-				.then((data: { error?: any }) => {
+			pool.runTaskAsync<{ error?: any }>(task)
+				.then((data) => {
 					error = data.error;
 				})
 				.catch((err) => {

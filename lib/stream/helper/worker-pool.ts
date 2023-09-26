@@ -58,10 +58,11 @@ export class WorkerPool extends EventEmitter {
 	}
 
 	addNewWorker(workerData: any) {
-		const worker = new Worker(
-			this.task,
-			{ workerData }
-		);
+		const worker = typeof this.task === "function" ? this.task({ workerData }) :
+			new Worker(
+				this.task,
+				{ workerData }
+			);
 		worker.on('message', (result) => {
 			if (result.event && this.messages[result.event]) {
 				this.messages[result.event](worker, result);
@@ -130,8 +131,8 @@ export class WorkerPool extends EventEmitter {
 		worker.postMessage(task);
 	}
 
-	runTaskAsync(task) {
-		return new Promise((resolve, reject) => {
+	runTaskAsync<T = void>(task) {
+		return new Promise<T>((resolve, reject) => {
 			this.runTask(task, (err, data) => {
 				err ? reject(err) : resolve(data);
 			});
