@@ -197,7 +197,55 @@ export interface WriteOptions extends BaseWriteOptions {
 	 * @default true
 	 */
 	autoCheckpoint?: boolean;
+
+	/**
+	 * Hook when the stream writes a checkpoint
+	 */
+	onCheckpoint?: (data: { error?: any, checkpoints: Record<string, Record<string, string>> }) => Promise<void> | void;
 }
+
+
+export interface StreamRecord {
+	records: number;
+	size: number;
+	gzipSize: number;
+	start: string;
+	end: string;
+	event: string;
+	// s3?: {
+	// 	bucket: string;
+	// 	key: string;
+	// }
+}
+export interface OnStartData {
+	queue: string;
+	eid: string;
+}
+
+export interface ReadOptionHooks<SR extends StreamRecord> {
+
+	onStart: (data: OnStartData) => void,
+	onEnd: () => void,
+
+	onBatchStart?: (streamRecords: SR[]) => void | SR[],
+	onBatchEnd?: (streamRecords: SR[]) => Promise<void>,
+
+	onRecordStart?: (streamRecord: SR, index: number) => void,
+	onRecordEnd?: (streamRecord: SR, index: number) => void,
+
+	getS3Stream?: (streamRecord: SR, index: number) => ReadableStream<string> & { idOffset: number },
+	createS3Stream?: (streamRecord: SR, index: number, start: string) => {
+		get: () => ReadableStream<string> & { idOffset: number }
+		on: (event: string, handler: (...args: any[]) => void) => void
+		destroy: (error?: any) => void
+	},
+	freeS3Stream?: (index: number) => void;
+	createSplitParseStream?: (JSONparse: (string) => any, streamRecord: SR) => TransformStream<string, any> | null,
+
+	onGetEvents?: (streamRecords: SR[]) => void | SR[],
+	getExtraMetaData?: () => any;
+}
+
 
 /**
  * Options when reading data from an instance of the RStreams bus.  The options in this
@@ -339,7 +387,8 @@ export interface ReadOptions<T = any> {
 	 * 
 	 * @default: JSON.parse
 	 */
-	parser?: (stringEvent: string) => ReadEvent<T>
+	parser?: (stringEvent: string) => ReadEvent<T>,
+	hooks?: ReadOptionHooks<StreamRecord>
 }
 
 /**
@@ -564,6 +613,11 @@ export interface OffloadOptions<T> extends ReadOptions<T> {
 	transform(this: ProcessFunctionContext<never>, payload: T, wrapper: ReadEvent<T>, callback?: ProcessCallback<never>): Promise<ProcessFunctionAsyncReturn<never>> | void;
 
 	force?: boolean;
+
+	/**
+	 * Hook when the stream writes a checkpoint
+	 */
+	onCheckpoint?: (data: { error?: any, checkpoints: Record<string, Record<string, string>> }) => Promise<void> | void;
 }
 
 /**
@@ -676,6 +730,11 @@ export interface CreateCorrelationOptions {
  * @todo question We have StreamUtil and Streams which is streams.d.ts.  Why?
  */
 export declare namespace StreamUtil {
+
+	/**
+	 * Default is process.env.RSTREAMS_TMP_DIR || "/tmp/rstreams"
+	 */
+	const tmpDir: string;
 
 	/**
 	 * Helper function to turn a timestamp into an RStreams event ID.

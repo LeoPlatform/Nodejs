@@ -574,6 +574,7 @@ export function passthrough<T, U>(opts?: stream.TransformOptions): TransformStre
  * @todo example with flush
  */
 export function through<T, U>(transform?: (this: TransformStream<T, U>, obj: T, done: DataCallback<U>) => void, flush?: FlushCallback<U>): TransformStream<T, U>;
+export function through<T, U>(opts: stream.DuplexOptions, transform?: (this: TransformStream<T, U>, obj: T, done: DataCallback<U>) => void, flush?: FlushCallback<U>): TransformStream<T, U>;
 
 /**
  * This creates an async/await-friendly pipeline step that will take data in, possibly transform the data or do computation, and then
@@ -600,6 +601,7 @@ export function through<T, U>(transform?: (this: TransformStream<T, U>, obj: T, 
  * @todo example with flush
  */
 export function throughAsync<T, U>(transform?: (this: TransformStream<T, U>, obj: T) => Promise<U> | U, flush?: (this: TransformStream<T, U>) => Promise<U> | U): TransformStream<T, U>;
+export function throughAsync<T, U>(opts: stream.DuplexOptions, transform?: (this: TransformStream<T, U>, obj: T) => Promise<U> | U, flush?: (this: TransformStream<T, U>) => Promise<U> | U): TransformStream<T, U>;
 
 /**
  * Wraps a command function as a WriteableStream.

@@ -128,14 +128,14 @@ describe('lib/aws-sdk-sync', function () {
 			}
 		});
 
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
+		awsSdkSyncInvoke(AWS, "S3", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
 		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":null,"response":{"SomeData":1234}}::RESPONSE`]);
 	});
 
 	it("invoke - bad Service", function () {
 		let log = sandbox.spy(console, "log");
-		awsSdkSyncInvoke("S2", "someMethod", undefined, undefined);
+		awsSdkSyncInvoke(AWS, "S2", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
 		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"AWS.S2 is not a constructor"}}::RESPONSE`]);
 	});
@@ -143,7 +143,7 @@ describe('lib/aws-sdk-sync', function () {
 
 	it("invoke - bad method", function () {
 		let log = sandbox.spy(console, "log");
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
+		awsSdkSyncInvoke(AWS, "S3", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
 		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"AWS.S3.someMethod is not a function"}}::RESPONSE`]);
 	});
@@ -156,7 +156,7 @@ describe('lib/aws-sdk-sync', function () {
 			}
 		});
 
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
+		awsSdkSyncInvoke(AWS, "S3", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
 		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"Some bad error"}}::RESPONSE`]);
 	});
