@@ -224,8 +224,8 @@ export interface OnStartData {
 
 export interface ReadOptionHooks<SR extends StreamRecord> {
 
-	onStart: (data: OnStartData) => void,
-	onEnd: () => void,
+	onStart?: (data: OnStartData) => void,
+	onEnd?: () => void,
 
 	onBatchStart?: (streamRecords: SR[]) => void | SR[],
 	onBatchEnd?: (streamRecords: SR[]) => Promise<void>,

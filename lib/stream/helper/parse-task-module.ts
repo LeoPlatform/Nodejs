@@ -14,41 +14,113 @@ export function taskModule(req) {
 		parentPort: any; workerData: ParseWorkerData
 	};
 
+	let { Transform } = req('readable-stream');
+	let { StringDecoder } = req('string_decoder');
+
 	let { PassThrough, pipeline, Writable } = req("stream");
 	let { createGunzip: gunzip, createGzip: gzip } = req("zlib");
 	let pipe = pipeline;
 
 	// Splits a stream of data on newlines
-	let split = (fn) => {
-		let last = "";
-		let buffer = [];
-		return new PassThrough({
-			objectMode: true,
-			transform(chunk, _encoding, callback) {
-				// Add data to bufer
-				buffer = buffer.concat((last + chunk).toString().split("\n"));
-				// Save the last chunk as it may not be complete
-				last = buffer.pop();
+	let split = (matcher, mapper, options) => {
+		const kLast = Symbol('last');
+		const kDecoder = Symbol('decoder');
 
-				// push lines as long as the stream can accept it
-				while (buffer.length && this.push(fn(buffer.shift()))) {
-					//empty
-				}
+		function transform(chunk, enc, cb) {
+			var list;
+			if (this.overflow) { // Line buffer is full. Skip to start of next line.
+				var buf = this[kDecoder].write(chunk);
+				list = buf.split(this.matcher);
 
-				callback();
-			},
-			flush(callback) {
-				// flush that last chunk of data
-				if (last) {
-					buffer.push(last);
-				}
-				while (buffer.length) {
-					this.push(fn(buffer.shift()));
-				}
-				callback();
+				if (list.length === 1) return cb(); // Line ending not found. Discard entire chunk.
 
-			},
-		});
+				// Line ending found. Discard trailing fragment of previous line and reset overflow state.
+				list.shift();
+				this.overflow = false;
+			} else {
+				this[kLast] += this[kDecoder].write(chunk);
+				list = this[kLast].split(this.matcher);
+			}
+
+			this[kLast] = list.pop();
+
+			for (var i = 0; i < list.length; i++) {
+				push(this, this.mapper(list[i]));
+			}
+
+			this.overflow = this[kLast].length > this.maxLength;
+			if (this.overflow && !this.skipOverflow) return cb(new Error('maximum buffer reached'));
+
+			cb();
+		}
+
+		function flush(cb) {
+			// forward any gibberish left in there
+			this[kLast] += this[kDecoder].end();
+
+			if (this[kLast]) {
+				push(this, this.mapper(this[kLast]));
+			}
+
+			cb();
+		}
+
+		function push(self, val) {
+			if (val !== undefined) {
+				self.push(val);
+			}
+		}
+
+		function noop(incoming) {
+			return incoming;
+		}
+		matcher = matcher || /\r?\n/;
+		mapper = mapper || noop;
+		options = options || {};
+
+		// Test arguments explicitly.
+		switch (arguments.length) {
+			case 1:
+				// If mapper is only argument.
+				if (typeof matcher === 'function') {
+					mapper = matcher;
+					matcher = /\r?\n/;
+					// If options is only argument.
+				} else if (typeof matcher === 'object' && !(matcher instanceof RegExp)) {
+					options = matcher;
+					matcher = /\r?\n/;
+				}
+				break;
+
+			case 2:
+				// If mapper and options are arguments.
+				if (typeof matcher === 'function') {
+					options = mapper;
+					mapper = matcher;
+					matcher = /\r?\n/;
+					// If matcher and options are arguments.
+				} else if (typeof mapper === 'object') {
+					options = mapper;
+					mapper = noop;
+				}
+		}
+
+		options = Object.assign({}, options);
+		options.transform = transform;
+		options.flush = flush;
+		options.readableObjectMode = true;
+
+		const stream = new Transform(options);
+
+		stream[kLast] = '';
+		stream[kDecoder] = new StringDecoder('utf8');
+		stream.matcher = matcher;
+		stream.mapper = mapper;
+		stream.maxLength = options.maxLength;
+		stream.skipOverflow = options.skipOverflow;
+		stream.overflow = false;
+
+		return stream;
 	};
 
 	if (parentPort) {
@@ -133,7 +205,7 @@ export function taskModule(req) {
 				let steps: any[] = [
 					createReadStream(task.filePath),
 					gunzip(),
-					split((value) => {
+					split(undefined, (value) => {
 						try {
 							let obj = JSONparse(value);
 							if (obj.size == null) {
@@ -144,7 +216,7 @@ export function taskModule(req) {
 							//If we cancel the download early, we don't want to die here.
 							return null;
 						}
-					}),
+					}, undefined),
 					((size: number) => {
 						let buffer = [];
 						let bufferByteSize = 0;
