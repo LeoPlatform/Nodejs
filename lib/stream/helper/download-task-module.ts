@@ -12,6 +12,7 @@ const { createGunzip: gunzip, createGzip: gzip, gzipSync } = zlib;
 let pipe = pipeline;
 
 interface DownloadWorkerData {
+	awsS3Config: any;
 	id: number;
 	payloadAtEnd: boolean;
 	unzipFiles: boolean;
@@ -55,7 +56,38 @@ const promiseAllConcurrency = async <T>(queue: (() => Promise<T>)[], concurrency
 };
 
 if (parentPort) {
-	let s3 = new aws.S3();
+	let s3 = new aws.S3(workerData.awsS3Config);
+	const tryFinalizeMultipartUpload = async (file) => {
+		//logger.debug("MultipartUpload Start", file);
+		let bucket = file.bucket || file.Bucket;
+		let key = file.key || file.Key;
+		let mpResponse = await s3.listMultipartUploads({
+			Bucket: bucket,
+			Prefix: key
+		}).promise();
+		if (mpResponse.Uploads.length) {
+			let file = mpResponse.Uploads[0];
+			let allParts = await s3.listParts({
+				Bucket: bucket,
+				Key: file.Key,
+				UploadId: file.UploadId
+			}).promise();
+			let parts = allParts.Parts.map(p => ({ ETag: p.ETag, PartNumber: p.PartNumber }));
+			if (parts.length > 0) {
+				let params = {
+					Bucket: bucket,
+					Key: file.Key,
+					UploadId: file.UploadId,
+					MultipartUpload: {
+						Parts: parts
+					}
+				};
+				//console.log("MultipartUpload params:", params);
+				await s3.completeMultipartUpload(params).promise();
+				//logger.log(`MultipartUpload Complete:`, bucket, file.Key, file.UploadId);
+			}
+		}
+	};
 	const fromS3 = function (file) {
 		let pass = new PassThrough();
 		let obj = s3.getObject({
@@ -76,24 +108,24 @@ if (parentPort) {
 				stream.emit(event, ...args);
 			});
 		});
-		stream.on("error", async (err) => {
+		stream.on("error", async (err: any) => {
 			let passAlong = true;
-			// if (err.code === "NoSuchKey") {
-			// 	try {
-			// 		await ls.tryFinalizeMultipartUpload(file);
-			// 		passAlong = false;
-			// 		stream.unpipe(pass);
-			// 		let newStream = s3.getObject({
-			// 			Bucket: file.bucket || file.Bucket,
-			// 			Key: file.key || file.Key,
-			// 			Range: file.range || undefined
-			// 		}).createReadStream();
-			// 		newStream.on("error", err => pass.emit("error", err));
-			// 		ls.pipe(newStream, pass);
-			// 	} catch (err) {
-			// 		logger.error("Error Looking for partial Multipart Upload", err);
-			// 	}
-			// }
+			if (err.code === "NoSuchKey") {
+				try {
+					await tryFinalizeMultipartUpload(file);
+					passAlong = false;
+					stream.unpipe(pass);
+					let newStream = s3.getObject({
+						Bucket: file.bucket || file.Bucket,
+						Key: file.key || file.Key,
+						Range: file.range || undefined
+					}).createReadStream();
+					newStream.on("error", err => pass.emit("error", err));
+					pipe(newStream, pass);
+				} catch (err) {
+					console.error("Error Looking for partial Multipart Upload", err);
+				}
+			}
 			if (passAlong) {
 				pass.emit("error", err);
 			}
@@ -102,7 +134,7 @@ if (parentPort) {
 		return pass;
 	};
 
-	let prefix = `${workerData.requestId || ""}Download Worker ${workerData.id}:`;
+	//let prefix = `${workerData.requestId || ""}Download Worker ${workerData.id}:`;
 	// let l = console.log.bind(console);
 	// console.log = function (...args) {
 	// 	args.unshift(prefix);

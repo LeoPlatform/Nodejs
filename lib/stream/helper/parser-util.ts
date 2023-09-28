@@ -22,50 +22,68 @@ export class FastJsonPlus extends FastJson implements FastJsonEnhanced {
 
 	currentObj: any;
 	parse(input: string) {
+		// Create an object for parsing
 		let obj = {
 			__unparsed_value__: input
 		};
 		this.currentObj = obj;
+
+		// Write the current input
 		this.write(input);
+
+		// remove the current object and return
 		delete this.currentObj;
 		return obj;
 	}
 	getPath() {
-		return (this as unknown as {
+		// Some fields are private so we have to fake access to them
+		const fastJson = (this as unknown as {
+			stack: {
+				key: string
+			}[]
 			events: {
 				node: Node
+			},
+			currentObj: {
+				__unparsed_value__: string
+			};
+			getKey: (data: string) => string;
+		});
+		return fastJson.events.node.getPath().map((f, i) => {
+			// Get the real field name for wildcards
+			if (f == "*") {
+				if (fastJson.stack.length > i + 1) {
+					// If it is in the stack we can use the stack key
+					f = fastJson.stack[i + 1].key;
+				}
+				else {
+					// If it isn't in the stack we use the latest key
+					f = fastJson.getKey(fastJson.currentObj.__unparsed_value__);
+				}
 			}
-		}).events.node.getPath();
+			return f;
+		});
 	}
 }
 
+export enum ParserName {
+	JsonParse = "JSON.parse",
+	Empty = "empty",
+	FastJson = "fast-json",
+}
 
-export let parsers: Record<string, (botId: string, queue: string, settings: any) => (input: string) => any> = {
-	"JSON.parse": () => JSON.parse,
-	"empty": (botId, queue, settings) => (input: string) => {
+// Factory of parsers so that they can be created with any config needed
+export let parsers: Record<ParserName, (botId: string, queue: string, settings: any) => (input: string) => any> = {
+	[ParserName.JsonParse]: () => JSON.parse,
+	[ParserName.Empty]: (botId, queue, settings) => (input: string) => {
 		return {
 			id: "unknown",
 			event: queue,
 			payload: {}
 		};
 	},
-	"fast-json": (botid, queue, settings: { fields?: FastParseField[], pathSeparator?: string }) => {
-		let fastJson = new FastJsonPlus({ pathSeparator: settings.pathSeparator }) as FastJsonEnhanced;
-		if (fastJson.parse == null) {
-			fastJson.parse = function (value: string) {
-				let obj = {
-					__unparsed_value__: value
-				};
-				this.currentObj = obj;
-				this.write(value);
-				delete this.currentObj;
-				return obj;
-			};
-
-			fastJson.getPath = function () {
-				return this.events.node.getPath();
-			};
-		}
+	[ParserName.FastJson]: (botid, queue, settings: { fields?: FastParseField[], pathSeparator?: string }) => {
+		let fastJson = new FastJsonPlus({ pathSeparator: settings.pathSeparator });
 
 		let allFields = 0;
 		let visitedFields = 0;
@@ -113,17 +131,23 @@ export let parsers: Record<string, (botId: string, queue: string, settings: any)
 			[FastParseType.Raw]: { set: (field, value) => set(field, value, "_raw") }
 		};
 
+		const ARRAY_TYPE = 1;
 		function set(field, value, suffix = "") {
 			let keys = fastJson.getPath();
 			let last = keys.pop();
-			// TODO: Detect if this is an array and default should be [] instead of {}
-			let c = keys.reduce((c, f, i) => c[f] = c[f] || {}, fastJson.currentObj);
-			c[last + suffix] = value;
-			//fastJson.currentObj[field + suffix] = value;
+			// Detect if this is an array and use [] instead of {}
+			let c = keys.reduce((c, f, i) => c[f] = c[f] || ((fastJson as any).stack[i + 1].type == ARRAY_TYPE ? [] : {}), fastJson.currentObj);
+			if (Array.isArray(c)) {
+				c[parseInt(last, 10)] = value;
+			} else {
+				c[last + suffix] = value;
+			}
 		}
 
+		let allowSkip = true;
 		function trySetSkip() {
-			if (visitedFields == allFields) {
+			// TODO: disable skip if using a wildcard '*' field
+			if (allowSkip && visitedFields == allFields) {
 				fastJson.skip();
 			}
 		}
@@ -133,13 +157,19 @@ export let parsers: Record<string, (botId: string, queue: string, settings: any)
 			let fieldProcessor = fieldParsers[def.type] || fieldParsers.string;
 			let fieldParser = fieldProcessor.parse || fieldParsers.string.parse;
 			let fieldSet = fieldProcessor.set || set;
+
+			// If wildcards are used we can't determine if all fields were visited
+			// so disable skipping
+			if (def.field.includes("*")) {
+				allowSkip = false;
+			}
 			fastJson.on(def.field, (value) => {
 				fieldSet(def.field, fieldParser(value));
 				visitedFields++;
 				trySetSkip();
 			});
 		});
-		console.log(allFieldsDefs.map(a => a.field));
+		//console.log(allFieldsDefs.map(a => a.field));
 
 		return (input) => {
 			visitedFields = 0;

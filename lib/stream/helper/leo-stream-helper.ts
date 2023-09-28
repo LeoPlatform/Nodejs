@@ -8,6 +8,8 @@ import * as  streamUtil from "../../streams";
 import { exec } from "child_process";
 import { ReadOptionHooks, StreamRecord, TransformStream } from "../../types";
 import { gunzipSync } from "zlib";
+import { S3 } from "aws-sdk";
+import { CredentialsOptions } from "aws-sdk/lib/credentials";
 //import { Worker } from 'worker_threads';
 let logger = require("leo-logger")("leo-stream-helper");
 
@@ -25,6 +27,7 @@ let { parseTaskModuleContent, downloadTaskModuleContent } = JSON.parse(gunzipSyn
 
 
 export interface ReadHooksParams {
+	awsS3Config?: S3.ClientConfiguration;
 	availableDiskSpace?: number;
 	mergeFileVersion?: number;
 	mergeFileSize?: number;
@@ -90,11 +93,12 @@ export function getAllFiles(dirPath: string, arrayOfFiles?: StatsPlus[]): StatsP
 	arrayOfFiles = arrayOfFiles || [];
 
 	files.forEach(function (file) {
-		let stat = statSync(dirPath + "/" + file) as StatsPlus;
+		let fullPath = path.resolve(dirPath, file);
+		let stat = statSync(fullPath) as StatsPlus;
 		if (stat.isDirectory()) {
-			arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+			arrayOfFiles = getAllFiles(fullPath, arrayOfFiles);
 		} else {
-			stat.fullpath = path.resolve(dirPath, file);
+			stat.fullpath = fullPath;
 			arrayOfFiles.push(stat);
 		}
 	});
@@ -143,11 +147,15 @@ interface LocalFileStreamRecord extends StreamRecord {
 }
 
 interface ExtraHooks<SR extends StreamRecord> {
-	onGetEventsAddDownload?: (StreamRecords: SR[]) => void
-	onGetEventsMerge2?: (StreamRecords: SR[]) => void | SR[];
-	onGetEventsMerge?: (StreamRecords: SR[]) => void | SR[];
+	onGetEventsAddDownload: (StreamRecords: SR[]) => void
+	onGetEventsMerge: (StreamRecords: SR[]) => void | SR[];
+	getExtraMetaData: () => {
+		availableDiskSpace: number;
+		startingDiskSpace: number;
+		enddingDiskSpace: number;
+	}
 }
-export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?: any): ReadOptionHooks<LocalFileStreamRecord> & ExtraHooks<LocalFileStreamRecord> {
+export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHooks<LocalFileStreamRecord> & ExtraHooks<LocalFileStreamRecord> {
 	settings = {
 		downloadThreads: Math.max(1, cpus().length - 1),
 		payloadAtEnd: false,
@@ -171,7 +179,17 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		{
 			payloadAtEnd: settings.payloadAtEnd,
 			unzipFiles: settings.unzipFiles,
-			rstreams: rstreamsConfig,
+			awsS3Config: {
+				...settings.awsS3Config,
+				// copy over only the credentials options, other credential fields won't serialize
+				...(settings.awsS3Config?.credentials ? {
+					credentials: {
+						accessKeyId: settings.awsS3Config?.credentials.accessKeyId,
+						secretAccessKey: settings.awsS3Config?.credentials.secretAccessKey,
+						sessionToken: settings.awsS3Config?.credentials.sessionToken,
+					}
+				} : undefined)
+			},
 			concurrency: 10,
 		}
 	);
@@ -510,9 +528,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		onGetEvents(streamRecords) {
 			logger.debug("onGetEvents", streamRecords.length);
 			let mergeVersion = settings.mergeFileVersion;
-			if (mergeVersion == 2) {
-				streamRecords = this.onGetEventsMerge2(streamRecords);
-			} else if (mergeVersion == 1) {
+			if (mergeVersion == 1 && settings.mergeFileSize != 0) {
 				streamRecords = this.onGetEventsMerge(streamRecords);
 			} else {
 				this.onGetEventsAddDownload(streamRecords);
@@ -523,95 +539,6 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 			(streamRecords as any).queryId = id;
 			logger.debug(id, "Start Query");
 			return streamRecords;
-		},
-		onGetEventsMerge2(streamRecords) {
-			logger.debug("onGetEventsMerge-Start", streamRecords.length);
-
-
-			let ret = [];
-			let maxFileSize = settings.mergeFileSize ?? (5 * 1024 * 1024);
-			streamRecords.forEach(r => {
-				if (r.s3 && !Array.isArray(r.s3)) {
-					let last = ret[ret.length - 1];
-
-					r.s3.start = r.start;
-					r.s3.end = r.end;
-					r.s3.gzipSize = r.gzipSize;
-
-					if (last == null || !last.s3 || (last.mergeS3GzipSize + r.gzipSize) > maxFileSize) {
-						//r.s3 = [r.s3];
-						//r.localFile.readyPromise
-						r.s3Parts = [r];
-						r.mergeS3GzipSize = r.gzipSize;
-						ret.push(r);
-					} else {
-						//last.s3.push(r.s3);
-						last.s3Parts.push(r);
-						last.mergeS3GzipSize += r.gzipSize;
-						r.s3.writeStartEid = true;
-						//last.offsets = last.offsets.concat(r.offsets);
-						//last.end = r.end;
-						//last.records += r.records;
-						//last.gzipSize += r.gzipSize;
-						//last.size += r.size;
-					}
-				} else {
-					ret.push(r);
-				}
-			});
-
-
-			logger.debug("onGetEventsMerge-Download", streamRecords.length);
-			this.onGetEventsAddDownload(streamRecords);
-			ret.forEach(r => {
-				if (r.s3Parts && r.s3Parts.length > 1) {
-					let partsPromises = [];
-					let subFiles = [];
-					r.offsets = [];
-					r.records = 0;
-					r.gzipSize = 0;
-					r.size = 0;
-
-					r.s3Parts.forEach(p => {
-						partsPromises.push(p.localFile.readyPromise);
-						subFiles.push(p.localFile.filePath);
-
-						r.offsets.push(...p.offsets);
-						r.records += p.records;
-						r.gzipSize += p.gzipSize;
-						r.size += p.size;
-					});
-					// get merged file name
-					let filePath = path.resolve(settings.tmpDir, `s3/${r.event}/${((r.end)).replace(/\//g, "_") + "-0-" + r.gzipSize}_m.jsonl.gz`);
-					r.localFile.filePath = filePath;
-					r.localFile.unlinkOnStreamClose = subFiles;
-					r.localFile.readyPromise = Promise.all(partsPromises).then(async () => {
-						let error;
-						try {
-							let cmd = `cat ${subFiles.map(p => basename(p).replace(/\\/g, "/")).join(" ")} >> ${filePath}`;
-							//logger.log("Merging stuff here", subFiles.length, cmd);
-
-							await new Promise((resolve, reject) => exec(cmd, {
-								cwd: dirname(filePath)
-							}, (err => {
-								err ? reject(err) : resolve(undefined);
-							})));
-						} catch (err) {
-							error = err;
-						} finally {
-							//subFiles.map(f => existsSync(f) && unlinkSync(f));
-						}
-						if (error && existsSync(filePath)) {
-							unlinkSync(filePath);
-						}
-						if (error) {
-							throw error;
-						}
-					});
-				}
-			});
-
-			return ret;
 		},
 		onGetEventsMerge(streamRecords) {
 			logger.debug("onGetEventsMerge", streamRecords.length);
