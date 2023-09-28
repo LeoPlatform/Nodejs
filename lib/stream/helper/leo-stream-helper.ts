@@ -4,13 +4,25 @@ import { cpus } from "os";
 import * as async from "async";
 import { Stats, createReadStream, existsSync, mkdirSync, readdirSync, statSync, unlink, unlinkSync, writeFileSync } from "fs";
 import { Transform, PassThrough } from "stream";
-import { taskModule as downloadTaskModule } from "./download-task-module";
-import { taskModule as parseTaskModule } from "./parse-task-module";
 import * as  streamUtil from "../../streams";
 import { exec } from "child_process";
 import { ReadOptionHooks, StreamRecord, TransformStream } from "../../types";
+import { gunzipSync } from "zlib";
 //import { Worker } from 'worker_threads';
 let logger = require("leo-logger")("leo-stream-helper");
+
+
+let { parseTaskModuleContent, downloadTaskModuleContent } = JSON.parse(gunzipSync(Buffer.from(require("./worker-thread-content.js"), "base64")).toString());
+// let workerThreadModuleLookup = Object.entries({
+// 	// "parse-task-module.js": () => import("./parse-task-module"),
+// 	// "download-task-module.js": () => import("./download-task-module"),
+// }).reduce((all, [key, fn]) => {
+// 	console.log(fn.toString());
+// 	all[key] = (fn.toString().match(/\(.*?(\d+)\)/) || ["", key.replace(/\.js$/, "")])[1] + ".js";
+// 	return all;
+// }, {});
+// console.log("Post  import", workerThreadModuleLookup);
+
 
 export interface ReadHooksParams {
 	availableDiskSpace?: number;
@@ -32,37 +44,24 @@ export interface ReadHooksParams {
 	};
 }
 
-// function downloadTaskWorker() {
-// 	return new Worker(
-// 		new URL("./download-task-entry.js", "")
-// 	);
-// }
-// function parseTaskWorker() {
-// 	return new Worker(
-// 		new URL("./parse-task-entry.js", "")
-// 	);
-// }
-
-// function getWebpackWorkerFilename(fn, defaultFilename) {
-// 	let webpackFileName = (fn.toString().match(/\((\d+)\)/) || [])[1];
-// 	console.log(fn.toString(), webpackFileName);
-// 	if (webpackFileName) {
-// 		return `${webpackFileName}.js`;
-// 	}
-// 	else {
-// 		return defaultFilename;
-// 	}
-// }
-function verifyTaskModule(taskPath: string, tmpDir: string, taskModule: (req: any) => void, filename: string) {
+function verifyTaskModule(taskPath: string, tmpDir: string, taskModule: string, filename: string) {
 	if (taskPath == null) {
-		// if (filename === "download-task-entry.js") {
-		// 	filename = getWebpackWorkerFilename(downloadTaskWorker, filename);
-		// } else if (filename === "parse-task-entry.js") {
-		// 	filename = getWebpackWorkerFilename(parseTaskWorker, filename);
-		// }
 
-		taskPath = path.resolve(__dirname, `./${filename}`);
 		// Check if the entry is available (webpack may package it away)
+		let chain = [
+			path.resolve(__dirname, `./${filename}`),
+			path.resolve("./", `./${filename}`)
+		];
+		for (let f of chain) {
+			let exists = existsSync(f);
+			//console.log("Checking File:", f, exists);
+			if (exists) {
+				taskPath = f;
+				break;
+			}
+		}
+
+		// If there still isn't a module copy the source to the tmp directory
 		if (!existsSync(taskPath)) {
 			// Copy the source to the tmp code directory
 			taskPath = path.resolve(tmpDir, `code/${filename}`);
@@ -70,13 +69,14 @@ function verifyTaskModule(taskPath: string, tmpDir: string, taskModule: (req: an
 			mkdirSync(dirname(taskPath), { recursive: true });
 			let fileContent = [
 				taskModule.toString(),
-				`taskModule(require)`
+				`typeof taskModule === "function" && taskModule(require)`
 			].join("\n");
 			//logger.log(filename, "\n", fileContent);
 			writeFileSync(taskPath, fileContent);
 			//}
 		}
 	}
+	logger.debug("Task Path", filename, taskPath);
 	return taskPath;
 }
 
@@ -161,24 +161,8 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 	let taskId = 0;
 	let downloadThreads = settings.downloadThreads ?? Math.max(1, cpus().length - 1);
 	let parseThreads = settings.parseThreads ?? Math.max(1, cpus().length - 1);
-	let downloadTaskPath = verifyTaskModule(settings.downloadTaskPath, settings.tmpDir, downloadTaskModule, "download-task-entry.js");
-	let parseTaskPath = verifyTaskModule(settings.parseTaskPath, settings.tmpDir, parseTaskModule, "parse-task-entry.js");
-	// if (settings.downloadTaskPath == null) {
-	// 	settings.downloadTaskPath = path.resolve(__dirname, "./download-task-entry.js");
-	// 	// Check if the entry is available (webpack may package it away)
-	// 	if (!existsSync(settings.downloadTaskPath)) {
-
-	// 		// Copy the source to the tmp code directory
-	// 		settings.downloadTaskPath = path.resolve(settings.tmpDir, "code/download-task-entry.js");
-	// 		//if (!existsSync(settings.downloadTaskPath) || (Date.now() - statSync(settings.downloadTaskPath).mtime.valueOf()) > (1000 * 60 * 5)) {
-	// 		mkdirSync(dirname(settings.downloadTaskPath), { recursive: true });
-	// 		writeFileSync(settings.downloadTaskPath, [
-	// 			downloadTaskModule.toString(),
-	// 			`downloadTaskModule(require)`
-	// 		].join("\n"));
-	// 		//}
-	// 	}
-	// }
+	let downloadTaskPath = verifyTaskModule(settings.downloadTaskPath, settings.tmpDir, downloadTaskModuleContent, "download-task-module.js");
+	let parseTaskPath = verifyTaskModule(settings.parseTaskPath, settings.tmpDir, parseTaskModuleContent, "parse-task-module.js");
 
 	let pool = new WorkerPool(
 		"Download",
@@ -231,7 +215,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		}
 	);
 
-	function poolStream(pool: WorkerPool, id, file: string) {
+	function poolStream(pool: WorkerPool, id: number, file: string, queue: string) {
 		let pass = streamUtil.passthrough({
 			objectMode: true,
 			highWaterMark: 10000
@@ -241,7 +225,8 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 			event: "parse",
 			data: {
 				id,
-				filePath: file
+				filePath: file,
+				queue
 			}
 		}, (err, result) => {
 			err = err || result.error;
@@ -482,7 +467,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 			let isDestroyed = false;
 			streamRecord.localFile.readyPromise.then(() => {
 				if (!isDestroyed) {
-					fileStream = parallelParse ? poolStream(parsePool, ++parseStreamId, localFile) : createReadStream(localFile);
+					fileStream = parallelParse ? poolStream(parsePool, ++parseStreamId, localFile, streamRecord.event) : createReadStream(localFile);
 					streamUtil.pipe(fileStream, pass, () => {
 						let files = streamRecord.localFile.unlinkOnStreamClose || [];
 						if (files.length > 0) {
