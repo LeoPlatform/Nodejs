@@ -725,12 +725,14 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 
 	let defaultsFromMem = getLambdaDefaults(totalMemory);
 	let parseTaskParser = typeof settings.parser === "string" ? {
+		parser: settings.parser,
+		bufferSize: MB,
+		...partialHookSettings?.parseTaskParser,
 		opts: {
 			parser: settings.parser,
-			...settings.parserOpts
+			...settings.parserOpts,
+			...partialHookSettings?.parseTaskParser.opts
 		},
-		parser: settings.parser,
-		bufferSize: MB
 	} : undefined;
 	let parallelParse = parseTaskParser != null;
 
@@ -748,7 +750,6 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 	let hookSettings: ReadHooksParams = {
 		parallelParse,
 		//parallelParseBufferSize,
-		parseTaskParser,
 		downloadThreads,
 		parseThreads,
 		saveFiles,
@@ -756,7 +757,10 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 		mergeFileSize,
 		mergeFileVersion,
 		awsS3Config,
-		...(partialHookSettings || {})
+		...(partialHookSettings || {}),
+
+		// last because it is a sub object that we don't want overriden 
+		parseTaskParser,
 	};
 
 	let readOpts: ReadOptions<T> = {
