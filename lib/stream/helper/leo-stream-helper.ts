@@ -764,13 +764,13 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 	};
 	if (defaultsFromMem.parallelFetchMax > 0) {
 		readOpts.fast_s3_read = true;
-		readOpts.fast_s3_read_parallel_fetch_max_bytes = defaultsFromMem.parallelFetchMax;
+		readOpts.fast_s3_read_parallel_fetch_max_bytes = readOpts.fast_s3_read_parallel_fetch_max_bytes || defaultsFromMem.parallelFetchMax;
 	}
 
-	console.log("Hook Params New:", JSON.stringify({
-		...readOpts,
-		hooks: hookSettings
-	}, null, 2));
+	// console.log("Hook Params New:", JSON.stringify({
+	// 	...readOpts,
+	// 	hooks: hookSettings
+	// }, null, 2));
 	return readOpts;
 }
 
