@@ -9,6 +9,8 @@ import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, Corr
 import * as es from "event-stream";
 import zlib from "zlib";
 import { Options as BackoffOptions } from "backoff";
+import { ParserName } from "./stream/helper/parser-util";
+import { ReadHooksParams } from "./stream/helper/leo-stream-helper";
 
 /**
  * A standard callback function.  If the operation failed, return the first argument only,
@@ -386,8 +388,10 @@ export interface ReadOptions<T = any> {
 	 * 
 	 * @default: JSON.parse
 	 */
-	parser?: (stringEvent: string) => ReadEvent<T>,
-	hooks?: ReadOptionHooks<StreamRecord>
+	parser?: ((stringEvent: string) => ReadEvent<T>) | ParserName | string,
+	parserOpts?: any;
+	hooks?: ReadOptionHooks<StreamRecord>,
+	autoConfigure?: boolean | Partial<ReadHooksParams>
 }
 
 /**

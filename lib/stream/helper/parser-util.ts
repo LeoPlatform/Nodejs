@@ -73,16 +73,17 @@ export enum ParserName {
 }
 
 // Factory of parsers so that they can be created with any config needed
-export let parsers: Record<ParserName, (botId: string, queue: string, settings: any) => (input: string) => any> = {
+export let parsers: Record<ParserName, (settings: any) => (input: string) => any> = {
 	[ParserName.JsonParse]: () => JSON.parse,
-	[ParserName.Empty]: (botId, queue, settings) => (input: string) => {
+	[ParserName.Empty]: () => (input: string) => {
 		return {
 			id: "unknown",
-			event: queue,
 			payload: {}
 		};
 	},
-	[ParserName.FastJson]: (botid, queue, settings: { fields?: FastParseField[], pathSeparator?: string }) => {
+	[ParserName.FastJson]: (settings: {
+		fields?: FastParseField[], pathSeparator?: string
+	}) => {
 		let fastJson = new FastJsonPlus({ pathSeparator: settings.pathSeparator });
 
 		let allFields = 0;
@@ -177,3 +178,68 @@ export let parsers: Record<ParserName, (botId: string, queue: string, settings: 
 		};
 	}
 };
+
+
+type ParseFunction<T> = (data: string) => T;
+
+interface CreateParserParams<R, T> {
+	parser: string | ParseFunction<R>;
+	opts: T & { botId?: string, queue?: string };
+
+}
+// Require function that is run outside of webpack
+declare var __webpack_require__;
+declare var __non_webpack_require__;
+const requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+
+// Create a parser and handle eid commands
+// Eid Commands are needed when merging multiple records
+// LeoStream records together as they have different starting eids
+export function createParser<R = any, T = any>(params: CreateParserParams<R, T>) {
+	let JSONparseInner: (val: string) => any;
+
+	if (typeof params.parser === "string") {
+
+		let parseFn: ((...args: any[]) => (input: string) => any) = parsers[params.parser];
+		if (parseFn == null) {
+			//console.log("PARSER:", params.parser);
+			// If it isn't one of the default parsers
+			// it should be an external module that we can require
+			// with a function to call to get the parser
+			parseFn = requireFn(params.parser);
+			if (typeof parseFn !== "function") {
+				let lib = parseFn as any;
+				parseFn = lib.default;
+				if (typeof parseFn !== "function") {
+					parseFn = (parseFn as any).parser;
+				}
+			}
+			parseFn = parseFn || parsers[ParserName.JsonParse];
+		}
+		//console.log("PARSER context:", parseFn.toString());
+		// Create the inner parser and pass in the parser options
+		if (parseFn.length == 1) {
+			JSONparseInner = (parseFn)(params.opts);
+		} else {
+			JSONparseInner = (parseFn)(params.opts.botId, params.opts.queue, params.opts);
+		}
+	} else {
+		JSONparseInner = params.parser;
+	}
+
+	JSONparseInner = JSONparseInner || JSON.parse;
+	return (str) => {
+		if (str.startsWith("__cmd:eid__")) {
+			let cmd = JSON.parse(str.replace("__cmd:eid__", ""));
+			cmd._cmd = "setBaseEid";
+			return cmd;
+		}
+		let r = JSONparseInner(str);
+
+		// Add size in bytes if it doesn't exist
+		if (r != null && r.size == null) {
+			r.size = Buffer.byteLength(str);
+		}
+		return r;
+	};
+}

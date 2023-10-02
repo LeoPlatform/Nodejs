@@ -3,7 +3,7 @@ import * as workerThreads from "worker_threads";
 import split from "split2";
 import { PassThrough, pipeline, Writable } from "stream";
 import { createGunzip, createGzip } from "zlib";
-import { ParserName, parsers } from "./parser-util";
+import { createParser, ParserName, parsers } from "./parser-util";
 const { parentPort, workerData } = workerThreads as { parentPort: any, workerData: ParseWorkerData };
 let gunzip = createGunzip;
 let pipe = pipeline;
@@ -32,56 +32,19 @@ if (parentPort) {
 	// Size of data to push to the parent thread in one message
 	let bufferSize = workerData.bufferSize || 1048576;
 
-	let JSONparseInner: (val: string) => any;
-
-	if (typeof workerData.parser === "string") {
-
-		let parseFn: ((...args: any[]) => (input: string) => any) = parsers[workerData.parser];
-		if (parseFn == null) {
-			//console.log("PARSER:", workerData.parser);
-			// If it isn't one of the default parsers
-			// it should be an external module that we can require
-			// with a function to call to get the parser
-			parseFn = requireFn(workerData.parser);
-			if (typeof parseFn !== "function") {
-				let lib = parseFn as any;
-				parseFn = lib.default;
-				if (typeof parseFn !== "function") {
-					parseFn = (parseFn as any).parser;
-				}
-			}
-			parseFn = parseFn || parsers[ParserName.JsonParse];
-		}
-		//console.log("PARSER context:", parseFn.toString());
-		// Create the inner parser and pass in the parser options
-		if (parseFn.length == 1) {
-			JSONparseInner = (parseFn)(workerData.parserOpts);
-		} else {
-			JSONparseInner = (parseFn)(workerData.parserOpts.botId, workerData.parserOpts.queue, workerData.parserOpts);
-		}
-	}
-
-	// Handle eid commands and parse the data
-	JSONparseInner = JSONparseInner || JSON.parse;
-
-	const JSONparse = function (str) {
-		if (str.startsWith("__cmd:eid__")) {
-			let cmd = JSON.parse(str.replace("__cmd:eid__", ""));
-			cmd._cmd = "setBaseEid";
-			return cmd;
-		}
-		let r = JSONparseInner(str);
-
-		// Add size in bytes if it doesn't exist
-		if (r != null && r.size == null) {
-			r.size = Buffer.byteLength(str);
-		}
-		return r;
-	};
+	const JSONparse = createParser({
+		parser: workerData.parser,
+		opts: workerData.parserOpts
+	});
 
 	interface Task {
 		id: number;
-		filePath: string;
+		filePath?: string;
+		// s3?: {
+		// 	key: string;
+		// 	bucket: string;
+		// };
+		gzip?: string
 		queue: string;
 	}
 	interface Message {
@@ -95,7 +58,19 @@ if (parentPort) {
 		parse: (task: Task) => {
 
 			let steps: any[] = [
-				createReadStream(task.filePath),
+				(() => {
+					if (task.filePath) {
+						return createReadStream(task.filePath);
+					} else if (task.gzip) {
+						let pass = new PassThrough();
+						pass.end(task.gzip);
+						return pass;
+					} else {
+						let pass = new PassThrough();
+						pass.end();
+						return pass;
+					}
+				})(),
 				gunzip(),
 				split((value) => {
 					try {
