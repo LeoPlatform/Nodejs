@@ -1,18 +1,36 @@
 import path, { basename, dirname } from "path";
 import { WorkerPool } from "./worker-pool";
-import { cpus } from "os";
+import { cpus, totalmem } from "os";
 import * as async from "async";
 import { Stats, createReadStream, existsSync, mkdirSync, readdirSync, statSync, unlink, unlinkSync, writeFileSync } from "fs";
 import { Transform, PassThrough } from "stream";
-import { taskModule as downloadTaskModule } from "./download-task-module";
-import { taskModule as parseTaskModule } from "./parse-task-module";
 import * as  streamUtil from "../../streams";
 import { exec } from "child_process";
-import { ReadOptionHooks, StreamRecord, TransformStream } from "../../types";
+import { ReadOptionHooks, ReadOptions, StreamRecord, TransformStream } from "../../types";
+import { gunzipSync } from "zlib";
+import { S3 } from "aws-sdk";
+import { CredentialsOptions } from "aws-sdk/lib/credentials";
+import { RStreamsSdk } from "../../../index";
 //import { Worker } from 'worker_threads';
 let logger = require("leo-logger")("leo-stream-helper");
 
+const MB = 1024 * 1024;
+const GB = MB * 1024;
+
+let { parseTaskModuleContent, downloadTaskModuleContent } = JSON.parse(gunzipSync(Buffer.from(require("./worker-thread-content.js"), "base64")).toString());
+// let workerThreadModuleLookup = Object.entries({
+// 	// "parse-task-module.js": () => import("./parse-task-module"),
+// 	// "download-task-module.js": () => import("./download-task-module"),
+// }).reduce((all, [key, fn]) => {
+// 	console.log(fn.toString());
+// 	all[key] = (fn.toString().match(/\(.*?(\d+)\)/) || ["", key.replace(/\.js$/, "")])[1] + ".js";
+// 	return all;
+// }, {});
+// console.log("Post  import", workerThreadModuleLookup);
+
+
 export interface ReadHooksParams {
+	awsS3Config?: S3.ClientConfiguration;
 	availableDiskSpace?: number;
 	mergeFileVersion?: number;
 	mergeFileSize?: number;
@@ -25,44 +43,33 @@ export interface ReadHooksParams {
 	downloadTaskPath?: string;
 	parseTaskPath?: string;
 	parallelParse?: boolean;
-	parallelParseBufferSize?: number;
+	parallelParseGzip?: boolean,
+	//parallelParseBufferSize?: number;
 	parseTaskParser?: {
 		opts: any;
 		parser: string;
+		bufferSize?: number;
 	};
 }
 
-// function downloadTaskWorker() {
-// 	return new Worker(
-// 		new URL("./download-task-entry.js", "")
-// 	);
-// }
-// function parseTaskWorker() {
-// 	return new Worker(
-// 		new URL("./parse-task-entry.js", "")
-// 	);
-// }
-
-// function getWebpackWorkerFilename(fn, defaultFilename) {
-// 	let webpackFileName = (fn.toString().match(/\((\d+)\)/) || [])[1];
-// 	console.log(fn.toString(), webpackFileName);
-// 	if (webpackFileName) {
-// 		return `${webpackFileName}.js`;
-// 	}
-// 	else {
-// 		return defaultFilename;
-// 	}
-// }
-function verifyTaskModule(taskPath: string, tmpDir: string, taskModule: (req: any) => void, filename: string) {
+function verifyTaskModule(taskPath: string, tmpDir: string, taskModule: string, filename: string) {
 	if (taskPath == null) {
-		// if (filename === "download-task-entry.js") {
-		// 	filename = getWebpackWorkerFilename(downloadTaskWorker, filename);
-		// } else if (filename === "parse-task-entry.js") {
-		// 	filename = getWebpackWorkerFilename(parseTaskWorker, filename);
-		// }
 
-		taskPath = path.resolve(__dirname, `./${filename}`);
 		// Check if the entry is available (webpack may package it away)
+		let chain = [
+			path.resolve(__dirname, `./${filename}`),
+			path.resolve("./", `./${filename}`)
+		];
+		for (let f of chain) {
+			let exists = existsSync(f);
+			//console.log("Checking File:", f, exists);
+			if (exists) {
+				taskPath = f;
+				break;
+			}
+		}
+
+		// If there still isn't a module copy the source to the tmp directory
 		if (!existsSync(taskPath)) {
 			// Copy the source to the tmp code directory
 			taskPath = path.resolve(tmpDir, `code/${filename}`);
@@ -70,13 +77,14 @@ function verifyTaskModule(taskPath: string, tmpDir: string, taskModule: (req: an
 			mkdirSync(dirname(taskPath), { recursive: true });
 			let fileContent = [
 				taskModule.toString(),
-				`taskModule(require)`
+				`typeof taskModule === "function" && taskModule(require)`
 			].join("\n");
 			//logger.log(filename, "\n", fileContent);
 			writeFileSync(taskPath, fileContent);
 			//}
 		}
 	}
+	logger.debug("Task Path", filename, taskPath);
 	return taskPath;
 }
 
@@ -90,11 +98,12 @@ export function getAllFiles(dirPath: string, arrayOfFiles?: StatsPlus[]): StatsP
 	arrayOfFiles = arrayOfFiles || [];
 
 	files.forEach(function (file) {
-		let stat = statSync(dirPath + "/" + file) as StatsPlus;
+		let fullPath = path.resolve(dirPath, file);
+		let stat = statSync(fullPath) as StatsPlus;
 		if (stat.isDirectory()) {
-			arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+			arrayOfFiles = getAllFiles(fullPath, arrayOfFiles);
 		} else {
-			stat.fullpath = path.resolve(dirPath, file);
+			stat.fullpath = fullPath;
 			arrayOfFiles.push(stat);
 		}
 	});
@@ -127,6 +136,7 @@ interface LocalFileStreamRecordS3 {
 	writeStartEid: boolean;
 }
 interface LocalFileStreamRecord extends StreamRecord {
+	s3Like?: boolean;
 	filePrefix?: string;
 	localFile: {
 		id: number;
@@ -143,11 +153,15 @@ interface LocalFileStreamRecord extends StreamRecord {
 }
 
 interface ExtraHooks<SR extends StreamRecord> {
-	onGetEventsAddDownload?: (StreamRecords: SR[]) => void
-	onGetEventsMerge2?: (StreamRecords: SR[]) => void | SR[];
-	onGetEventsMerge?: (StreamRecords: SR[]) => void | SR[];
+	onGetEventsAddDownload: (StreamRecords: SR[]) => void
+	onGetEventsMerge: (StreamRecords: SR[]) => void | SR[];
+	getExtraMetaData: () => {
+		availableDiskSpace: number;
+		startingDiskSpace: number;
+		enddingDiskSpace: number;
+	}
 }
-export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?: any): ReadOptionHooks<LocalFileStreamRecord> & ExtraHooks<LocalFileStreamRecord> {
+export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHooks<LocalFileStreamRecord> & ExtraHooks<LocalFileStreamRecord> {
 	settings = {
 		downloadThreads: Math.max(1, cpus().length - 1),
 		payloadAtEnd: false,
@@ -161,24 +175,8 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 	let taskId = 0;
 	let downloadThreads = settings.downloadThreads ?? Math.max(1, cpus().length - 1);
 	let parseThreads = settings.parseThreads ?? Math.max(1, cpus().length - 1);
-	let downloadTaskPath = verifyTaskModule(settings.downloadTaskPath, settings.tmpDir, downloadTaskModule, "download-task-entry.js");
-	let parseTaskPath = verifyTaskModule(settings.parseTaskPath, settings.tmpDir, parseTaskModule, "parse-task-entry.js");
-	// if (settings.downloadTaskPath == null) {
-	// 	settings.downloadTaskPath = path.resolve(__dirname, "./download-task-entry.js");
-	// 	// Check if the entry is available (webpack may package it away)
-	// 	if (!existsSync(settings.downloadTaskPath)) {
-
-	// 		// Copy the source to the tmp code directory
-	// 		settings.downloadTaskPath = path.resolve(settings.tmpDir, "code/download-task-entry.js");
-	// 		//if (!existsSync(settings.downloadTaskPath) || (Date.now() - statSync(settings.downloadTaskPath).mtime.valueOf()) > (1000 * 60 * 5)) {
-	// 		mkdirSync(dirname(settings.downloadTaskPath), { recursive: true });
-	// 		writeFileSync(settings.downloadTaskPath, [
-	// 			downloadTaskModule.toString(),
-	// 			`downloadTaskModule(require)`
-	// 		].join("\n"));
-	// 		//}
-	// 	}
-	// }
+	let downloadTaskPath = verifyTaskModule(settings.downloadTaskPath, settings.tmpDir, downloadTaskModuleContent, "download-task-module.js");
+	let parseTaskPath = verifyTaskModule(settings.parseTaskPath, settings.tmpDir, parseTaskModuleContent, "parse-task-module.js");
 
 	let pool = new WorkerPool(
 		"Download",
@@ -187,7 +185,17 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		{
 			payloadAtEnd: settings.payloadAtEnd,
 			unzipFiles: settings.unzipFiles,
-			rstreams: rstreamsConfig,
+			awsS3Config: {
+				...settings.awsS3Config,
+				// copy over only the credentials options, other credential fields won't serialize
+				...(settings.awsS3Config?.credentials ? {
+					credentials: {
+						accessKeyId: settings.awsS3Config?.credentials.accessKeyId,
+						secretAccessKey: settings.awsS3Config?.credentials.secretAccessKey,
+						sessionToken: settings.awsS3Config?.credentials.sessionToken,
+					}
+				} : undefined)
+			},
 			concurrency: 10,
 		}
 	);
@@ -200,9 +208,9 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		parseTaskPath,
 		settings.parallelParse ? parseThreads : 0,
 		{
-			parser: settings.parseTaskParser?.parser,//"JSON.parse",
+			parser: settings.parseTaskParser?.parser,
 			parserOpts: settings.parseTaskParser?.opts,
-			bufferSize: settings.parallelParseBufferSize
+			bufferSize: settings.parseTaskParser?.bufferSize,// ?? settings.parallelParseBufferSize
 		},
 		{
 			data: async (worker, result) => {
@@ -231,7 +239,15 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		}
 	);
 
-	function poolStream(pool: WorkerPool, id, file: string) {
+	function poolStream(
+		pool: WorkerPool,
+		id: number,
+		source: ({
+			filePath: string;
+		} | {
+			gzip: string;
+		}),
+		queue: string) {
 		let pass = streamUtil.passthrough({
 			objectMode: true,
 			highWaterMark: 10000
@@ -241,7 +257,9 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 			event: "parse",
 			data: {
 				id,
-				filePath: file
+				//filePath: file,
+				...source,
+				queue
 			}
 		}, (err, result) => {
 			err = err || result.error;
@@ -264,7 +282,6 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		data?: any;
 		fileSize: number;
 	}
-	let MB = 1024 * 1024;
 	let availableDiskSpace = settings.availableDiskSpace ?? Math.floor(MB * (500 * 0.8));
 	let s3Dir = path.resolve(settings.tmpDir, `s3/`);
 	let cachedS3Files = getAllFiles(s3Dir);
@@ -392,7 +409,8 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 			return {
 				availableDiskSpace: availableDiskSpace,
 				startingDiskSpace: startingDiskSpace,
-				enddingDiskSpace: endingDiskSpace
+				enddingDiskSpace: endingDiskSpace,
+				...settings
 			};
 		},
 		onStart(data) {
@@ -457,7 +475,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		// 	});
 		// },
 		createSplitParseStream(JSONparse, record) {
-			if (record.s3 && settings.parallelParse) {
+			if ((record.s3 || record.s3Like) && settings.parallelParse) {
 				return new PassThrough({ objectMode: true }) as unknown as TransformStream<string, any>;
 			} else if (record.gzip && settings.parallelParse) {
 				// TODO: can I create a split and parse for gzip?
@@ -469,6 +487,24 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		createS3Stream(streamRecord, index) {
 			let _parts = streamRecord.start.split(/-/);
 			let idOffset = parseInt(_parts[1]);
+			if (streamRecord.s3Like) {
+				let pass = poolStream(parsePool, ++parseStreamId, { gzip: streamRecord.gzip }, streamRecord.event) as Transform & { idOffset: number, isUnzipped: boolean };
+				pass.isUnzipped = true;
+				pass.idOffset = idOffset;
+				return {
+					get: function () {
+						return pass;
+					},
+					on: function (...args) {
+						return (pass as any).on(...args);
+					},
+					destroy: function (...args) {
+						return pass.destroy(...args);
+					}
+				};
+			}
+
+
 			let localFile = streamRecord.localFile.filePath;
 
 			let parallelParse = settings.parallelParse;
@@ -482,7 +518,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 			let isDestroyed = false;
 			streamRecord.localFile.readyPromise.then(() => {
 				if (!isDestroyed) {
-					fileStream = parallelParse ? poolStream(parsePool, ++parseStreamId, localFile) : createReadStream(localFile);
+					fileStream = parallelParse ? poolStream(parsePool, ++parseStreamId, { filePath: localFile }, streamRecord.event) : createReadStream(localFile);
 					streamUtil.pipe(fileStream, pass, () => {
 						let files = streamRecord.localFile.unlinkOnStreamClose || [];
 						if (files.length > 0) {
@@ -525,9 +561,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 		onGetEvents(streamRecords) {
 			logger.debug("onGetEvents", streamRecords.length);
 			let mergeVersion = settings.mergeFileVersion;
-			if (mergeVersion == 2) {
-				streamRecords = this.onGetEventsMerge2(streamRecords);
-			} else if (mergeVersion == 1) {
+			if (mergeVersion == 1 && settings.mergeFileSize != 0) {
 				streamRecords = this.onGetEventsMerge(streamRecords);
 			} else {
 				this.onGetEventsAddDownload(streamRecords);
@@ -538,95 +572,6 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 			(streamRecords as any).queryId = id;
 			logger.debug(id, "Start Query");
 			return streamRecords;
-		},
-		onGetEventsMerge2(streamRecords) {
-			logger.debug("onGetEventsMerge-Start", streamRecords.length);
-
-
-			let ret = [];
-			let maxFileSize = settings.mergeFileSize ?? (5 * 1024 * 1024);
-			streamRecords.forEach(r => {
-				if (r.s3 && !Array.isArray(r.s3)) {
-					let last = ret[ret.length - 1];
-
-					r.s3.start = r.start;
-					r.s3.end = r.end;
-					r.s3.gzipSize = r.gzipSize;
-
-					if (last == null || !last.s3 || (last.mergeS3GzipSize + r.gzipSize) > maxFileSize) {
-						//r.s3 = [r.s3];
-						//r.localFile.readyPromise
-						r.s3Parts = [r];
-						r.mergeS3GzipSize = r.gzipSize;
-						ret.push(r);
-					} else {
-						//last.s3.push(r.s3);
-						last.s3Parts.push(r);
-						last.mergeS3GzipSize += r.gzipSize;
-						r.s3.writeStartEid = true;
-						//last.offsets = last.offsets.concat(r.offsets);
-						//last.end = r.end;
-						//last.records += r.records;
-						//last.gzipSize += r.gzipSize;
-						//last.size += r.size;
-					}
-				} else {
-					ret.push(r);
-				}
-			});
-
-
-			logger.debug("onGetEventsMerge-Download", streamRecords.length);
-			this.onGetEventsAddDownload(streamRecords);
-			ret.forEach(r => {
-				if (r.s3Parts && r.s3Parts.length > 1) {
-					let partsPromises = [];
-					let subFiles = [];
-					r.offsets = [];
-					r.records = 0;
-					r.gzipSize = 0;
-					r.size = 0;
-
-					r.s3Parts.forEach(p => {
-						partsPromises.push(p.localFile.readyPromise);
-						subFiles.push(p.localFile.filePath);
-
-						r.offsets.push(...p.offsets);
-						r.records += p.records;
-						r.gzipSize += p.gzipSize;
-						r.size += p.size;
-					});
-					// get merged file name
-					let filePath = path.resolve(settings.tmpDir, `s3/${r.event}/${((r.end)).replace(/\//g, "_") + "-0-" + r.gzipSize}_m.jsonl.gz`);
-					r.localFile.filePath = filePath;
-					r.localFile.unlinkOnStreamClose = subFiles;
-					r.localFile.readyPromise = Promise.all(partsPromises).then(async () => {
-						let error;
-						try {
-							let cmd = `cat ${subFiles.map(p => basename(p).replace(/\\/g, "/")).join(" ")} >> ${filePath}`;
-							//logger.log("Merging stuff here", subFiles.length, cmd);
-
-							await new Promise((resolve, reject) => exec(cmd, {
-								cwd: dirname(filePath)
-							}, (err => {
-								err ? reject(err) : resolve(undefined);
-							})));
-						} catch (err) {
-							error = err;
-						} finally {
-							//subFiles.map(f => existsSync(f) && unlinkSync(f));
-						}
-						if (error && existsSync(filePath)) {
-							unlinkSync(filePath);
-						}
-						if (error) {
-							throw error;
-						}
-					});
-				}
-			});
-
-			return ret;
 		},
 		onGetEventsMerge(streamRecords) {
 			logger.debug("onGetEventsMerge", streamRecords.length);
@@ -689,6 +634,9 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 							readyPromise.resolve();
 						}
 					});
+				} else if (r.gzip && settings.parallelParse && settings.parallelParseGzip) {
+					// TODO: Should we pass gzip like s3 to the parallel parser
+					r.s3Like = true;
 				}
 			});
 
@@ -715,6 +663,120 @@ export function createFastS3ReadHooks(settings: ReadHooksParams, rstreamsConfig?
 	};
 }
 
+
+/** 
+ * Lambda with 10 GB
+ * dthreads: 4 | 2
+ * pthreads: even 4 | 8 | 2
+ * parseBufferSize: 2MB | 1MB (large objects perfer smaller values)
+ * fast_s3_parallel_fatch_max_bytes: 100MB (slower parsers eg. JSON.parse prefer smaller values 50MB)
+ * mergeFileSize: No Merge //even 2MB | 5MB (2MB by a little)
+**/
+let totalCpus = cpus().length;
+let workerCpus = totalCpus - 1;
+let totalMemory = (parseInt(process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE, 10) * MB) || totalmem();
+
+let lambdaDefaultsByMemory = [
+	{
+		memory: 10 * GB,
+		downloadThreads: 2,
+		parseThreads: 4,
+		parseBufferSize: 2 * MB,
+		parallelFetchMax: 50 * MB
+	}, {
+		memory: 0,
+		// Split CPUs between download and parse
+		downloadThreads: Math.max(1, Math.floor(Math.max(1, workerCpus * 0.3))),
+		parseThreads: Math.max(1, workerCpus - Math.floor(Math.max(1, workerCpus * 0.3))),
+		parseBufferSize: 2 * MB,
+		parallelFetchMax: 5 * MB
+	}
+].sort((a, b) => b.memory - a.memory);
+
+function getLambdaDefaults(memoryAvailable: number) {
+	return lambdaDefaultsByMemory.find(d => d.memory <= memoryAvailable) || lambdaDefaultsByMemory[lambdaDefaultsByMemory.length - 1];
+}
+
+export interface ExtraConfig {
+	tmpDir?: string;
+	awsS3Config?: S3.ClientConfiguration
+}
+export function addReadHooks<T>(readOpts: ReadOptions<T>, partialHookSettings?: Partial<ReadHooksParams>, extraConfig?: RStreamsSdk | ExtraConfig) {
+	Object.assign(readOpts, determineReadHooks(readOpts, partialHookSettings, extraConfig));
+	return readOpts;
+}
+export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSettings?: Partial<ReadHooksParams>, extraConfig?: RStreamsSdk | ExtraConfig): Partial<ReadOptions<T>> {
+
+	let extraConfiguration: ExtraConfig = {
+		tmpDir: process.env.RSTREAMS_TMP_DIR || "/tmp/rstreams"
+	};
+	let maybeSdk = (extraConfig as RStreamsSdk);
+	if (maybeSdk.streams != null && maybeSdk.configuration != null) {
+		extraConfiguration.tmpDir = maybeSdk.streams.tmpDir;
+		extraConfiguration.awsS3Config = {
+			credentials: maybeSdk.configuration.credentials
+		};
+	} else {
+		extraConfiguration = {
+			...extraConfiguration,
+			...extraConfig
+		};
+	}
+
+	let defaultsFromMem = getLambdaDefaults(totalMemory);
+	let parseTaskParser = typeof settings.parser === "string" ? {
+		parser: settings.parser,
+		bufferSize: MB,
+		...partialHookSettings?.parseTaskParser,
+		opts: {
+			parser: settings.parser,
+			...settings.parserOpts,
+			...partialHookSettings?.parseTaskParser.opts
+		},
+	} : undefined;
+	let parallelParse = parseTaskParser != null;
+
+	let downloadThreads = defaultsFromMem.downloadThreads;
+	let parseThreads = defaultsFromMem.parseThreads;
+	let saveFiles = false;
+	let tmpDir = extraConfiguration.tmpDir;
+
+	// Not using them
+	let mergeFileSize;
+	let mergeFileVersion;
+
+	let awsS3Config = extraConfiguration.awsS3Config;
+
+	let hookSettings: ReadHooksParams = {
+		parallelParse,
+		//parallelParseBufferSize,
+		downloadThreads,
+		parseThreads,
+		saveFiles,
+		tmpDir,
+		mergeFileSize,
+		mergeFileVersion,
+		awsS3Config,
+		...(partialHookSettings || {}),
+
+		// last because it is a sub object that we don't want overriden 
+		parseTaskParser,
+	};
+
+	let readOpts: ReadOptions<T> = {
+		hooks: createFastS3ReadHooks(hookSettings)
+	};
+	if (defaultsFromMem.parallelFetchMax > 0) {
+		readOpts.fast_s3_read = true;
+		readOpts.fast_s3_read_parallel_fetch_max_bytes = readOpts.fast_s3_read_parallel_fetch_max_bytes || defaultsFromMem.parallelFetchMax;
+	}
+
+	// console.log("Hook Params New:", JSON.stringify({
+	// 	...readOpts,
+	// 	hooks: hookSettings
+	// }, null, 2));
+	return readOpts;
+}
 
 
 interface PromiseResolver<T> extends Promise<T> {

@@ -159,6 +159,20 @@ export interface CommandWrapOptions {
 	ignoreCommands?: string[];
 }
 
+
+export interface CounterStream<T> extends TransformStream<T, T> {
+	counterData: {
+		rps: string;
+		bps: string
+		rpsNum: number;
+		bpsNum: number;
+		totalRecords: number;
+		totalBytes: number;
+		duration: number;
+		lastEid: string;
+	}
+}
+
 // export interface AsEventOptions {}
 //export default interface Streams {
 //export function pipe(streams: stream.Transform[], callback?: pump.Callback): stream.Transform;
@@ -498,7 +512,7 @@ export function devnull<T>(shouldLog?: boolean | string): WritableStream<T>;
  * @returns The pipeline step that is ready to be used in a pipeline
  * @todo review
  */
-export function counter<T>(label: string, records?: number): TransformStream<T, T>;
+export function counter<T>(label: string, records?: number): CounterStream<T>;
 
 /**
  * This creates a pipeline step that takes an event, logs it and then passes the event on to the next pipeline step.

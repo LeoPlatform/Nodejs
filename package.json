@@ -12,19 +12,27 @@
 		"utest": "mocha \"**/*.utest.js\"",
 		"coverage-all": "cross-env NODE_ENV=utest node ./node_modules/nyc/bin/nyc.js --all node ./node_modules/mocha/bin/mocha --timeout 5000 \"./{,!(node_modules)/**/}*.utest.js\"",
 		"coverage": "cross-env NODE_ENV=utest node ./node_modules/nyc/bin/nyc.js node ./node_modules/mocha/bin/mocha --timeout 5000 \"./{,!(node_modules)/**/}*.utest.js\"",
-		"compile": "tsc",
+		"compile": "tsc && npm run compile-worker-thread-code",
+		"compile-worker-thread-code": "npx webpack build --config ./webpack.config.js && node ./set-worker-thread-content.js",
 		"watch": "tsc -w",
 		"publish-beta": "npm publish --tag beta",
 		"build-docs": "cd docs && ts-node build-docs.ts",
 		"lint": "eslint ."
 	},
+	"overrides": {
+		"typedoc": {
+			"typescript": "$typescript"
+		}
+	},
 	"dependencies": {
 		"async": "2.6.4",
+		"aws-lambda": "^1.0.7",
 		"backoff": "2.5.0",
 		"big-integer": "^1.6.51",
 		"event-stream": "4.0.1",
 		"extend": "3.0.2",
 		"fast-csv": "4.3.6",
+		"fast-json": "^3.0.0",
 		"flush-write-stream": "2.0.0",
 		"ini": "2.0.0",
 		"leo-config": "1.1.0",
@@ -63,7 +71,10 @@
 		"typedoc": "^0.22.15",
 		"typedoc-plugin-no-inherit": "^1.3.1",
 		"typedoc-plugin-replace-text": "^1.0.0",
-		"typescript": "^4.7.4"
+		"typescript": "^4.7.4",
+		"webpack-cli": "^5.1.4",
+		"glob": "^10.3.4",
+		"ts-loader": "^9.4.4"
 	},
 	"peerDependencies": {
 		"aws-sdk": "^2.1107.0"

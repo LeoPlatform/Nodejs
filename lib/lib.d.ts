@@ -9,6 +9,8 @@ import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, Corr
 import * as es from "event-stream";
 import zlib from "zlib";
 import { Options as BackoffOptions } from "backoff";
+import { ParserName } from "./stream/helper/parser-util";
+import { ReadHooksParams } from "./stream/helper/leo-stream-helper";
 
 /**
  * A standard callback function.  If the operation failed, return the first argument only,
@@ -224,26 +226,25 @@ export interface OnStartData {
 
 export interface ReadOptionHooks<SR extends StreamRecord> {
 
-	onStart?: (data: OnStartData) => void,
-	onEnd?: () => void,
+	onStart?: (data: OnStartData) => void;
+	onEnd?: () => void;
 
-	onBatchStart?: (streamRecords: SR[]) => void | SR[],
-	onBatchEnd?: (streamRecords: SR[]) => Promise<void>,
+	onBatchStart?: (streamRecords: SR[]) => void | SR[];
+	onBatchEnd?: (streamRecords: SR[]) => Promise<void>;
 
-	onRecordStart?: (streamRecord: SR, index: number) => void,
-	onRecordEnd?: (streamRecord: SR, index: number) => void,
+	onRecordStart?: (streamRecord: SR, index: number) => void;
+	onRecordEnd?: (streamRecord: SR, index: number) => void;
 
-	getS3Stream?: (streamRecord: SR, index: number) => ReadableStream<string> & { idOffset: number },
+	getS3Stream?: (streamRecord: SR, index: number) => ReadableStream<string> & { idOffset: number };
 	createS3Stream?: (streamRecord: SR, index: number, start: string) => {
-		get: () => ReadableStream<string> & { idOffset: number }
-		on: (event: string, handler: (...args: any[]) => void) => void
-		destroy: (error?: any) => void
-	},
+		get: () => ReadableStream<string> & { idOffset: number };
+		on: (event: string, handler: (...args: any[]) => void) => void;
+		destroy: (error?: any) => void;
+	};
 	freeS3Stream?: (index: number) => void;
-	createSplitParseStream?: (JSONparse: (string) => any, streamRecord: SR) => TransformStream<string, any> | null,
+	createSplitParseStream?: (JSONparse: (string) => any, streamRecord: SR) => TransformStream<string, any> | null;
 
-	onGetEvents?: (streamRecords: SR[]) => void | SR[],
-	getExtraMetaData?: () => any;
+	onGetEvents?: (streamRecords: SR[]) => void | SR[];
 }
 
 
@@ -387,8 +388,10 @@ export interface ReadOptions<T = any> {
 	 * 
 	 * @default: JSON.parse
 	 */
-	parser?: (stringEvent: string) => ReadEvent<T>,
-	hooks?: ReadOptionHooks<StreamRecord>
+	parser?: ((stringEvent: string) => ReadEvent<T>) | ParserName | string,
+	parserOpts?: any;
+	hooks?: ReadOptionHooks<StreamRecord>,
+	autoConfigure?: boolean | Partial<ReadHooksParams>
 }
 
 /**
@@ -734,7 +737,7 @@ export declare namespace StreamUtil {
 	/**
 	 * Default is process.env.RSTREAMS_TMP_DIR || "/tmp/rstreams"
 	 */
-	const tmpDir: string;
+	let tmpDir: string;
 
 	/**
 	 * Helper function to turn a timestamp into an RStreams event ID.
