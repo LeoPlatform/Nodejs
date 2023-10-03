@@ -18,7 +18,8 @@ module.exports = (async () => {
 		externals: [
 			"aws-sdk"
 		],
-		devtool: 'source-map',
+		// Don't include source map for these files
+		// devtool: 'source-map',
 		mode: "production",
 		module: {
 			rules: [
