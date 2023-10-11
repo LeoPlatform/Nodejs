@@ -1452,6 +1452,122 @@ describe('index', function () {
 		});
 
 
+		it("enriches Async -Return true", async function () {
+			interface InData {
+				a: string;
+			}
+			interface OutData {
+				b: string;
+			}
+
+			let inQueue = "mock-in";
+			let outQueue = "mock-out";
+			let botId = "mock-bot";
+
+			let batchGetResponse = {
+				Responses: {
+					"mock-LeoEvent": [
+						{
+							event: inQueue,
+							max_eid: streams.eventIdFromTimestamp(1647460979245),
+							v: 2,
+							timestamp: 1647460979245
+						}
+					],
+					"mock-LeoCron": [{
+						checkpoints: {
+							read: {
+								[`queue:${inQueue}`]: {
+									checkpoint: streams.eventIdFromTimestamp(1647460979244)
+								}
+							}
+						}
+					}]
+				},
+				UnprocessedKeys: {}
+			};
+
+			let batchGet = sandbox.stub()
+				.onFirstCall().callsArgWith(1, null, batchGetResponse);
+
+			let builder = new BusStreamMockBuilder();
+			builder.addEvents(
+				inQueue,
+				[
+					{
+						a: "1"
+					}, {
+						a: "2"
+					}
+				].map(a => ({ payload: a, event_source_timestamp: 1647460979244, timestamp: 1647460979244 })), { now: 1647460979244 }, { id: "mock-prev-bot-id" }
+			);
+			let queryResponse = builder.getAll(inQueue);
+			let query = sandbox.stub();
+			queryResponse.forEach((data, index) => {
+				query.onCall(index).callsArgWith(1, null, data);
+			});
+
+
+			let updateResponse = {};
+			let update = sandbox.stub()
+				.onFirstCall().callsArgWith(1, null, updateResponse);
+
+			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query, update });
+
+			let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+				Records: [{
+					SequenceNumber: "0",
+					ShardId: "shard-0"
+				}]
+			};
+			let kinesisPutRecords = sandbox.stub();
+			kinesisPutRecords
+				.callsArgWith(1, null, kinesisPutRecordsRespone);
+
+			sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
+
+			let sdk = RStreamsSdk(mockSdkConfig);
+			async function returnsTrue() {
+				return true;
+			}
+			await sdk.enrichEvents<InData, OutData>({
+				id: botId,
+				inQueue: inQueue,
+				outQueue: outQueue,
+				transform: returnsTrue
+			});
+			expect(update).is.called;
+			let updateCallArgs = update.getCall(0).args[0];
+			delete updateCallArgs.ExpressionAttributeValues[":value"].ended_timestamp;
+			delete updateCallArgs.ExpressionAttributeValues[":value"].started_timestamp;
+			assert.deepEqual(updateCallArgs,
+				{
+					"ConditionExpression": "#checkpoints.#type.#event.#checkpoint = :expected",
+					"ExpressionAttributeNames": {
+						"#checkpoint": "checkpoint",
+						"#checkpoints": "checkpoints",
+						"#event": "queue:mock-in",
+						"#type": "read"
+					},
+					"ExpressionAttributeValues": {
+						":expected": "z/2022/03/16/20/02/1647460979244",
+						":value": {
+							"checkpoint": "z/2022/03/16/20/02/1647460979244-0000001",
+							"records": 2,
+							"source_timestamp": 1647460979244,
+						}
+					},
+					"Key": {
+						"id": "mock-bot"
+					},
+					"ReturnConsumedCapacity": "TOTAL",
+					"TableName": "mock-LeoCron",
+					"UpdateExpression": "set #checkpoints.#type.#event = :value"
+				}
+			);
+
+			expect(kinesisPutRecords).is.not.called;
+		});
 	});
 
 	describe("sdk offload", function () {
