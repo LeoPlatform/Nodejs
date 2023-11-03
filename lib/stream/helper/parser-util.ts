@@ -127,7 +127,7 @@ export let parsers: Record<ParserName, (settings: any) => (input: string) => any
 
 		let fieldParsers: Record<FastParseType, { parse?: (value: string | Buffer) => any, set?: (field: string, value: any) => void }> = {
 			[FastParseType.String]: { parse: (value) => value },
-			[FastParseType.Number]: { parse: (value) => parseInt(value.toString(), 10) },
+			[FastParseType.Number]: { parse: (value) => Number(value) },
 			[FastParseType.Eid]: { parse: (value) => value.toString().startsWith("z/") ? value : parseInt(value.toString(), 10) },
 			[FastParseType.Raw]: { set: (field, value) => set(field, value, "_raw") }
 		};
