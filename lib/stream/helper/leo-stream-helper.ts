@@ -731,7 +731,7 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 		opts: {
 			parser: settings.parser,
 			...settings.parserOpts,
-			...partialHookSettings?.parseTaskParser.opts
+			...partialHookSettings?.parseTaskParser?.opts
 		},
 	} : undefined;
 	let parallelParse = parseTaskParser != null;
@@ -767,6 +767,7 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 		hooks: createFastS3ReadHooks(hookSettings)
 	};
 	if (defaultsFromMem.parallelFetchMax > 0) {
+		readOpts.stream_query_limit = 1000;
 		readOpts.fast_s3_read = true;
 		readOpts.fast_s3_read_parallel_fetch_max_bytes = readOpts.fast_s3_read_parallel_fetch_max_bytes || defaultsFromMem.parallelFetchMax;
 	}
