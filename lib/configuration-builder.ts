@@ -101,7 +101,7 @@ export class ConfigurationBuilder<T> {
 					region: options.region
 				}).getSecretValue({
 					SecretId: this.data
-				}).SecretString);
+				}).SecretString.replace(/"{/g, '{').replace(/}"/g, "}"));
 				logger.timeEnd("get-rsf-config");
 			}
 		}
