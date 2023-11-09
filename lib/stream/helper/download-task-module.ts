@@ -1,9 +1,9 @@
 import { createReadStream, createWriteStream, existsSync, mkdirSync, unlinkSync } from "fs";
 import * as workerThreads from "worker_threads";
 import split from "split2";
-import { PassThrough, pipeline, Writable } from "stream";
+import { PassThrough, pipeline, Readable, Writable } from "stream";
 import zlib from "zlib";
-import * as aws from "aws-sdk";
+import { S3 } from "@aws-sdk/client-s3";
 import { basename, dirname, extname, resolve } from "path";
 import { execSync } from "child_process";
 const { parentPort, workerData } = workerThreads as { parentPort: any, workerData: DownloadWorkerData };
@@ -56,7 +56,7 @@ const promiseAllConcurrency = async <T>(queue: (() => Promise<T>)[], concurrency
 };
 
 if (parentPort) {
-	let s3 = new aws.S3(workerData.awsS3Config);
+	let s3 = new S3(workerData.awsS3Config);
 	const tryFinalizeMultipartUpload = async (file) => {
 		//logger.debug("MultipartUpload Start", file);
 		let bucket = file.bucket || file.Bucket;
@@ -64,14 +64,14 @@ if (parentPort) {
 		let mpResponse = await s3.listMultipartUploads({
 			Bucket: bucket,
 			Prefix: key
-		}).promise();
+		});
 		if (mpResponse.Uploads.length) {
 			let file = mpResponse.Uploads[0];
 			let allParts = await s3.listParts({
 				Bucket: bucket,
 				Key: file.Key,
 				UploadId: file.UploadId
-			}).promise();
+			});
 			let parts = allParts.Parts.map(p => ({ ETag: p.ETag, PartNumber: p.PartNumber }));
 			if (parts.length > 0) {
 				let params = {
@@ -83,54 +83,57 @@ if (parentPort) {
 					}
 				};
 				//console.log("MultipartUpload params:", params);
-				await s3.completeMultipartUpload(params).promise();
+				await s3.completeMultipartUpload(params);
 				//logger.log(`MultipartUpload Complete:`, bucket, file.Key, file.UploadId);
 			}
 		}
 	};
 	const fromS3 = function (file) {
 		let pass = new PassThrough();
-		let obj = s3.getObject({
-			Bucket: file.bucket || file.Bucket,
-			Key: file.key || file.Key,
-			Range: file.range || undefined
-		});
-		let stream = obj.createReadStream();
-		stream.destroy = stream.destroy || (stream as any).close || (() => {
-			obj.abort();
-		});
-		[
-			"httpHeaders",
-			"httpUploadProgress",
-			"httpDownloadProgress"
-		].map(event => {
-			obj.on(event, (...args) => {
-				stream.emit(event, ...args);
+
+		(async () => {
+			let obj = await s3.getObject({
+				Bucket: file.bucket || file.Bucket,
+				Key: file.key || file.Key,
+				Range: file.range || undefined
 			});
-		});
-		stream.on("error", async (err: any) => {
-			let passAlong = true;
-			if (err.code === "NoSuchKey") {
-				try {
-					await tryFinalizeMultipartUpload(file);
-					passAlong = false;
-					stream.unpipe(pass);
-					let newStream = s3.getObject({
-						Bucket: file.bucket || file.Bucket,
-						Key: file.key || file.Key,
-						Range: file.range || undefined
-					}).createReadStream();
-					newStream.on("error", err => pass.emit("error", err));
-					pipe(newStream, pass);
-				} catch (err) {
-					console.error("Error Looking for partial Multipart Upload", err);
+			let stream = obj.Body as Readable;
+			stream.destroy = stream.destroy || (stream as any).close || (() => {
+				(obj as any).abort();
+			});
+			// [
+			// 	"httpHeaders",
+			// 	"httpUploadProgress",
+			// 	"httpDownloadProgress"
+			// ].map(event => {
+			// 	obj.Body.on(event, (...args) => {
+			// 		stream.emit(event, ...args);
+			// 	});
+			// });
+			stream.on("error", async (err: any) => {
+				let passAlong = true;
+				if (err.code === "NoSuchKey") {
+					try {
+						await tryFinalizeMultipartUpload(file);
+						passAlong = false;
+						stream.unpipe(pass);
+						let newStream = (await s3.getObject({
+							Bucket: file.bucket || file.Bucket,
+							Key: file.key || file.Key,
+							Range: file.range || undefined
+						})).Body as Readable;
+						newStream.on("error", err => pass.emit("error", err));
+						pipe(newStream, pass);
+					} catch (err) {
+						console.error("Error Looking for partial Multipart Upload", err);
+					}
 				}
-			}
-			if (passAlong) {
-				pass.emit("error", err);
-			}
-		});
-		stream.pipe(pass);
+				if (passAlong) {
+					pass.emit("error", err);
+				}
+			});
+			stream.pipe(pass);
+		})();
 		return pass;
 	};
 

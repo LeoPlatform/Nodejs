@@ -1,4 +1,4 @@
-import aws from "./aws-sdk-sync";
+import awsSdkSync from "./aws-sdk-sync";
 import leolog from "leo-logger";
 import path from "path";
 import fs from "fs";
@@ -97,11 +97,11 @@ export class ConfigurationBuilder<T> {
 				// config is the key to a secret
 
 				logger.time("get-rsf-config");
-				this.data = JSON.parse(new aws.SecretsManager({
+				this.data = JSON.parse(new awsSdkSync.SecretsManager({
 					region: options.region
 				}).getSecretValue({
 					SecretId: this.data
-				}).SecretString);
+				}).SecretString.replace(/"{/g, '{').replace(/}"/g, "}"));
 				logger.timeEnd("get-rsf-config");
 			}
 		}
@@ -238,7 +238,7 @@ export class ConfigurationBuilder<T> {
 				logger.log(`SecretsManager  Key: ${key}, Region:${ref.options?.region}`);
 
 				logger.time("secret-get");
-				let value = JSON.parse(new aws.SecretsManager({
+				let value = JSON.parse(new awsSdkSync.SecretsManager({
 					region: ref.options?.region
 				}).getSecretValue({
 					SecretId: resolveKeywords(key, ref.options)

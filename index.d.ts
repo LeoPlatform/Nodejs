@@ -4,10 +4,17 @@ import stream from "stream";
 import { Callback, EnrichOptions, EnrichBatchOptions, OffloadOptions, OffloadBatchOptions, ReadOptions, StreamUtil, ToCheckpointOptions, WriteOptions } from "./lib/lib";
 import { LeoCron } from "./lib/cron";
 import { LeoDynamodb } from "./lib/dynamodb";
-import AWS, { Credentials } from "aws-sdk";
+import { AwsCredentialIdentity, Provider } from "@smithy/types";
 import { Event } from "./lib/types";
 import ConfigurationProvider from "./lib/rstreams-configuration";
 import { ReadableStream } from "./lib/types";
+import { S3, S3ClientConfig } from "@aws-sdk/client-s3";
+import { Kinesis, KinesisClientConfig } from "@aws-sdk/client-kinesis";
+import { Firehose, FirehoseClientConfig } from "@aws-sdk/client-firehose";
+import { CloudFormation } from "@aws-sdk/client-cloudformation";
+import { DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
+import { NodeHttpHandlerOptions } from "@aws-sdk/node-http-handler";
+import https from "https";
 export * from "./lib/types";
 
 /**
@@ -66,7 +73,7 @@ export interface Configuration {
 	registry: any;
 
 	/** The AWS credentials to use. In most cases AWS will discover these.  Set if using STS or other scenarios where want to manually set them. */
-	credentials?: Credentials
+	credentials?: AwsCredentialIdentity | Provider<AwsCredentialIdentity>
 
 	// TODO: These exist but do we need to expose them
 	//onUpdate: [Function: onUpdate],
@@ -223,16 +230,16 @@ export declare class RStreamsSdk {
 		dynamodb: LeoDynamodb,
 
 		/** A refernce to the AWS S3 library. */
-		s3: AWS.S3,
+		s3: S3,
 
 		/** A refernce to the AWS Kinesis library. */
-		kinesis: AWS.Kinesis
+		kinesis: Kinesis
 
 		/** A refernce to the AWS Firehose library. */
-		firehose: AWS.Firehose
+		firehose: Firehose
 
 		/** A refernce to the AWS CloudFormation library. */
-		cloudformation: AWS.CloudFormation
+		cloudformation: CloudFormation
 	};
 
 	/**
@@ -274,11 +281,41 @@ export interface CreateSourceOptions {
 	milliseconds?: number;
 }
 
+
+
+interface ServiceConfigDeprecations {
+	/**
+	  * @deprecated use requestHandler
+	  */
+	httpOptions?: NodeHttpHandlerOptionsDeprecations
+
+	/**
+	  * @deprecated use maxAttempts.  value should be maxRetries + 1
+	  */
+	maxRetries?: number;
+}
+
+interface NodeHttpHandlerOptionsDeprecations extends NodeHttpHandlerOptions {
+	/**
+	  * @deprecated use requestTimeout
+	  */
+	timeout?: number;
+
+	/**
+	  * @deprecated use connectionTimeout
+	  */
+	connectTimeout?: number;
+	/**
+		  * @deprecated use httpsAgent
+		  */
+	agent?: https.Agent
+}
+
 export interface AwsResourceConfig {
-	s3Config?: AWS.S3.ClientConfiguration,
-	dynamodbConfig?: AWS.DynamoDB.DocumentClient.DocumentClientOptions & AWS.ConfigurationOptions & AWS.DynamoDB.ClientApiVersions,
-	firehoseConfig?: AWS.Firehose.ClientConfiguration,
-	kinesisConfig?: AWS.Kinesis.ClientConfiguration
+	s3Config?: S3ClientConfig & ServiceConfigDeprecations,
+	dynamodbConfig?: DynamoDBClientConfig & ServiceConfigDeprecations
+	firehoseConfig?: FirehoseClientConfig & ServiceConfigDeprecations,
+	kinesisConfig?: KinesisClientConfig & ServiceConfigDeprecations
 }
 
 /**

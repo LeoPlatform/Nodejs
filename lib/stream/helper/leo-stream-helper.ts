@@ -5,12 +5,10 @@ import * as async from "async";
 import { Stats, createReadStream, existsSync, mkdirSync, readdirSync, statSync, unlink, unlinkSync, writeFileSync } from "fs";
 import { Transform, PassThrough } from "stream";
 import * as  streamUtil from "../../streams";
-import { exec } from "child_process";
 import { ReadOptionHooks, ReadOptions, StreamRecord, TransformStream } from "../../types";
 import { gunzipSync } from "zlib";
-import { S3 } from "aws-sdk";
-import { CredentialsOptions } from "aws-sdk/lib/credentials";
 import { RStreamsSdk } from "../../../index";
+import { S3ClientConfig } from "@aws-sdk/client-s3";
 //import { Worker } from 'worker_threads';
 let logger = require("leo-logger")("leo-stream-helper");
 
@@ -30,7 +28,7 @@ let { parseTaskModuleContent, downloadTaskModuleContent } = JSON.parse(gunzipSyn
 
 
 export interface ReadHooksParams {
-	awsS3Config?: S3.ClientConfiguration;
+	awsS3Config?: S3ClientConfig;
 	availableDiskSpace?: number;
 	mergeFileVersion?: number;
 	mergeFileSize?: number;
@@ -190,9 +188,9 @@ export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHook
 				// copy over only the credentials options, other credential fields won't serialize
 				...(settings.awsS3Config?.credentials ? {
 					credentials: {
-						accessKeyId: settings.awsS3Config?.credentials.accessKeyId,
-						secretAccessKey: settings.awsS3Config?.credentials.secretAccessKey,
-						sessionToken: settings.awsS3Config?.credentials.sessionToken,
+						accessKeyId: (settings.awsS3Config?.credentials as any).accessKeyId,
+						secretAccessKey: (settings.awsS3Config?.credentials as any).secretAccessKey,
+						sessionToken: (settings.awsS3Config?.credentials as any).sessionToken,
 					}
 				} : undefined)
 			},
@@ -626,7 +624,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHook
 					};
 					//r.stream = sdk.streams.passThrough();
 					downloadQueue.push(task, (err) => {
-						logger.debug(id, "download task end", err || "");
+						logger.debug(id, "download task queue end", err || "");
 						if (err) {
 							readyPromise.reject(err);
 						} else {
@@ -699,7 +697,7 @@ function getLambdaDefaults(memoryAvailable: number) {
 
 export interface ExtraConfig {
 	tmpDir?: string;
-	awsS3Config?: S3.ClientConfiguration
+	awsS3Config?: S3ClientConfig
 }
 export function addReadHooks<T>(readOpts: ReadOptions<T>, partialHookSettings?: Partial<ReadHooksParams>, extraConfig?: RStreamsSdk | ExtraConfig) {
 	Object.assign(readOpts, determineReadHooks(readOpts, partialHookSettings, extraConfig));
@@ -731,7 +729,7 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 		opts: {
 			parser: settings.parser,
 			...settings.parserOpts,
-			...partialHookSettings?.parseTaskParser.opts
+			...partialHookSettings?.parseTaskParser?.opts
 		},
 	} : undefined;
 	let parallelParse = parseTaskParser != null;
@@ -763,10 +761,13 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 		parseTaskParser,
 	};
 
-	let readOpts: ReadOptions<T> = {
-		hooks: createFastS3ReadHooks(hookSettings)
+	let readOpts: ReadOptions<T> & { _hookSettings: ReadHooksParams } = {
+		hooks: createFastS3ReadHooks(hookSettings),
+		_hookSettings: hookSettings
 	};
 	if (defaultsFromMem.parallelFetchMax > 0) {
+		// TODO: Should i also set this
+		readOpts.stream_query_limit = 1000;
 		readOpts.fast_s3_read = true;
 		readOpts.fast_s3_read_parallel_fetch_max_bytes = readOpts.fast_s3_read_parallel_fetch_max_bytes || defaultsFromMem.parallelFetchMax;
 	}
