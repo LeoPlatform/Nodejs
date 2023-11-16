@@ -29,7 +29,9 @@ export function error(err, options) {
 	if (typeof err.message === 'string' && err.message !== '') {
 		if (typeof options === 'string' || (options && options.message)) {
 			originalError = copy(err);
-			originalError.message = err.message;
+			if (originalError != null) {
+				originalError.message = err.message;
+			}
 		}
 	}
 	err.message = err.message || null;

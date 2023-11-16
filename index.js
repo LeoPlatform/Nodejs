@@ -1,7 +1,6 @@
 "use strict";
 let leoconfig = require("leo-config");
 let ls = require("./lib/stream/leo-stream");
-let logging = require("./lib/logging.js");
 let LeoConfiguration = require("./lib/configuration.js");
 const { fromIni, fromTemporaryCredentials } = require("@aws-sdk/credential-providers");
 const { CloudFormation } = require("@aws-sdk/client-cloudformation");
@@ -84,9 +83,6 @@ function SDK(id, data, awsResourceConfig) {
 	}
 
 	let logger = null;
-	if (data && data.logging) {
-		logger = logging(id, configuration);
-	}
 
 	let leoStream = ls(configuration);
 	if (process.env.RSTREAMS_MOCK_DATA) {

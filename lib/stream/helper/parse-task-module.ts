@@ -8,11 +8,6 @@ const { parentPort, workerData } = workerThreads as { parentPort: any, workerDat
 let gunzip = createGunzip;
 let pipe = pipeline;
 
-// Require function that is run outside of webpack
-declare var __webpack_require__;
-declare var __non_webpack_require__;
-const requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-
 interface ParseWorkerData {
 	id: number;
 	bufferSize?: number;

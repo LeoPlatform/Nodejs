@@ -147,7 +147,6 @@ export let parsers: Record<ParserName, (settings: any) => (input: string) => any
 
 		let allowSkip = true;
 		function trySetSkip() {
-			// TODO: disable skip if using a wildcard '*' field
 			if (allowSkip && visitedFields == allFields) {
 				fastJson.skip();
 			}
