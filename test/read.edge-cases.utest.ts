@@ -10,6 +10,8 @@ import zlib from "zlib";
 import util from "../lib/aws-util";
 import awsSdkSync from "../lib/aws-sdk-sync";
 import { ReadableStream } from "../lib/types";
+import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
+
 chai.use(sinonchai);
 
 let mockSdkConfig = {
@@ -105,7 +107,7 @@ describe('sdk.read edge cases', function () {
 			.onFirstCall().callsArgWith(1, null, batchGetResponse);
 
 
-		sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet, query });
+		sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet, query } as unknown as DynamoDBDocument);
 
 		let sdk = RStreamsSdk(mockSdkConfig);
 		let ls = sdk.streams;
