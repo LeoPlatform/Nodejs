@@ -160,6 +160,11 @@ export class ConfigurationBuilder<T> {
 						return all;
 					}, {}))
 				};
+
+				// If it isn't a valid reference, set it back 
+				if (!this.isResourceReference(value)) {
+					value = root[key];
+				}
 			}
 
 			if (this.isResourceReference(value)) {
