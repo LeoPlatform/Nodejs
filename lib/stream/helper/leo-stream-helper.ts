@@ -766,7 +766,6 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 		_hookSettings: hookSettings
 	};
 	if (defaultsFromMem.parallelFetchMax > 0) {
-		// TODO: Should i also set this
 		readOpts.stream_query_limit = 1000;
 		readOpts.fast_s3_read = true;
 		readOpts.fast_s3_read_parallel_fetch_max_bytes = readOpts.fast_s3_read_parallel_fetch_max_bytes || defaultsFromMem.parallelFetchMax;

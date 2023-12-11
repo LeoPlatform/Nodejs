@@ -76,6 +76,13 @@ export class S3 extends Service<S3ClientConfig> {
 	}
 }
 
+
+export class DynamoDB extends Service<AWS.DynamoDB.ClientConfiguration> {
+	putItem(): AWS.DynamoDB.PutItemOutput {
+		return this.invoke("putItem");
+	}
+}
+
 export default {
 	SecretsManager,
 	S3
