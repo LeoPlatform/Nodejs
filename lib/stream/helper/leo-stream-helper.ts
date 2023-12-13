@@ -503,6 +503,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHook
 			}
 
 
+
 			let localFile = streamRecord.localFile.filePath;
 
 			let parallelParse = settings.parallelParse;
@@ -514,6 +515,13 @@ export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHook
 
 			let fileStream;
 			let isDestroyed = false;
+
+			let hasPiped = false;
+			let passpipe = pass.pipe.bind(pass);
+			pass.pipe = function (dest, opts) {
+				hasPiped = true;
+				return passpipe(dest, opts);
+			};
 			streamRecord.localFile.readyPromise.then(() => {
 				if (!isDestroyed) {
 					fileStream = parallelParse ? poolStream(parsePool, ++parseStreamId, { filePath: localFile }, streamRecord.event) : createReadStream(localFile);
@@ -532,12 +540,16 @@ export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHook
 				}
 			}).catch(err => {
 				if (!isDestroyed) {
-					let pipe = pass.pipe.bind(pass);
-					pass.pipe = function (dest, opts) {
-						let ret = pipe(dest, opts);
-						dest.emit("error", err);
-						return ret;
-					};
+					if (hasPiped) {
+						pass.emit("error", err);
+					} else {
+						let pipe = pass.pipe.bind(pass);
+						pass.pipe = function (dest, opts) {
+							let ret = pipe(dest, opts);
+							dest.emit("error", err);
+							return ret;
+						};
+					}
 				}
 			});
 			return {
@@ -614,6 +626,9 @@ export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHook
 						filePath,
 						readyPromise
 					};
+					readyPromise.catch(() => {
+						// Do nothing.  The error is later emitted if piped
+					});
 					let task: DownloadTask = {
 						id: id,
 						s3: r.s3,

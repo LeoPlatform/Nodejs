@@ -1,4 +1,5 @@
 
+import { DynamoDBClient, DynamoDBClientConfig, PutItemOutput } from "@aws-sdk/client-dynamodb";
 import { S3ClientConfig, ListBucketsOutput } from "@aws-sdk/client-s3";
 import { GetSecretValueRequest, GetSecretValueResponse, SecretsManagerClientConfig } from "@aws-sdk/client-secrets-manager";
 import { spawnSync } from "child_process";
@@ -77,8 +78,8 @@ export class S3 extends Service<S3ClientConfig> {
 }
 
 
-export class DynamoDB extends Service<AWS.DynamoDB.ClientConfiguration> {
-	putItem(): AWS.DynamoDB.PutItemOutput {
+export class DynamoDB extends Service<DynamoDBClientConfig> {
+	putItem(): PutItemOutput {
 		return this.invoke("putItem");
 	}
 }
