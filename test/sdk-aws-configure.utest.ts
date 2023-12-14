@@ -19,6 +19,11 @@ let mockSdkConfig = {
 
 describe('index/aws-configs', function () {
 	let sandbox: sinon.SinonSandbox;
+	let region;
+	before(() => {
+		region = process.env.AWS_REGION;
+		process.env.AWS_REGION = "us-east-1";
+	});
 	beforeEach(() => {
 		sandbox = sinon.createSandbox();
 		process.env.RSTREAMS_CONFIG = JSON.stringify(mockSdkConfig);
@@ -28,6 +33,7 @@ describe('index/aws-configs', function () {
 	});
 	after(() => {
 		delete process.env.RSTREAMS_CONFIG;
+		process.env.AWS_REGION = region;
 	});
 
 	describe("sdk AWS config", function () {
