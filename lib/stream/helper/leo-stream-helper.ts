@@ -28,28 +28,118 @@ let { parseTaskModuleContent, downloadTaskModuleContent } = JSON.parse(gunzipSyn
 
 
 export interface ReadHooksParams {
+	/**
+	 * Configuration for the AWS S3 Client used in the download threads
+	 */
 	awsS3Config?: S3ClientConfig;
+
+	/**
+	 * Amount of space available to use when downloading S3 files.
+	 * @default 419430400 (400 MB)
+	 */
 	availableDiskSpace?: number;
+
+	/**
+	 * Can be undefined|1
+	 * 
+	 * Determines how files are merged to local disk 
+	 */
 	mergeFileVersion?: number;
+
+	/**
+	 * Target file size when merging S3 files to local disk
+	 */
 	mergeFileSize?: number;
+
+	/**
+	 * Number of threads to use to download S3 files
+	 */
 	downloadThreads?: number;
+
+	/**
+	 * number of threads to use to parse string json into objects
+	 */
 	parseThreads?: number;
+
+	/** 
+	 * @ignore
+	*/
 	payloadAtEnd?: boolean;
+
+	/** 
+	 * @ignore
+	*/
 	unzipFiles?: boolean;
+
+	/** 
+	 * Save the local files rather then deleting them after being consumed
+	 * @default false
+	*/
 	saveFiles?: boolean;
+
+	/**
+	 * Directory used when downloading files
+	 * @default /tmp/rstreams
+	 */
 	tmpDir?: string;
+
+	/**
+	 * Path to the download task code
+	 * 
+	 * @default internal code
+	 */
 	downloadTaskPath?: string;
+
+	/**
+	 * Path to the parse task code
+	 * 
+	 * @default internal code
+	 */
 	parseTaskPath?: string;
+
+	/** 
+	 * Weather or not to enable parallel parsing 
+	 */
 	parallelParse?: boolean;
+
+	/**
+	 * Parse Gzip content in threads too.
+	 * This flag is not fully supported yet
+	 * @ignore
+	 */
 	parallelParseGzip?: boolean,
 	//parallelParseBufferSize?: number;
+
+	/**
+	 * Settings for the Parser task
+	 */
 	parseTaskParser?: {
+		/**
+		 * Custom options to pass to the parser
+		 */
 		opts: any;
+
+		/**
+		 * Name of the parser or Path to the parser factory file
+		 */
 		parser: string;
+
+		/**
+		 * Data size used to send parsed data between threads
+		 */
 		bufferSize?: number;
 	};
 }
 
+/**
+ * Verify that a task module exists.  If it doesn't save the internal content in a location
+ * so that it does exists.  Otherwise worker threads won't work
+ * @param taskPath path to that task. can be null
+ * @param tmpDir directory to store code if needed
+ * @param taskModule code of the task to save if needed
+ * @param filename filename to use to look for the module
+ * @returns path to the task
+ */
 function verifyTaskModule(taskPath: string, tmpDir: string, taskModule: string, filename: string) {
 	if (taskPath == null) {
 
@@ -159,6 +249,12 @@ interface ExtraHooks<SR extends StreamRecord> {
 		enddingDiskSpace: number;
 	}
 }
+
+/**
+ * Creates read hooks that use worker threads for downloading and parsing
+ * @param settings 
+ * @returns 
+ */
 export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHooks<LocalFileStreamRecord> & ExtraHooks<LocalFileStreamRecord> {
 	settings = {
 		downloadThreads: Math.max(1, cpus().length - 1),
@@ -714,10 +810,26 @@ export interface ExtraConfig {
 	tmpDir?: string;
 	awsS3Config?: S3ClientConfig
 }
+
+/**
+ * Addes configured read hooks to the read options
+ * @param readOpts 
+ * @param partialHookSettings 
+ * @param extraConfig 
+ * @returns 
+ */
 export function addReadHooks<T>(readOpts: ReadOptions<T>, partialHookSettings?: Partial<ReadHooksParams>, extraConfig?: RStreamsSdk | ExtraConfig) {
 	Object.assign(readOpts, determineReadHooks(readOpts, partialHookSettings, extraConfig));
 	return readOpts;
 }
+
+/**
+ * 
+ * @param settings 
+ * @param partialHookSettings 
+ * @param extraConfig 
+ * @returns 
+ */
 export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSettings?: Partial<ReadHooksParams>, extraConfig?: RStreamsSdk | ExtraConfig): Partial<ReadOptions<T>> {
 
 	let extraConfiguration: ExtraConfig = {
