@@ -39,6 +39,26 @@ declare interface ProcessFunctionOptions extends ProcessCallbackOptions {
 	 * @default false
 	 */
 	partial?: boolean;
+
+	/**
+	 * Overriding the default queue to send the event to
+	 */
+	queue?: string;
+	/**
+	 * Overriding the default event_source_timestamp from the source event
+	 */
+	event_source_timestamp?: number;
+
+
+	/**
+	 * Overriding the source eid to use for correlation
+	 */
+	eid?: string;
+
+	/**
+	 * Overriding the default units from the source event
+	 */
+	units?: number;
 }
 
 /**
@@ -700,6 +720,13 @@ export function fromS3(file: {
 }): WritableStream<any>;
 //}
 
+
+/**
+ * @returns The pipeline step that joins an external data source with events
+ */
+export function joinExternal<T, R>(fetcher: JoinExternalFetcher<T, R>): TransformStream<T, R>;
+
+
 /**
  * An interface that extends the [fastCSV libraries options](https://c2fo.github.io/fast-csv/docs/parsing/options)
  * in case we add our own.
@@ -782,4 +809,12 @@ export interface BatchOptions {
 	 * @todo review
 	 */
 	field?: string;
+}
+
+
+export interface JoinExternalFetcher<T, R> {
+	//getIds: (events)=> Key[],
+	//getObjects: (events: T[]) => Record<string, ExtData>,
+	join: (events: T[]) => Promise<(T & { joinData: R })[]>,
+	batchOptions?: BatchOptions
 }

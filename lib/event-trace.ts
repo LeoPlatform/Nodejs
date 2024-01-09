@@ -180,7 +180,7 @@ export async function trace(sdk: RStreamsSdk, statsTableName: string, options: E
 								id: botId,
 								server_id: botId,
 								type: "bot",
-								label: botLookup[botId].name
+								label: (botLookup[botId] || {}).name ?? botId
 							};
 							let eRef = util.ref(event.event);
 							event.id = eRef.refId(); //util.botRefId(event.id);
@@ -223,14 +223,14 @@ export async function trace(sdk: RStreamsSdk, statsTableName: string, options: E
 						seen[queue] = 1;
 						let kids = {};
 						queues[queue].children.forEach((bot) => {
-							let checkpoint = (botLookup[bot].checkpoints && botLookup[bot].checkpoints.read[queue]) || {};
+							let checkpoint = ((botLookup[bot] || {}).checkpoints && botLookup[bot].checkpoints.read[queue]) || {};
 							let lag = checkpoint.source_timestamp ? moment(checkpoint.source_timestamp).diff(targetEvent.event_source_timestamp) : null;
 							let has_processed = checkpoint.checkpoint > id || false;
 							kids[bot] = {
 								id: bot,
 								server_id: bot,
 								type: 'bot',
-								label: botLookup[bot].name,
+								label: (botLookup[bot] || {}).name ?? bot,
 								has_processed: has_processed,
 								lag: !has_processed ? lag : 0,
 								checkpoint: checkpoint,

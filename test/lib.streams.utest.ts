@@ -766,6 +766,83 @@ describe("Streams", function () {
 				"data6"
 			]);
 		});
+		it("async with push", async function () {
+			let results = await new Promise((resolve, reject) => {
+				streams.pipe(
+					util.eventstream.readArray([{
+						some: "data1"
+					}, {
+						some: "data2"
+					}, {
+						some: "data3"
+					}, {
+						some: "data4"
+					}, {
+						some: "data5"
+					}, {
+						some: "data6"
+					}]),
+					streams.throughAsync<SampleData, string>(function (data) {
+						this.push(data.some + data.some);
+						return undefined;
+					}),
+					util.eventstream.writeArray((err, results) => {
+						err ? reject(err) : resolve(results);
+					}),
+				);
+			});
+
+			assert.deepEqual(results, [
+				"data1data1",
+				"data2data2",
+				"data3data3",
+				"data4data4",
+				"data5data5",
+				"data6data6"
+			]);
+		});
+
+		it("async with push & return", async function () {
+			let results = await new Promise((resolve, reject) => {
+				streams.pipe(
+					util.eventstream.readArray([{
+						some: "data1"
+					}, {
+						some: "data2"
+					}, {
+						some: "data3"
+					}, {
+						some: "data4"
+					}, {
+						some: "data5"
+					}, {
+						some: "data6"
+					}]),
+					streams.throughAsync<SampleData, string>(function (data) {
+						this.push(data.some + data.some);
+						return data.some;
+					}),
+					util.eventstream.writeArray((err, results) => {
+						err ? reject(err) : resolve(results);
+					}),
+				);
+			});
+
+			assert.deepEqual(results, [
+				"data1data1",
+				"data1",
+				"data2data2",
+				"data2",
+				"data3data3",
+				"data3",
+				"data4data4",
+				"data4",
+				"data5data5",
+				"data5",
+				"data6data6",
+				"data6"
+			]);
+		});
 		it("async with error", async function () {
 			let results;
 			let error;

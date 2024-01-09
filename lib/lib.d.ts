@@ -5,7 +5,7 @@ import { LeoDynamodb } from "./dynamodb";
 import { Checkpoint, LeoCron } from "./cron";
 import Streams, { BatchOptions, ProcessFunction, } from "./streams";
 export { BatchOptions, FromCsvOptions, ProcessFunction, ToCsvOptions } from "./streams";
-import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions, BaseEvent, ReadableQueueStream } from "./types";
+import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, CorrelationId, ProcessFunctionAsync, ProcessCallback, ProcessFunctionContext, ProcessFunctionAsyncReturn, ProcessFunctionAsyncReturnOptions, BaseEvent, ReadableQueueStream, JoinExternalFetcher } from "./types";
 import * as es from "event-stream";
 import zlib from "zlib";
 import { Options as BackoffOptions } from "backoff";
@@ -63,6 +63,40 @@ export interface BaseWriteOptions {
 	 * @todo review
 	 */
 	useS3?: boolean;
+
+	/**
+	 * Options to pass to leoS3 to configure s3 file creation
+	 */
+	s3Opts?: {
+		/**
+		 * prefix to use in the file name.  
+		 * @default Bot Id
+		 */
+		prefix?: string;
+
+		/**
+		 * Time allowed before closing an s3 file
+		 * @default 10s
+		 */
+		time?: moment.DurationInputArg1;
+
+		/**
+		 * Time allowed before closing a chunk of an s3 file
+		 * @default this.time
+		 */
+		chunkTime?: moment.DurationInputArg1;
+
+		/**
+		 * Max number of chunk sections to allow in an S3 file
+		 */
+		sectionCount?: number;
+
+		/**
+		 * Include the duration to create the first chunk in the allowed S3 file time
+		 * @default true
+		 */
+		addBufferDuration?: boolean;
+	}
 
 	/**
 	 * If true, firehose will be used.  Firehose batches events sent to it to an S3 file in 1 minute
@@ -285,6 +319,17 @@ export interface ReadOptions {
 	 * @todo inconsistent fast_s3_read_parallel_fetch_max_bytes
 	 */
 	fast_s3_read_parallel_fetch_max_bytes?: number;
+
+
+	/**
+	 * When using the [[`ReadOptions.fast_s3_read`]] feature, this specifies how many retries for S3 timeouts 
+	 * before giving up on preconnecting.
+	 * The default usually is correct.
+	 * 
+	 * @default 1 retry
+	 * @todo inconsistent fast_s3_read_timeout_retry_count
+	 */
+	fast_s3_read_timeout_retry_count?: number;
 
 	/**
 	 * The max number of records, events, the SDK should retrieve each time it retrieves events from the 
@@ -1165,5 +1210,10 @@ export declare namespace StreamUtil {
 	function createCorrelation<T>(event: ReadEvent<T>, opts?: CreateCorrelationOptions): CorrelationId;
 	function createCorrelation<T>(startEvent: ReadEvent<T>, endEvent: ReadEvent<T>, units: number, opts?: CreateCorrelationOptions): CorrelationId;
 	function createCorrelation<T>(events: ReadEvent<T>[], opts?: CreateCorrelationOptions): CorrelationId;
+
+	/**
+	 * @returns The pipeline step that joins an external data source with events
+	 */
+	export function joinExternal<T, R>(fetcher: JoinExternalFetcher<T, T & { joinData: R }>): TransformStream<T, T & { joinData: R }>;
 
 }
