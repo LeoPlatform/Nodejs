@@ -117,6 +117,13 @@ export interface BaseWriteOptions {
 	firehose?: boolean;
 
 	/**
+	 * If true, data sent to firehose will be gzip compressed.
+	 * 
+	 * @default false
+	 */
+	gzipFirehose?: boolean
+
+	/**
 	 * The number of records, where each record is an event, to micro-batch locally in the SDK before writing 
 	 * them to either kinesis, firehose or S3.  See the other options in this object to understand how this 
 	 * might be useful.
