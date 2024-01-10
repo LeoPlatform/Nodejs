@@ -302,7 +302,9 @@ describe('index', function () {
 				DeliveryStreamName: 'mock-LeoFirehoseStream'
 			};
 
-			assert.deepEqual(firehosePutRecordBatch.getCall(0).args[0], expectedData);
+			let actual = firehosePutRecordBatch.getCall(0).args[0];
+			actual.Records[0].Data = actual.Records[0].Data.toString();
+			assert.deepEqual(actual, expectedData);
 
 		});
 

@@ -151,7 +151,7 @@ describe('index/aws-configs', function () {
 				let sdk = new RStreamsSdk();
 				let config = sdk.aws.s3.config;
 				assert.exists(config, "should have a config");
-				assert.equal(await config.region(), "us-east-1");
+				assert.equal(await config.region(), "mock-Region");
 				let httpOptions = (await (config.requestHandler as any).configProvider) as NodeHttpHandlerOptions;
 				assert.exists(httpOptions, "should have httpOptions");
 				assert.equal(httpOptions.requestTimeout, undefined);

@@ -839,6 +839,7 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 	if (maybeSdk.streams != null && maybeSdk.configuration != null) {
 		extraConfiguration.tmpDir = maybeSdk.streams.tmpDir;
 		extraConfiguration.awsS3Config = {
+			region: maybeSdk.configuration.aws.region,
 			credentials: maybeSdk.configuration.credentials
 		};
 	} else {
