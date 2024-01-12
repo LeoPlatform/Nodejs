@@ -46,6 +46,15 @@ let keys = [
 	"LeoSettings"
 ];
 
+
+function removeEmpty(obj: any) {
+	Object.entries(obj || {}).forEach(([key, value]) => {
+		if (value === undefined) {
+			delete obj[key];
+		}
+	});
+	return obj;
+}
 describe('index', function () {
 	let sandbox: sinon.SinonSandbox;
 	beforeEach(() => {
@@ -828,7 +837,7 @@ describe('index', function () {
 				});
 			});
 			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.deepEqual(await (sdk.configuration.credentials as any)(), fakeCredentials as unknown as AwsCredentialIdentity);
+			assert.deepEqual(removeEmpty(await (sdk.configuration.credentials as any)()), fakeCredentials as unknown as AwsCredentialIdentity);
 		});
 
 		// Couldn't find an easy way to mock ini file credentials
