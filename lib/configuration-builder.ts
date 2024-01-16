@@ -143,6 +143,7 @@ export class ConfigurationBuilder<T> {
 		let returnValue = {};
 		Object.getOwnPropertyNames(root).forEach(key => {
 			let value = root[key];
+			let origKey = key;
 
 			// convert  string shorthand to full ResourceReference
 			if (typeof value === "string" && value.match(/^.+?::/)) {
@@ -163,7 +164,7 @@ export class ConfigurationBuilder<T> {
 
 				// If it isn't a valid reference, set it back 
 				if (!this.isResourceReference(value)) {
-					value = root[key];
+					value = root[origKey];
 				}
 			}
 
