@@ -117,12 +117,12 @@ export interface ReadHooksParams {
 		/**
 		 * Custom options to pass to the parser
 		 */
-		opts: any;
+		opts?: any;
 
 		/**
 		 * Name of the parser or Path to the parser factory file
 		 */
-		parser: string;
+		parser?: string;
 
 		/**
 		 * Data size used to send parsed data between threads
@@ -855,7 +855,7 @@ export function determineReadHooks<T>(settings: ReadOptions<T>, partialHookSetti
 		bufferSize: MB,
 		...partialHookSettings?.parseTaskParser,
 		opts: {
-			parser: settings.parser,
+			parser: partialHookSettings?.parseTaskParser?.parser || settings.parser,
 			...settings.parserOpts,
 			...partialHookSettings?.parseTaskParser?.opts
 		},
