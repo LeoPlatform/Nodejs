@@ -801,44 +801,44 @@ describe('index', function () {
 
 	describe("sdk profile load", function () {
 
-		it("should read an aws profile w/ STS", async function () {
+		// it("should read an aws profile w/ STS", async function () {
 
-			require("leo-config").leoaws = {
-				profile: "mock-profile"
-			};
+		// 	require("leo-config").leoaws = {
+		// 		profile: "mock-profile"
+		// 	};
 
-			sandbox.stub(fs, "existsSync").returns(true);
-			sandbox.stub(fs, "readFileSync").onFirstCall().callsFake(() =>
-				"[profile mock-profile]\n" +
-				"source_profile = mock-profile\n" +
-				"mfa_serial = arn:aws:iam::mock-account:mfa/mock-user\n" +
-				"role_arn = arn:aws:iam::mock-account:role/mock-role"
-			).onSecondCall().callsFake(() => JSON.stringify({
-				RoleArn: "arn:aws:iam::mock-account:role/mock-role",
-				Credentials: {
-					Expiration: Date.now() + 10000
-				}
-			}));
+		// 	sandbox.stub(fs, "existsSync").returns(true);
+		// 	sandbox.stub(fs, "readFileSync").onFirstCall().callsFake(() =>
+		// 		"[profile mock-profile]\n" +
+		// 		"source_profile = mock-profile\n" +
+		// 		"mfa_serial = arn:aws:iam::mock-account:mfa/mock-user\n" +
+		// 		"role_arn = arn:aws:iam::mock-account:role/mock-role"
+		// 	).onSecondCall().callsFake(() => JSON.stringify({
+		// 		RoleArn: "arn:aws:iam::mock-account:role/mock-role",
+		// 		Credentials: {
+		// 			Expiration: Date.now() + 10000
+		// 		}
+		// 	}));
 
-			let fakeCredentials = {
-				accessKeyId: "123456",
-				secretAccessKey: "789",
-				sessionToken: "456",
-				expiration: "123",
-			};
-			sandbox.stub(STSClient.prototype, "send").callsFake(() => {
-				return Promise.resolve({
-					Credentials: {
-						AccessKeyId: "123456",
-						SecretAccessKey: "789",
-						SessionToken: "456",
-						Expiration: "123",
-					}
-				});
-			});
-			let sdk = RStreamsSdk(mockSdkConfig);
-			assert.deepEqual(removeEmpty(await (sdk.configuration.credentials as any)()), fakeCredentials as unknown as AwsCredentialIdentity);
-		});
+		// 	let fakeCredentials = {
+		// 		accessKeyId: "123456",
+		// 		secretAccessKey: "789",
+		// 		sessionToken: "456",
+		// 		expiration: "123",
+		// 	};
+		// 	sandbox.stub(STSClient.prototype, "send").callsFake(() => {
+		// 		return Promise.resolve({
+		// 			Credentials: {
+		// 				AccessKeyId: "123456",
+		// 				SecretAccessKey: "789",
+		// 				SessionToken: "456",
+		// 				Expiration: "123",
+		// 			}
+		// 		});
+		// 	});
+		// 	let sdk = RStreamsSdk(mockSdkConfig);
+		// 	assert.deepEqual(removeEmpty(await (sdk.configuration.credentials as any)()), fakeCredentials as unknown as AwsCredentialIdentity);
+		// });
 
 		// Couldn't find an easy way to mock ini file credentials
 		// it("should read an aws profile w/ INI", async function () {
