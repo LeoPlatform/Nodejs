@@ -393,7 +393,60 @@ export interface ReadOptions<T = any> {
 	/**
 	 * Praser to convert string event objects into json event objects.
 	 * 
-	 * @default: JSON.parse
+	 * @default JSON.parse
+	 * If the value is as string not found it will try to find a named parser
+	 * otherwise the value is assumed to be the path to a custom parser module
+	 * @example
+	 * eg. { parser: "./my-parser.js"}
+	 * "my-parser.js" file content
+	 * 
+	 * // Custom parser options
+	 * interface MatchParserOpts {
+	 * 	matches: {
+	 * 		regex: string;
+	 * 		field: string;
+	 * 		type?: string;
+	 * 	}[];
+	 * }
+	 * 
+	 * 
+	 * // Function that returns the parser function
+	 * // This allows you process settings to then use in your parser
+	 * // 
+	 * // This parser takes a list of regex matches to extract data
+	 * export function matchParserFactory(settings: MatchParserOpts) {
+	 * 	let types = {
+	 * 		number: (v) => Number(v),
+	 * 		default: (v) => v
+	 * 	};
+	 * 	let matches = settings.matches.map(r => {
+	 * 		const [, pattern, flags] = r.regex.match(/^\/(.*)\/(.*)?$/);
+	 * 		let path = r.field.split(".");
+	 * 		let field = path.pop();
+	 * 		let type = types[r.type] || types.default;
+	 * 		return {
+	 * 			regex: new RegExp(pattern, flags),
+	 * 			set: (root: any, value: any) => {
+	 * 				let container = path.reduce((cur, field) => (cur[field] = cur[field] || {}), root);
+	 * 				container[field] = type(value);
+	 * 			}
+	 * 		};
+	 * 	});
+	 * 	return (jsonString: string) => {
+	 * 		let result = {
+	 * 			__unparsed_value__: jsonString
+	 * 		};
+	 * 		matches.forEach(r => {
+	 * 			let v = (jsonString.match(r.regex) || [])[1];
+	 * 			if (v !== undefined) {
+	 * 				r.set(result, v);
+	 * 			}
+	 * 		});
+	 * 		return result;
+	 * 	};
+	 * }
+	 * 
+	 * export default matchParserFactory;
 	 */
 	parser?: ((stringEvent: string) => ReadEvent<T>) | ParserName | string,
 	parserOpts?: any;

@@ -1,6 +1,9 @@
 import { FastJson } from "fast-json";
 import { Node } from "fast-json/dist/Node";
 
+export interface FastJsonEvent {
+	__unparsed_value__: string;
+}
 export enum FastParseType {
 	Number = "number",
 	String = "string",
@@ -147,7 +150,6 @@ export let parsers: Record<ParserName, (settings: any) => (input: string) => any
 
 		let allowSkip = true;
 		function trySetSkip() {
-			// TODO: disable skip if using a wildcard '*' field
 			if (allowSkip && visitedFields == allFields) {
 				fastJson.skip();
 			}

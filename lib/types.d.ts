@@ -320,6 +320,10 @@ export interface ReadEvent<T> extends Event<T> {
 	payload: T;
 }
 
+export interface FastJsonReadEvent<T> extends ReadEvent<T> {
+	__unparsed_value__: string;
+}
+
 /**
  * This is data stored in an RStreams queue `Event` to understand where this event came from before it got into the queue it 
  * is in now, whether that's an external system like Mongo or MS SQL Server or whether this event is a derivative
