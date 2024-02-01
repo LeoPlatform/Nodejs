@@ -30,6 +30,8 @@ export class WorkerPool extends EventEmitter {
 	workers: Worker[];
 	freeWorkers: Worker[];
 	messages: Record<string, (worker: Worker, m: any) => void>;
+	private onExit: (...args: any[]) => void;
+
 	constructor(
 		private id: string,
 		private task,
@@ -49,12 +51,11 @@ export class WorkerPool extends EventEmitter {
 		}
 		this.setMaxListeners(0);//(numThreads * 10);
 
-		process.on('SIGINT', () => {
+		this.onExit = () => {
 			this.close();
-		});
-		process.on('exit', () => {
-			this.close();
-		});
+		};
+		process.on('SIGINT', this.onExit);
+		process.on('exit', this.onExit);
 	}
 
 	addNewWorker(workerData: any) {
@@ -140,6 +141,11 @@ export class WorkerPool extends EventEmitter {
 	}
 
 	async close() {
+
+		// Remove event listeners to prevent memory leaks
+		process.removeListener('SIGINT', this.onExit);
+		process.removeListener('exit', this.onExit);
+
 		if (this.workers.length > 0) {
 			//console.log(this.id, "Worker Pool Closing", this.workers.length);
 			await Promise.allSettled(this.workers.map(w => {
