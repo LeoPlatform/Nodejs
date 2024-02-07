@@ -179,6 +179,12 @@ function SDK(id, data, awsResourceConfig) {
 		putEvent: function(bot_id, queue, payload) {
 			return promisify(this.put).call(this, bot_id, queue, payload);
 		},
+		putEvents: function(payloads, settings = {}) {
+			return this.streams.pipeAsync(
+				this.streams.eventstream.readArray(payloads),
+				this.load(settings.botId, settings.queue, settings.writeOptions)
+			);
+		},
 		throughAsync: leoStream.throughAsync,
 		checkpoint: leoStream.toCheckpoint,
 		streams: leoStream,
