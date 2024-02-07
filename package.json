@@ -26,7 +26,6 @@
 	},
 	"dependencies": {
 		"async": "2.6.4",
-		"aws-lambda": "^1.0.7",
 		"backoff": "2.5.0",
 		"big-integer": "^1.6.51",
 		"event-stream": "4.0.1",
