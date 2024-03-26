@@ -1,9 +1,9 @@
 "use strict";
 let leoconfig = require("leo-config");
 let ls = require("./lib/stream/leo-stream");
-let logging = require("./lib/logging.js");
 let LeoConfiguration = require("./lib/configuration.js");
-let aws = require("./lib/leo-aws");
+const { fromIni, fromTemporaryCredentials } = require("@aws-sdk/credential-providers");
+const { CloudFormation } = require("@aws-sdk/client-cloudformation");
 const fs = require("fs");
 const ini = require('ini');
 const { default: Configuration } = require("./lib/rstreams-configuration");
@@ -41,13 +41,7 @@ function SDK(id, data, awsResourceConfig) {
 		}
 	}
 
-	// if (data.assumeRole) {
-	// 	const cred = await new AWS.STS({}).assumeRole({
-	// 		RoleArn: data.assumeRole,
-	// 		RoleSessionName: process.env.AWS_LAMBDA_FUNCTION_NAME || uuid.v4()
-	// 	}).promise();
-	// 	busConfig.credentials = sts.credentialsFrom(cred);
-	// }
+
 
 	let configuration = new LeoConfiguration(data);
 	configuration.awsResourceConfig = awsResourceConfig || {};
@@ -71,25 +65,24 @@ function SDK(id, data, awsResourceConfig) {
 				} finally {
 					console.log("Using cached AWS credentials", profile);
 					if (!data.Credentials || new Date() >= new Date(data.Credentials.Expiration)) {
-						execSync('aws sts get-caller-identity --duration-seconds 28800 --profile ' + profile);
+						execSync('aws sts get-caller-identity --profile ' + profile);
 						data = JSON.parse(fs.readFileSync(cacheFile));
 					}
 				}
-				configuration.credentials = new aws.STS().credentialsFrom(data, data);
+				configuration.credentials = fromTemporaryCredentials({
+					params: data
+				});
 			} else {
 				console.log("Switching AWS Profile", profile);
-				configuration.credentials = new aws.SharedIniFileCredentials(awsConfig);
+				configuration.credentials = fromIni(awsConfig);
 			}
 		} else {
 			console.log("Switching AWS Profile", awsConfig.profile);
-			configuration.credentials = new aws.SharedIniFileCredentials(awsConfig);
+			configuration.credentials = fromIni(awsConfig);
 		}
 	}
 
 	let logger = null;
-	if (data && data.logging) {
-		logger = logging(id, configuration);
-	}
 
 	let leoStream = ls(configuration);
 	if (process.env.RSTREAMS_MOCK_DATA) {
@@ -179,6 +172,12 @@ function SDK(id, data, awsResourceConfig) {
 		putEvent: function(bot_id, queue, payload) {
 			return promisify(this.put).call(this, bot_id, queue, payload);
 		},
+		putEvents: function(payloads, settings = {}) {
+			return this.streams.pipeAsync(
+				this.streams.eventstream.readArray(payloads),
+				this.load(settings.botId, settings.queue, settings.writeOptions)
+			);
+		},
 		throughAsync: leoStream.throughAsync,
 		checkpoint: leoStream.toCheckpoint,
 		streams: leoStream,
@@ -188,7 +187,7 @@ function SDK(id, data, awsResourceConfig) {
 			s3: leoStream.s3,
 			kinesis: leoStream.kinesis,
 			firehose: leoStream.firehose,
-			cloudformation: new aws.CloudFormation({
+			cloudformation: new CloudFormation({
 				region: configuration.aws.region,
 				credentials: configuration.credentials
 			})

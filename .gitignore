@@ -32,3 +32,5 @@ package-lock.json
 *.utest.js
 docs/build/
 /docs/build-docs.js
+scripts/*
+util-lambdas/*

@@ -480,7 +480,7 @@ describe("Streams", function () {
 			console.log = function (...args) {
 				logs.push(args);
 			};
-			Date.now = () => 1000;
+			Date.now = (() => { let s = 1000; return () => s++; })();
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
 					util.eventstream.readArray([{
@@ -504,12 +504,13 @@ describe("Streams", function () {
 			});
 
 			assert.deepEqual(logs, [
-				["counter 1 0 "],
-				["counter 2 0 "],
-				["counter 3 0 "],
-				["counter 4 0 "],
-				["counter 5 0 "],
-				["counter 6 0 "]
+				["counter 1 RPS: 1000 BPS: 0.00 1ms "],
+				["counter 2 RPS: 1000 BPS: 0.00 2ms "],
+				["counter 3 RPS: 1000 BPS: 0.00 3ms "],
+				["counter 4 RPS: 1000 BPS: 0.00 4ms "],
+				["counter 5 RPS: 1000 BPS: 0.00 5ms "],
+				["counter 6 RPS: 1000 BPS: 0.00 6ms "],
+				["Total", "counter 6 RPS: 857 BPS: 0.00 7ms "]
 			]);
 			assert.deepEqual(data, [
 				{ some: "data1" },
@@ -526,7 +527,7 @@ describe("Streams", function () {
 			console.log = function (...args) {
 				logs.push(args);
 			};
-			Date.now = () => 1000;
+			Date.now = (() => { let s = 1000; return () => s++; })();
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
 					util.eventstream.readArray([{
@@ -550,9 +551,10 @@ describe("Streams", function () {
 			});
 
 			assert.deepEqual(logs, [
-				["counter 2 0 "],
-				["counter 4 0 "],
-				["counter 6 0 "]
+				["counter 2 RPS: 2000 BPS: 0.00 1ms "],
+				["counter 4 RPS: 2000 BPS: 0.00 2ms "],
+				["counter 6 RPS: 2000 BPS: 0.00 3ms "],
+				["Total", "counter 6 RPS: 1500 BPS: 0.00 4ms "]
 			]);
 			assert.deepEqual(data, [
 				{ some: "data1" },
@@ -569,7 +571,7 @@ describe("Streams", function () {
 			console.log = function (...args) {
 				logs.push(args);
 			};
-			Date.now = () => 1000;
+			Date.now = (() => { let s = 1000; return () => s++; })();
 			let data = await new Promise((resolve, reject) => {
 				streams.pipe(
 					util.eventstream.readArray([{
@@ -593,9 +595,10 @@ describe("Streams", function () {
 			});
 
 			assert.deepEqual(logs, [
-				["2 0 "],
-				["4 0 "],
-				["6 0 "]
+				["2 RPS: 2000 BPS: 0.00 1ms "],
+				["4 RPS: 2000 BPS: 0.00 2ms "],
+				["6 RPS: 2000 BPS: 0.00 3ms "],
+				["Total", "6 RPS: 1500 BPS: 0.00 4ms "]
 			]);
 			assert.deepEqual(data, [
 				{ some: "data1" },

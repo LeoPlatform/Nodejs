@@ -1,16 +1,18 @@
 
-import AWS from "aws-sdk";
+import { DynamoDBClient, DynamoDBClientConfig, PutItemOutput } from "@aws-sdk/client-dynamodb";
+import { S3ClientConfig, ListBucketsOutput } from "@aws-sdk/client-s3";
+import { GetSecretValueRequest, GetSecretValueResponse, SecretsManagerClientConfig } from "@aws-sdk/client-secrets-manager";
 import { spawnSync } from "child_process";
 
 // Build a function to call on a different process
 // use `module.require` to keep webpack from overriding the function.
 // This isn't run within the bundle
 // It is stringified and run in a different process
-export function invoke(service: string, method: string, config: any, params: any) {
-	let AWS = module.require.call(module, "aws-sdk");
+export function invoke(req: any, service: string, method: string, config: any, params: any) {
 	let hasLogged = false;
 	try {
-		new AWS[service](config)[method](params, (err: any, data: any) => {
+		let serviceLib = req("@aws-sdk/client-" + service.replace(/[A-Z]+/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""));
+		new serviceLib[service](config)[method](params, (err: any, data: any) => {
 			if (!hasLogged) {
 				hasLogged = true;
 				console.log(`RESPONSE::${JSON.stringify({ error: err, response: data })}::RESPONSE`);
@@ -19,7 +21,7 @@ export function invoke(service: string, method: string, config: any, params: any
 	} catch (err: any) {
 		if (err.message.match(/is not a function/)) {
 			err.message = `AWS.${service}.${method} is not a function`;
-		} else if (err.message.match(/is not a constructor/)) {
+		} else if (err.message.match(/is not a constructor/) || err.message.match(/Cannot find module/)) {
 			err.message = `AWS.${service} is not a constructor`;
 		}
 		if (!hasLogged) {
@@ -30,7 +32,7 @@ export function invoke(service: string, method: string, config: any, params: any
 }
 
 function run(service: string, method: string, config: any, params: any) {
-	let fn = `(${invoke.toString()})("${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)})`;
+	let fn = `(${invoke.toString()})(require,"${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)})`;
 
 	// Spawn node with the function to run `node -e (()=>{})`
 	// Using `RESPONSE::{}::RESPONSE` to denote the response in the output
@@ -63,15 +65,22 @@ class Service<T> {
 	}
 }
 
-export class SecretsManager extends Service<AWS.SecretsManager.ClientConfiguration> {
-	getSecretValue(params: AWS.SecretsManager.GetSecretValueRequest): AWS.SecretsManager.GetSecretValueResponse {
+export class SecretsManager extends Service<SecretsManagerClientConfig> {
+	getSecretValue(params: GetSecretValueRequest): GetSecretValueResponse {
 		return this.invoke("getSecretValue", params);
 	}
 }
 
-export class S3 extends Service<AWS.S3.ClientConfiguration> {
-	listBuckets(): AWS.S3.ListBucketsOutput {
+export class S3 extends Service<S3ClientConfig> {
+	listBuckets(): ListBucketsOutput {
 		return this.invoke("listBuckets");
+	}
+}
+
+
+export class DynamoDB extends Service<DynamoDBClientConfig> {
+	putItem(): PutItemOutput {
+		return this.invoke("putItem");
 	}
 }
 
