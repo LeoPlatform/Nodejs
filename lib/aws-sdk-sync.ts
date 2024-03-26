@@ -11,7 +11,7 @@ import { spawnSync } from "child_process";
 export function invoke(req: any, service: string, method: string, config: any, params: any) {
 	let hasLogged = false;
 	try {
-		let serviceLib = req("@aws-sdk/client-" + service.replace(/[A-Z]/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""));
+		let serviceLib = req("@aws-sdk/client-" + service.replace(/[A-Z]+/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""));
 		new serviceLib[service](config)[method](params, (err: any, data: any) => {
 			if (!hasLogged) {
 				hasLogged = true;
