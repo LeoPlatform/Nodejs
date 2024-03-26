@@ -29,7 +29,7 @@ jobs:
 
       - name: Remove Tag from version
         shell: bash
-        run: echo "##[set-output name=val;]"$(echo "${{steps.extract_version.outputs.version}}" | awk -F'-' '{print $1}')
+        run: echo "##[set-output name=value;]"$(echo "${{steps.extract_version.outputs.version}}" | awk -F'-' '{print $1}')
         id: version
 
       - name: Extract npm Tag from Tag Tag
