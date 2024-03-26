@@ -31,13 +31,11 @@ jobs:
         run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/v*-})"
         id: extract_tag
 
-
-      - run: version=$(echo "$${{steps.extract_version.outputs.version}}" | awk -F'-' '{print $1}')
       - run: echo ref ${{github.ref}}
-      - run: echo version $version
+      - run: echo version ${{steps.extract_version.outputs.version}}
       - run: echo tag ${{steps.extract_tag.outputs.tag}}
 
-      - run: npm version $version --no-git-tag-version --allow-same-version
+      - run: npm version ${{steps.extract_version.outputs.version}} --no-git-tag-version --allow-same-version
 
       - if: steps.extract_tag.outputs.tag == github.ref
         run: npm publish
