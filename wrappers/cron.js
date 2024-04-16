@@ -13,7 +13,10 @@ module.exports = function(configOverride, botHandler) {
 	//const kms = require("../lib/kms")(leosdk.configuration);
 	const refUtil = require("../lib/reference.js");
 
-	process.__config = config;
+	process.__config = process.__config || config;
+	process.__config.registry = process.__config.registry || {};
+	config.registry = Object.assign(process.__config.registry, config.registry || {});
+
 	const fill = require("../lib/build-config").fillWithTableReferences;
 	process.env.TZ = config.timezone;
 	// require('source-map-support').install({

@@ -1,4 +1,4 @@
-import aws from "./aws-sdk-sync";
+import awsSdkSync from "./aws-sdk-sync";
 import leolog from "leo-logger";
 import path from "path";
 import fs from "fs";
@@ -74,6 +74,12 @@ export class ConfigurationBuilder<T> {
 			g.rstreams_project_config_cache = {};
 		}
 
+		if (g.rsf_config_opts) {
+			Object.assign(options, g.rsf_config_opts);
+		} else if (process.env.RSF_CONFIG_OPTS) {
+			Object.assign(options, JSON.parse(process.env.RSF_CONFIG_OPTS));
+		}
+
 		if (this.data == null || this.data == "") {
 			if (process.env.RSF_CONFIG) {
 				this.data = process.env.RSF_CONFIG;
@@ -97,11 +103,11 @@ export class ConfigurationBuilder<T> {
 				// config is the key to a secret
 
 				logger.time("get-rsf-config");
-				this.data = JSON.parse(new aws.SecretsManager({
+				this.data = JSON.parse(new awsSdkSync.SecretsManager({
 					region: options.region
 				}).getSecretValue({
 					SecretId: this.data
-				}).SecretString);
+				}).SecretString.replace(/"{/g, '{').replace(/}"/g, "}"));
 				logger.timeEnd("get-rsf-config");
 			}
 		}
@@ -109,7 +115,7 @@ export class ConfigurationBuilder<T> {
 		// Allow extra env vars to be defined as RSF_CONFIG_some.new.field=my_value
 		Object.entries(process.env).forEach(([key, value]) => {
 			const a = (key.match(/^RSF_CONFIG_(.*)$/) || [])[1];
-			if (a) {
+			if (a && key != "RSF_CONFIG_OPTS") {
 				let parts = a.split(".");
 				let lastPart = parts.pop();
 				let parent = parts.reduce((a, b) => {
@@ -143,10 +149,11 @@ export class ConfigurationBuilder<T> {
 		let returnValue = {};
 		Object.getOwnPropertyNames(root).forEach(key => {
 			let value = root[key];
+			let origKey = key;
 
 			// convert  string shorthand to full ResourceReference
 			if (typeof value === "string" && value.match(/^.+?::/)) {
-				let [service, key, type, opts] = value.split('::');
+				let [service, key, type, opts] = value.split(/(?<!AWS)::/);
 				type = type || "dynamic";
 				value = {
 					service,
@@ -160,6 +167,11 @@ export class ConfigurationBuilder<T> {
 						return all;
 					}, {}))
 				};
+
+				// If it isn't a valid reference, set it back 
+				if (!this.isResourceReference(value)) {
+					value = root[origKey];
+				}
 			}
 
 			if (this.isResourceReference(value)) {
@@ -211,10 +223,10 @@ export class ConfigurationBuilder<T> {
 		}
 	}
 	private isResourceReference(value: any): boolean {
-		return value != null && typeof value === "object" && value.service && value.key && value.type && ConfigurationBuilder.Resolvers[value.service];
+		return value != null && typeof value === "object" && value.service && value.key && value.type && ConfigurationBuilder.Resolvers[value.service] != null;
 	}
 
-	static Resolvers = {
+	static Resolvers: Record<string, (ref: ResourceReference, cache: any) => any> = {
 		// ssm: (ref: ResourceReference) => {
 		// 	return process.env[`RS_ssm::${resolveKeywords(ref.key, ref.options)}`];
 		// },
@@ -238,7 +250,7 @@ export class ConfigurationBuilder<T> {
 				logger.log(`SecretsManager  Key: ${key}, Region:${ref.options?.region}`);
 
 				logger.time("secret-get");
-				let value = JSON.parse(new aws.SecretsManager({
+				let value = JSON.parse(new awsSdkSync.SecretsManager({
 					region: ref.options?.region
 				}).getSecretValue({
 					SecretId: resolveKeywords(key, ref.options)
@@ -256,7 +268,7 @@ export class ConfigurationBuilder<T> {
 	};
 }
 
-function resolveKeywords(template: string, data: any) {
+export function resolveKeywords(template: string, data: any) {
 	const name = template.replace(/\${(.*?)}/g, function (match, field) {
 		let value = getDataSafe(data, field);
 		if (value != null && typeof value === "object") {
@@ -266,7 +278,7 @@ function resolveKeywords(template: string, data: any) {
 	}).replace(/[_-]{2,}/g, "");
 	return name;
 }
-function getDataSafe(data = {}, path = "") {
+export function getDataSafe(data = {}, path = "") {
 	const pathArray = path.split(".").filter(a => a !== "");
 	if (pathArray.length === 0) {
 		return data;
@@ -281,7 +293,7 @@ const nullRegex = /^null$/;
 const undefinedRegex = /^undefined$/;
 const jsonRegex = /^{(.|\n)*}$/;
 
-function inferTypes(node) {
+export function inferTypes(node) {
 	let type = typeof node;
 	if (Array.isArray(node)) {
 		for (let i = 0; i < node.length; i++) {

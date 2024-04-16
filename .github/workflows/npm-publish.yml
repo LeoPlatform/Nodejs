@@ -14,10 +14,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 16
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm i aws-sdk@^2.581.0 --no-save
+      - run: npm i aws-sdk@^2.581.0
+      - run: npm i @aws-sdk/client-cloudformation@^3.378.0 @aws-sdk/client-dynamodb@^3.378.0 @aws-sdk/client-firehose@^3.378.0 @aws-sdk/client-kinesis@^3.378.0 @aws-sdk/client-s3@^3.378.0 @aws-sdk/client-secrets-manager@^3.378.0 @aws-sdk/client-sts@^3.378.0 @aws-sdk/credential-providers@^3.379.1 @aws-sdk/lib-dynamodb@^3.378.0 @aws-sdk/lib-storage@^3.378.0 @aws-sdk/node-http-handler@^3.374.0
       - run: npm run compile --if-present
       - run: npm run coverage-all
 
@@ -26,16 +27,21 @@ jobs:
         run: echo "##[set-output name=version;]$(echo ${GITHUB_REF#refs/tags/v})"
         id: extract_version
 
+      - name: Remove Tag from version
+        shell: bash
+        run: echo "##[set-output name=value;]"$(echo "${{steps.extract_version.outputs.version}}" | awk -F'-' '{print $1}')
+        id: version
+
       - name: Extract npm Tag from Tag Tag
         shell: bash
         run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/v*-})"
         id: extract_tag
 
       - run: echo ref ${{github.ref}}
-      - run: echo version ${{steps.extract_version.outputs.version}}
+      - run: echo version ${{steps.version.outputs.value}}
       - run: echo tag ${{steps.extract_tag.outputs.tag}}
 
-      - run: npm version ${{steps.extract_version.outputs.version}} --no-git-tag-version --allow-same-version
+      - run: npm version ${{steps.version.outputs.value}} --no-git-tag-version --allow-same-version
 
       - if: steps.extract_tag.outputs.tag == github.ref
         run: npm publish

@@ -1,7 +1,8 @@
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
-import AWS from "aws-sdk";
+import { Kinesis, PutRecordsOutput } from "@aws-sdk/client-kinesis";
+import { Firehose } from "@aws-sdk/client-firehose";
 import zlib from "zlib";
 import { RStreamsSdk } from "../index";
 chai.use(sinonchai);
@@ -38,7 +39,7 @@ describe("kinesis-shard", function () {
 	}
 
 	function setupTest() {
-		let kinesisPutRecordsRespone: AWS.Kinesis.Types.PutRecordsOutput = {
+		let kinesisPutRecordsRespone: Partial<PutRecordsOutput> = {
 			Records: [{
 				SequenceNumber: "0",
 				ShardId: "shard-0"
@@ -51,8 +52,8 @@ describe("kinesis-shard", function () {
 		let firehosePutRecordBatch = sandbox.stub();
 
 
-		sandbox.stub(AWS, 'Kinesis').returns({ putRecords: kinesisPutRecords });
-		sandbox.stub(AWS, 'Firehose').returns({ putRecordBatch: firehosePutRecordBatch });
+		sandbox.stub(Kinesis.prototype, 'putRecords').callsFake(kinesisPutRecords);
+		sandbox.stub(Firehose.prototype, 'putRecordBatch').callsFake(firehosePutRecordBatch);
 
 		return {
 			kinesisPutRecords,

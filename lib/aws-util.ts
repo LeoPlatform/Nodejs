@@ -1,6 +1,3 @@
-import AWS from "aws-sdk";
-
-
 const abort = {};
 function update(obj1, obj2) {
 	each(obj2, function iterator(key, item) {
@@ -32,7 +29,9 @@ export function error(err, options) {
 	if (typeof err.message === 'string' && err.message !== '') {
 		if (typeof options === 'string' || (options && options.message)) {
 			originalError = copy(err);
-			originalError.message = err.message;
+			if (originalError != null) {
+				originalError.message = err.message;
+			}
 		}
 	}
 	err.message = err.message || null;
@@ -71,11 +70,7 @@ export const date = {
 	 *   requests.
 	 */
 	getDate: function getDate() {
-		if (AWS.config.systemClockOffset) { // use offset when non-zero
-			return new Date(new Date().getTime() + AWS.config.systemClockOffset);
-		} else {
-			return new Date();
-		}
+		return new Date();
 	}
 };
 

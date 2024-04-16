@@ -1,6 +1,6 @@
-import { AWSError } from "aws-sdk";
 import moment, { Moment } from "moment";
 
+export type AWSError = any;
 /**
  * Defines a callback function that takes an error object.
  * @typeParam E The Error object.

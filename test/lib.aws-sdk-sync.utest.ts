@@ -3,7 +3,7 @@ import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
 import sinon from "sinon";
 import awsSdkSync, { invoke as awsSdkSyncInvoke } from "../lib/aws-sdk-sync";
-import AWS from "aws-sdk";
+import { S3 } from "@aws-sdk/client-s3";
 chai.use(sinonchai);
 describe('lib/aws-sdk-sync', function () {
 
@@ -121,21 +121,24 @@ describe('lib/aws-sdk-sync', function () {
 	});
 
 	it("invoke - success", function () {
-		let log = sandbox.spy(console, "log");
-		sandbox.stub(AWS, "S3").returns({
-			someMethod: (params: any, cb) => {
-				cb(null, { SomeData: 1234 });
-			}
-		});
+		try {
+			let log = sandbox.spy(console, "log");
 
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
-		assert(log.calledOnce);
-		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":null,"response":{"SomeData":1234}}::RESPONSE`]);
+			(S3.prototype as any).someMethod = (params: any, cb) => {
+				cb(null, { SomeData: 1234 });
+			};
+
+			awsSdkSyncInvoke(require, "S3", "someMethod", undefined, undefined);
+			assert(log.calledOnce);
+			assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":null,"response":{"SomeData":1234}}::RESPONSE`]);
+		} finally {
+			delete (S3.prototype as any).someMethod;
+		}
 	});
 
 	it("invoke - bad Service", function () {
 		let log = sandbox.spy(console, "log");
-		awsSdkSyncInvoke("S2", "someMethod", undefined, undefined);
+		awsSdkSyncInvoke(require, "S2", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
 		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"AWS.S2 is not a constructor"}}::RESPONSE`]);
 	});
@@ -143,21 +146,23 @@ describe('lib/aws-sdk-sync', function () {
 
 	it("invoke - bad method", function () {
 		let log = sandbox.spy(console, "log");
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
+		awsSdkSyncInvoke(require, "S3", "someMethod", undefined, undefined);
 		assert(log.calledOnce);
 		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"AWS.S3.someMethod is not a function"}}::RESPONSE`]);
 	});
 
 	it("invoke - service error", function () {
-		let log = sandbox.spy(console, "log");
-		sandbox.stub(AWS, "S3").returns({
-			someMethod: (params: any, cb) => {
+		try {
+			let log = sandbox.spy(console, "log");
+			(S3.prototype as any).someMethod = (params: any, cb) => {
 				cb(Object.assign(new Error(), { message: "Some bad error" }));
-			}
-		});
+			};
 
-		awsSdkSyncInvoke("S3", "someMethod", undefined, undefined);
-		assert(log.calledOnce);
-		assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"Some bad error"}}::RESPONSE`]);
+			awsSdkSyncInvoke(require, "S3", "someMethod", undefined, undefined);
+			assert(log.calledOnce);
+			assert.deepEqual(log.getCall(0).args, [`RESPONSE::{"error":{"message":"Some bad error"}}::RESPONSE`]);
+		} finally {
+			delete (S3.prototype as any).someMethod;
+		}
 	});
 });

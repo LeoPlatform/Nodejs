@@ -9,6 +9,8 @@ import { Event, ReadEvent, ReadableStream, WritableStream, TransformStream, Corr
 import * as es from "event-stream";
 import zlib from "zlib";
 import { Options as BackoffOptions } from "backoff";
+import { ParserName } from "./stream/helper/parser-util";
+import { ReadHooksParams } from "./stream/helper/leo-stream-helper";
 
 /**
  * A standard callback function.  If the operation failed, return the first argument only,
@@ -117,6 +119,13 @@ export interface BaseWriteOptions {
 	firehose?: boolean;
 
 	/**
+	 * If true, data sent to firehose will be gzip compressed.
+	 * 
+	 * @default false
+	 */
+	gzipFirehose?: boolean
+
+	/**
 	 * The number of records, where each record is an event, to micro-batch locally in the SDK before writing 
 	 * them to either kinesis, firehose or S3.  See the other options in this object to understand how this 
 	 * might be useful.
@@ -197,7 +206,54 @@ export interface WriteOptions extends BaseWriteOptions {
 	 * @default true
 	 */
 	autoCheckpoint?: boolean;
+
+	/**
+	 * Hook when the stream writes a checkpoint
+	 */
+	onCheckpoint?: (data: { error?: any, checkpoints: Record<string, Record<string, string>> }) => Promise<void> | void;
 }
+
+
+export interface StreamRecord {
+	records: number;
+	size: number;
+	gzipSize: number;
+	start: string;
+	end: string;
+	event: string;
+	// s3?: {
+	// 	bucket: string;
+	// 	key: string;
+	// }
+}
+export interface OnStartData {
+	queue: string;
+	eid: string;
+}
+
+export interface ReadOptionHooks<SR extends StreamRecord> {
+
+	onStart?: (data: OnStartData) => void;
+	onEnd?: () => void;
+
+	onBatchStart?: (streamRecords: SR[]) => void | SR[];
+	onBatchEnd?: (streamRecords: SR[]) => Promise<void>;
+
+	onRecordStart?: (streamRecord: SR, index: number) => void;
+	onRecordEnd?: (streamRecord: SR, index: number) => void;
+
+	getS3Stream?: (streamRecord: SR, index: number) => ReadableStream<string> & { idOffset: number };
+	createS3Stream?: (streamRecord: SR, index: number, start: string) => {
+		get: () => ReadableStream<string> & { idOffset: number };
+		on: (event: string, handler: (...args: any[]) => void) => void;
+		destroy: (error?: any) => void;
+	};
+	freeS3Stream?: (index: number) => void;
+	createSplitParseStream?: (JSONparse: (string) => any, streamRecord: SR) => TransformStream<string, any> | null;
+
+	onGetEvents?: (streamRecords: SR[]) => void | SR[];
+}
+
 
 /**
  * Options when reading data from an instance of the RStreams bus.  The options in this
@@ -213,7 +269,7 @@ export interface WriteOptions extends BaseWriteOptions {
  * 
  * @todo example
  */
-export interface ReadOptions {
+export interface ReadOptions<T = any> {
 	/** @deprecated Don't use. */
 	subqueue?: string;
 
@@ -333,6 +389,68 @@ export interface ReadOptions {
 	 * @todo inconsistent stream_query_limit
 	 */
 	stream_query_limit?: number;
+
+	/**
+	 * Praser to convert string event objects into json event objects.
+	 * 
+	 * If the value is as string not found it will try to find a named parser
+	 * otherwise the value is assumed to be the path to a custom parser module
+	 * @example
+	 * eg. { parser: "./my-parser.js"}
+	 * "my-parser.js" file content
+	 * 
+	 * // Custom parser options
+	 * interface MatchParserOpts {
+	 * 	matches: {
+	 * 		regex: string;
+	 * 		field: string;
+	 * 		type?: string;
+	 * 	}[];
+	 * }
+	 * 
+	 * 
+	 * // Function that returns the parser function
+	 * // This allows you process settings to then use in your parser
+	 * // 
+	 * // This parser takes a list of regex matches to extract data
+	 * export function matchParserFactory(settings: MatchParserOpts) {
+	 * 	let types = {
+	 * 		number: (v) => Number(v),
+	 * 		default: (v) => v
+	 * 	};
+	 * 	let matches = settings.matches.map(r => {
+	 * 		const [, pattern, flags] = r.regex.match(/^\/(.*)\/(.*)?$/);
+	 * 		let path = r.field.split(".");
+	 * 		let field = path.pop();
+	 * 		let type = types[r.type] || types.default;
+	 * 		return {
+	 * 			regex: new RegExp(pattern, flags),
+	 * 			set: (root: any, value: any) => {
+	 * 				let container = path.reduce((cur, field) => (cur[field] = cur[field] || {}), root);
+	 * 				container[field] = type(value);
+	 * 			}
+	 * 		};
+	 * 	});
+	 * 	return (jsonString: string) => {
+	 * 		let result = {
+	 * 			__unparsed_value__: jsonString
+	 * 		};
+	 * 		matches.forEach(r => {
+	 * 			let v = (jsonString.match(r.regex) || [])[1];
+	 * 			if (v !== undefined) {
+	 * 				r.set(result, v);
+	 * 			}
+	 * 		});
+	 * 		return result;
+	 * 	};
+	 * }
+	 * 
+	 * export default matchParserFactory;
+	 */
+	parser?: ((stringEvent: string) => ReadEvent<T>) | ParserName | string,
+	parserOpts?: any;
+	hooks?: ReadOptionHooks<StreamRecord>,
+	autoConfigure?: boolean | Partial<ReadHooksParams>
 }
 
 /**
@@ -484,7 +602,7 @@ export interface EnrichOptions<T, U> extends WriteOptions {
 	start?: string;
 
 	/** Fine-grained control of reading from the source `inQueue` */
-	config?: ReadOptions;
+	config?: ReadOptions<T>;
 
 	/**
 	 * The SDK will invoke this function after reading events from the `inQueue` and will take
@@ -537,7 +655,7 @@ export interface EnrichBatchOptions<T, U> extends EnrichOptions<ReadEvent<T>[], 
  * @see [[`RStreamsSdk.offload`]]
  * @see [[`RStreamsSdk.offloadEvents`]]
  */
-export interface OffloadOptions<T> extends ReadOptions {
+export interface OffloadOptions<T> extends ReadOptions<T> {
 	/** 
 	 * The name of the bot that this code is acting as.  The SDK will use it to query to the bot Dynamo DB 
 	 * table to pull checkpoints and to checkpoint for you. 
@@ -557,6 +675,11 @@ export interface OffloadOptions<T> extends ReadOptions {
 	transform(this: ProcessFunctionContext<never>, payload: T, wrapper: ReadEvent<T>, callback?: ProcessCallback<never>): Promise<ProcessFunctionAsyncReturn<never>> | void;
 
 	force?: boolean;
+
+	/**
+	 * Hook when the stream writes a checkpoint
+	 */
+	onCheckpoint?: (data: { error?: any, checkpoints: Record<string, Record<string, string>> }) => Promise<void> | void;
 }
 
 /**
@@ -669,6 +792,11 @@ export interface CreateCorrelationOptions {
  * @todo question We have StreamUtil and Streams which is streams.d.ts.  Why?
  */
 export declare namespace StreamUtil {
+
+	/**
+	 * Default is process.env.RSTREAMS_TMP_DIR || "/tmp/rstreams"
+	 */
+	let tmpDir: string;
 
 	/**
 	 * Helper function to turn a timestamp into an RStreams event ID.
@@ -885,7 +1013,7 @@ export declare namespace StreamUtil {
 	 * @todo question is the meant to be used in an ls.pipe? or all by itself?
 	 * @todo example
 	 */
-	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions): ReadableQueueStream<T>;
+	function fromLeo<T>(botId: string, inQueue: string, config?: ReadOptions<T>): ReadableQueueStream<T>;
 
 	/**
 	 * Create a pipeline step that takes the events from the previous pipeline step and then writes them
