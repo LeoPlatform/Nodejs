@@ -200,6 +200,18 @@ export declare class RStreamsSdk {
 	putEvent: <T>(bot_id: string, outQueue: string, payload: Event<T> | T) => Promise<void>;
 
 
+	/**
+	 * An async/await friendly function to write an array of events to a queue.
+	 *
+	 * @typeParam T The data to write as the payload of the event
+	 * @param payloads The payloads of the events to write
+	 * @param settings The botId and queue to use if payloas is a T[] instead of Event<T>[], and writeOptions for sdk.load()
+	 * @method
+	 * @todo example
+	 */
+	putEvents: <T>(payloads: (Event<T> | T)[], settings?: { botId?: string, queue?: string, writeOptions?: WriteOptions }) => Promise<void>;
+
+
 	/** @method */
 	throughAsync: typeof StreamUtil.throughAsync;
 

@@ -159,6 +159,20 @@ export interface CommandWrapOptions {
 	ignoreCommands?: string[];
 }
 
+
+export interface CounterStream<T> extends TransformStream<T, T> {
+	counterData: {
+		rps: string;
+		bps: string
+		rpsNum: number;
+		bpsNum: number;
+		totalRecords: number;
+		totalBytes: number;
+		duration: number;
+		lastEid: string;
+	}
+}
+
 // export interface AsEventOptions {}
 //export default interface Streams {
 //export function pipe(streams: stream.Transform[], callback?: pump.Callback): stream.Transform;
@@ -498,7 +512,7 @@ export function devnull<T>(shouldLog?: boolean | string): WritableStream<T>;
  * @returns The pipeline step that is ready to be used in a pipeline
  * @todo review
  */
-export function counter<T>(label: string, records?: number): TransformStream<T, T>;
+export function counter<T>(label: string, records?: number): CounterStream<T>;
 
 /**
  * This creates a pipeline step that takes an event, logs it and then passes the event on to the next pipeline step.
@@ -574,6 +588,7 @@ export function passthrough<T, U>(opts?: stream.TransformOptions): TransformStre
  * @todo example with flush
  */
 export function through<T, U>(transform?: (this: TransformStream<T, U>, obj: T, done: DataCallback<U>) => void, flush?: FlushCallback<U>): TransformStream<T, U>;
+export function through<T, U>(opts: stream.DuplexOptions, transform?: (this: TransformStream<T, U>, obj: T, done: DataCallback<U>) => void, flush?: FlushCallback<U>): TransformStream<T, U>;
 
 /**
  * This creates an async/await-friendly pipeline step that will take data in, possibly transform the data or do computation, and then
@@ -600,6 +615,7 @@ export function through<T, U>(transform?: (this: TransformStream<T, U>, obj: T, 
  * @todo example with flush
  */
 export function throughAsync<T, U>(transform?: (this: TransformStream<T, U>, obj: T) => Promise<U> | U, flush?: (this: TransformStream<T, U>) => Promise<U> | U): TransformStream<T, U>;
+export function throughAsync<T, U>(opts: stream.DuplexOptions, transform?: (this: TransformStream<T, U>, obj: T) => Promise<U> | U, flush?: (this: TransformStream<T, U>) => Promise<U> | U): TransformStream<T, U>;
 
 /**
  * Wraps a command function as a WriteableStream.

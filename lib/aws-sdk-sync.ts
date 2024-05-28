@@ -6,8 +6,7 @@ import { spawnSync } from "child_process";
 // use `module.require` to keep webpack from overriding the function.
 // This isn't run within the bundle
 // It is stringified and run in a different process
-export function invoke(service: string, method: string, config: any, params: any) {
-	let AWS = module.require.call(module, "aws-sdk");
+export function invoke(AWS: any, service: string, method: string, config: any, params: any) {
 	let hasLogged = false;
 	try {
 		new AWS[service](config)[method](params, (err: any, data: any) => {
@@ -30,7 +29,7 @@ export function invoke(service: string, method: string, config: any, params: any
 }
 
 function run(service: string, method: string, config: any, params: any) {
-	let fn = `(${invoke.toString()})("${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)})`;
+	let fn = `(${invoke.toString()})(require("aws-sdk"),"${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)})`;
 
 	// Spawn node with the function to run `node -e (()=>{})`
 	// Using `RESPONSE::{}::RESPONSE` to denote the response in the output
@@ -72,6 +71,13 @@ export class SecretsManager extends Service<AWS.SecretsManager.ClientConfigurati
 export class S3 extends Service<AWS.S3.ClientConfiguration> {
 	listBuckets(): AWS.S3.ListBucketsOutput {
 		return this.invoke("listBuckets");
+	}
+}
+
+
+export class DynamoDB extends Service<AWS.DynamoDB.ClientConfiguration> {
+	putItem(): AWS.DynamoDB.PutItemOutput {
+		return this.invoke("putItem");
 	}
 }
 
