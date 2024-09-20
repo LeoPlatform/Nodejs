@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { FastJson } from "fast-json";
 import { Node } from "fast-json/dist/Node";
 
@@ -8,7 +9,10 @@ export enum FastParseType {
 	Number = "number",
 	String = "string",
 	Eid = "eid",
-	Raw = "raw"
+	Raw = "raw",
+	Json = "json",
+	Array = "array",
+	Object = "object",
 }
 export interface FastParseField {
 	field: string;
@@ -75,6 +79,25 @@ export enum ParserName {
 	FastJson = "fast-json",
 }
 
+export let fieldParsers: Record<FastParseType, {
+	parse?: (value: string | Buffer) => any,
+	set?: (
+		field: string,
+		value: any,
+		setFn: (field: string, value: any, suffix?: string) => void
+	) => void
+}> = {
+	[FastParseType.String]: { parse: (value) => value },
+	[FastParseType.Number]: { parse: (value) => Number(value) },
+	[FastParseType.Eid]: { parse: (value) => value.toString().startsWith("z/") ? value : parseInt(value.toString(), 10) },
+	[FastParseType.Raw]: { set: (field, value, setFn) => setFn(field, value, "_raw") },
+
+	// These are handled the same way.  Just JSON strings to parse
+	[FastParseType.Json]: { parse: (value) => JSON.parse(value.toString()) },
+	[FastParseType.Array]: { parse: (value) => JSON.parse(value.toString()) },
+	[FastParseType.Object]: { parse: (value) => JSON.parse(value.toString()) },
+};
+
 // Factory of parsers so that they can be created with any config needed
 export let parsers: Record<ParserName, (settings: any) => (input: string) => any> = {
 	[ParserName.JsonParse]: () => JSON.parse,
@@ -128,13 +151,6 @@ export let parsers: Record<ParserName, (settings: any) => (input: string) => any
 		 */
 		let allFieldsDefs = wrapperFieldsDefs.concat(settings.fields ?? []);
 
-		let fieldParsers: Record<FastParseType, { parse?: (value: string | Buffer) => any, set?: (field: string, value: any) => void }> = {
-			[FastParseType.String]: { parse: (value) => value },
-			[FastParseType.Number]: { parse: (value) => Number(value) },
-			[FastParseType.Eid]: { parse: (value) => value.toString().startsWith("z/") ? value : parseInt(value.toString(), 10) },
-			[FastParseType.Raw]: { set: (field, value) => set(field, value, "_raw") }
-		};
-
 		const ARRAY_TYPE = 1;
 		function set(field, value, suffix = "") {
 			let keys = fastJson.getPath();
@@ -155,11 +171,13 @@ export let parsers: Record<ParserName, (settings: any) => (input: string) => any
 			}
 		}
 
+		let defaultFieldSet = ((a, b) => set(a, b));
+
 		allFieldsDefs.forEach(def => {
 			allFields++;
 			let fieldProcessor = fieldParsers[def.type] || fieldParsers.string;
 			let fieldParser = fieldProcessor.parse || fieldParsers.string.parse;
-			let fieldSet = fieldProcessor.set || set;
+			let fieldSet = fieldProcessor.set || defaultFieldSet;
 
 			// If wildcards are used we can't determine if all fields were visited
 			// so disable skipping
@@ -167,7 +185,7 @@ export let parsers: Record<ParserName, (settings: any) => (input: string) => any
 				allowSkip = false;
 			}
 			fastJson.on(def.field, (value) => {
-				fieldSet(def.field, fieldParser(value));
+				fieldSet(def.field, fieldParser(value), set);
 				visitedFields++;
 				trySetSkip();
 			});

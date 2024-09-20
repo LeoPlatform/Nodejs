@@ -43,7 +43,7 @@ function run(service: string, method: string, config: any, params: any) {
 	} else if (child.output.length > 0) {
 		// Try to extract the response
 		let output = child.output.join("");
-		let outputJson = (child.output.join("").match(/RESPONSE::({.*})::RESPONSE/) || [])[1];
+		let outputJson = (output.match(/RESPONSE::({.*})::RESPONSE/) || [])[1];
 		if (outputJson == null) {
 			throw new Error(`Invalid Response: ${output}`);
 		} else {
@@ -58,7 +58,7 @@ function run(service: string, method: string, config: any, params: any) {
 	}
 }
 
-class Service<T> {
+export class Service<T> {
 	constructor(private options?: T) { }
 	protected invoke(method: string, params?: any): any {
 		return run(this.constructor.name, method, this.options, params);
@@ -85,6 +85,8 @@ export class DynamoDB extends Service<DynamoDBClientConfig> {
 }
 
 export default {
+	Service,
 	SecretsManager,
-	S3
+	S3,
+	DynamoDB
 };

@@ -1,3 +1,8 @@
+*.js
+!*.ts
+*.d.ts
+*.js.map
+*.utest.js
 
 *.swp
 **/test/out/
@@ -26,10 +31,6 @@ package-lock.json
 .scannerwork
 .idea
 .idea/
-*.d.ts
-*.js
-*.js.map
-*.utest.js
 docs/build/
 /docs/build-docs.js
 scripts/*

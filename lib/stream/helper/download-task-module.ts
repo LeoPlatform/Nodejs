@@ -112,7 +112,7 @@ if (parentPort) {
 			// });
 			stream.on("error", async (err: any) => {
 				let passAlong = true;
-				if (err.code === "NoSuchKey") {
+				if (err.code === "NoSuchKey" || err.name === "NoSuchKey") {
 					try {
 						await tryFinalizeMultipartUpload(file);
 						passAlong = false;
