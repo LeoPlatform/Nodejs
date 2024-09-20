@@ -42,6 +42,7 @@ export default function (leoStream: LeoStream) {
 		let queueDataFileJson = path.resolve(settings.queueDirectory, runtimeQueue, `${queue}.json`);
 		let mockStream;
 
+		// Create a custom JSON parser
 		let JSONparse = parserUtil.createParser({
 			parser: config.parser,
 			opts: {
@@ -52,14 +53,24 @@ export default function (leoStream: LeoStream) {
 		if (fs.existsSync(queueDataFileJsonl)) {
 			mockStream = leoStream.pipeline(
 				fs.createReadStream(queueDataFileJsonl),
-				leoStream.split((value) => JSONparse(value))
+				leoStream.split((value) => {
+					try {
+						let obj = JSONparse(value);
+						return obj;
+					} catch (e) {
+						return null;
+					}
+				})
 			);
 		} else if (fs.existsSync(queueDataFileJson)) {
-			mockStream = leoStream.pipeline(
-				// They may be using a custom parser so we need to convert the json to a string and use the parser
-				leoStream.eventstream.readArray(requireFn(queueDataFileJson).map(l => JSON.stringify(l))),
-				leoStream.split((value) => JSONparse(value))
-			);
+			let jsonData = requireFn(queueDataFileJson);
+			mockStream = leoStream.eventstream.readArray(jsonData.map(item => {
+				try {
+					return JSONparse(JSON.stringify(item));
+				} catch (e) {
+					return null;
+				}
+			}).filter(item => item !== null));
 		} else {
 			mockStream = leoStream.eventstream.readArray([]);
 		}
