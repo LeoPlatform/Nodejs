@@ -1,6 +1,5 @@
 "use strict";
 
-
 let cachedHandler;
 module.exports = function(configOverride, botHandler) {
 	process.resources = process.env.Resources && JSON.parse(process.env.Resources) || {};
@@ -254,4 +253,6 @@ module.exports = function(configOverride, botHandler) {
 		}
 	};
 };
+
+// Export CronWrapper as the same value as the default export
 module.exports.CronWrapper = module.exports;
