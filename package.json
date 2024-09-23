@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "7.0.2",
+	"version": "7.1.8",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -25,7 +25,6 @@
 		}
 	},
 	"dependencies": {
-		"@aws-sdk/util-utf8-browser": "^3.259.0",
 		"async": "2.6.4",
 		"backoff": "2.5.0",
 		"big-integer": "^1.6.51",
