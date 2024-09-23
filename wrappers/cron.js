@@ -254,4 +254,4 @@ module.exports = function(configOverride, botHandler) {
 		}
 	};
 };
-module.exports.CronWrapper = module.exports;
+module.exports.CronWrapper = module.exports.default;
