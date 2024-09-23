@@ -1,6 +1,6 @@
 *.js
 !*.ts
-*.d.ts
+#*.d.ts
 *.js.map
 *.utest.js
 

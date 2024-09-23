@@ -359,7 +359,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHook
 			err = err || result.error;
 			delete workerLink[id];
 			if (err) {
-				logger.error(err);
+				logger.error(err, source, queue);
 				pass.emit("error", err);
 			} else {
 				pass.end();
