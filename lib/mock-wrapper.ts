@@ -45,25 +45,15 @@ export default function (leoStream: LeoStream) {
 		if (fs.existsSync(queueDataFileJsonl)) {
 			mockStream = leoStream.pipeline(
 				fs.createReadStream(queueDataFileJsonl),
-				leoStream.split(),
-				leoStream.parse({
-					parser: (stringEvent: string) => {
-						try {
-							return JSON.parse(stringEvent);
-						} catch (error) {
-							return null;
-						}
-					}
+				leoStream.through((chunk, encoding, callback) => {
+					// assuming config.parser is the custom parser
+					const parsed = parserUtil.createParser(config)(chunk.toString());
+					callback(null, parsed);
 				})
 			);
 		} else if (fs.existsSync(queueDataFileJson)) {
-			mockStream = leoStream.eventstream.readArray(requireFn(queueDataFileJson).map((event: any) => {
-				try {
-					return JSON.parse(JSON.stringify(event));
-				} catch (error) {
-					return null;
-				}
-			}).filter((event) => event !== null));
+			const jsonData = requireFn(queueDataFileJson);
+			mockStream = leoStream.eventstream.readArray(jsonData.map((item) => parserUtil.createParser(config)(JSON.stringify(item))));
 		} else {
 			mockStream = leoStream.eventstream.readArray([]);
 		}
