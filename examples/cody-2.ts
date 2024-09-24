@@ -17,32 +17,27 @@ export const handler = CronWrapper(async (invocationEvent: RSFQueueBotInvocation
 });
 
 interface OldNew<T> {
-	new?: T
-	old?: T
+	old?: T;
+	new?: T;
 }
-
 enum ItemStatus {
-	Hidden = "hidden",
 	InStock = "in-stock",
-	OutOfStock = "out-of-stock"
+	OutOfStock = "out-of-stock",
+	Hidden = "hidden",
 }
 
 interface RetailerData {
-	retailer_id: number;
-	status: ItemStatus;
+	retailer_id: string;
 	quantity: number;
-
+	status: ItemStatus;
 }
-
 interface Item {
-	item_id: number;
-	quantity_available: number;
+	item_id: string;
 	status: ItemStatus;
 	sku: string;
-	per_retailer?: Record<string, RetailerData>
-
+	quantity_available: number;
+	per_retailer: Record<string, RetailerData>
 }
-
 
 // Prompt:
 // Transform the incomming payload by returning an new item that has the the top level status set based on the per_retailer data.  Per retailer, if the quantity is greather than 0 the item status for that reatailer should be InStock, if the quantity is 0 or less and status is InStock it should be OutOfStock.  The top level status should be InStock if a single retailer has it InStock.  If all retailers agree on the status that should be the top level status. Otherwise, the top level status should be OutOfStock
@@ -86,29 +81,28 @@ async function transform(payload: OldNew<Item>, event: ReadEvent<OldNew<Item>>) 
 
 }
 
-
-// Typed for auto complete
-export async function transform2(payload: OldNew<Item>, _event: ReadEvent<OldNew<Item>>) {
+async function transform2(payload: OldNew<Item>, event: ReadEvent<OldNew<Item>>) {
 	if (payload.new) {
-		let firstStatus: undefined | ItemStatus;
-		let allSame = true;
+		let firstStatus: undefined | ItemStatus = undefined;
+		let allSameStatus = true;
 		let someInStock = false;
 
-		Object.values(payload.new.per_retailer ?? {}).forEach((rData) => {
-			if (rData.quantity > 0) {
-				rData.status = ItemStatus.InStock;
+		Object.values(payload.new.per_retailer).forEach(retailer => {
+			if (retailer.quantity > 0) {
+				retailer.status = ItemStatus.InStock;
 				someInStock = true;
-			} else if (rData.status === ItemStatus.InStock && rData.quantity <= 0) {
-				rData.status = ItemStatus.OutOfStock;
+			} else if (retailer.quantity <= 0 && retailer.status === ItemStatus.InStock) {
+				retailer.status = ItemStatus.OutOfStock;
 			}
-			if (firstStatus == undefined) {
-				firstStatus = rData.status;
-			} else if (firstStatus !== rData.status) {
-				allSame = false;
+
+			if (firstStatus === undefined) {
+				firstStatus = retailer.status;
+			} else if (retailer.status !== firstStatus) {
+				allSameStatus = false;
 			}
 		});
 
-		if (allSame) {
+		if (allSameStatus) {
 			payload.new.status = firstStatus ?? ItemStatus.OutOfStock;
 		} else if (someInStock) {
 			payload.new.status = ItemStatus.InStock;
@@ -116,8 +110,9 @@ export async function transform2(payload: OldNew<Item>, _event: ReadEvent<OldNew
 			payload.new.status = ItemStatus.OutOfStock;
 		}
 	}
-	return payload.new;
 }
+
+
 
 
 
