@@ -86,6 +86,28 @@ async function transform2(payload: OldNew<Item>, event: ReadEvent<OldNew<Item>>)
 	return payload.new;
 }
 
+function transform3(payload: OldNew<Item>, event: ReadEvent<OldNew<Item>>) {
+
+	if (payload.new == null || payload.old == null || payload.old.status === payload.new.status) {
+		return;
+	}
+
+	const statusCounts: Record<ItemStatus, number> = {
+		[ItemStatus.Hidden]: 0,
+		[ItemStatus.InStock]: 0,
+		[ItemStatus.OutOfStock]: 0
+	};
+
+	for (const retailer in payload.new.per_retailer) {
+		statusCounts[payload.new.per_retailer[retailer].status]++;
+	}
+
+	const sortedStatus = Object.entries(statusCounts)
+		.sort((a, b) => b[1] - a[1])
+		.map(([status]) => status);
+
+}
+
 interface OldNew<T> {
 	old?: T;
 	new?: T;
