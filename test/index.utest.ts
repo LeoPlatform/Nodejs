@@ -2869,10 +2869,59 @@ describe('index', function () {
 		});
 	});
 
+
 	describe("sdk mock", function () {
 		afterEach(function () {
 			delete process.env.RSTREAMS_MOCK_DATA;
 		});
+
+		// it("mock example", async function () {
+		// 	return;
+		// 	let sdk = require("../lib/mock")({
+		// 		queues: [{ id: "some id", event: "in-queue", eid: "z/1", payload: { data: 1 } }, { id: "some id", event: "in-queue", eid: "z/2", payload: { data: 3 } }]
+		// 	}, RStreamsSdk(mockSdkConfig));
+
+		// 	await sdk.streams.pipeAsync(
+		// 		sdk.read("bot-id", "in-queue"),
+		// 		sdk.streams.process("bot-id", (p, e, cb) => {
+		// 			cb(null, p);
+		// 		}, "out-queue"),
+		// 		sdk.write("bot-id", "out-queue")
+		// 	);
+		// 	assert.deepEqual(sdk.write.events,
+		// 		[
+		// 			{
+		// 				"correlation_id": {
+		// 					"source": "in-queue",
+		// 					"start": "z/1",
+		// 					"units": 1,
+		// 				},
+		// 				"eid": "z/1",
+		// 				"event": "out-queue",
+		// 				"event_source_timestamp": undefined,
+		// 				"id": "bot-id",
+		// 				"payload": {
+		// 					"data": 1,
+		// 				},
+		// 			},
+		// 			{
+		// 				"correlation_id": {
+		// 					"source": "in-queue",
+		// 					"start": "z/2",
+		// 					"units": 1,
+		// 				},
+		// 				"eid": "z/2",
+		// 				"event": "out-queue",
+		// 				"event_source_timestamp": undefined,
+		// 				"id": "bot-id",
+		// 				"payload": {
+		// 					"data": 3,
+		// 				},
+		// 			},
+		// 		],
+		// 	);
+		// });
+
 		it("mocks the inner stream", async function () {
 			process.env.RSTREAMS_MOCK_DATA = "test-mock-data-location";
 			let sdk = RStreamsSdk(mockSdkConfig);

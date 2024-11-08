@@ -1205,6 +1205,16 @@ export declare namespace StreamUtil {
 */
 	const pipeline: typeof Streams.pipeline;
 
+
+	/**
+	 * Creates a stream that writes to S3 files and emits and event with the results
+	 * 
+	 * @param queue queue to write to
+	 * @param opts S3 write options
+	 * @param onFlush callback when flushing the stream
+	 */
+	function toS3GzipChunks(queue: string, opts: BaseWriteOptions["s3Opts"], onFlush?: Callback): stream.Transform;
+
 	/**
 	 * This creates a pipeline step meant to be the last step in a pipeline, the sink, that writes events that flow into it
 	 * into S3.  You should micro-batch events before getting to this step to control how many events to write to the file.

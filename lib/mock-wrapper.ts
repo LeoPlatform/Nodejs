@@ -43,9 +43,9 @@ export default function (leoStream: LeoStream) {
 		let mockStream;
 
 		let JSONparse = parserUtil.createParser({
-			parser: config.parser,
+			parser: config?.parser,
 			opts: {
-				...config.parserOpts
+				...config?.parserOpts
 			}
 		});
 
