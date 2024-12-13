@@ -57,7 +57,7 @@ export default function (leoStream: LeoStream) {
 		} else if (fs.existsSync(queueDataFileJson)) {
 			mockStream = leoStream.pipeline(
 				// They may be using a custom parser so we need to convert the json to a string and use the parser
-				leoStream.eventstream.readArray(requireFn(queueDataFileJson).map(l => JSON.stringify(l))),
+				leoStream.eventstream.readArray(requireFn(queueDataFileJson).map(l => JSON.stringify(l) + "\n")),
 				leoStream.split((value) => JSONparse(value))
 			);
 		} else {
