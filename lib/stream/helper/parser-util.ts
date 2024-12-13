@@ -25,9 +25,12 @@ export interface FastJsonEnhanced extends FastJson {
 	currentObj: any;
 }
 
+// Overriding a private function to add isString feature.
+//@ts-ignore
 export class FastJsonPlus extends FastJson implements FastJsonEnhanced {
 
 	currentObj: any;
+	isLastPrimitiveAString: boolean = false;
 	parse(input: string) {
 		// Create an object for parsing
 		let obj = {
@@ -70,6 +73,13 @@ export class FastJsonPlus extends FastJson implements FastJsonEnhanced {
 			}
 			return f;
 		});
+	}
+
+	// Override private function to determine if the last permitive is a string or not
+	emitPrimitiveOrString(data, start, end) {
+		this.isLastPrimitiveAString = data[start - 1] == '"' && data[end] == '"';
+		// @ts-ignore
+		return super.emitPrimitiveOrString(data, start, end);
 	}
 }
 
@@ -185,7 +195,12 @@ export let parsers: Record<ParserName, (settings: any) => (input: string) => any
 				allowSkip = false;
 			}
 			fastJson.on(def.field, (value) => {
-				fieldSet(def.field, fieldParser(value), set);
+				// If the value is string null then use JS null
+				if (value == "null" && !fastJson.isLastPrimitiveAString) {
+					fieldSet(def.field, null, set);
+				} else {
+					fieldSet(def.field, fieldParser(value), set);
+				}
 				visitedFields++;
 				trySetSkip();
 			});
