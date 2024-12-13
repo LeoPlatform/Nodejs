@@ -5,16 +5,15 @@ import path from "path";
 import util from "./aws-util";
 import stream from "stream";
 import { Callback, CronData, Milliseconds, ReportCompleteOptions } from "./cron";
-import { AWSError } from "aws-sdk";
-import uuid from "uuid";
-
+//import uuid from "uuid";
 import refUtil from "./reference";
+import * as parserUtil from "./stream/helper/parser-util";
 
 declare var __webpack_require__;
 declare var __non_webpack_require__;
 const requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
 
-
+type AWSError = any;
 declare type LeoStream = typeof StreamUtil;
 export default function (leoStream: LeoStream) {
 	if (process.env.RSTREAMS_MOCK_DATA == null || (leoStream as any).mocked) {
@@ -30,7 +29,7 @@ export default function (leoStream: LeoStream) {
 	};
 
 	let fromLeo = leoStream.fromLeo.bind(leoStream);
-	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions): ReadableQueueStream<T> => {
+	leoStream.fromLeo = <T>(id: string, queue: string, config: ReadOptions<T>): ReadableQueueStream<T> => {
 		queue = refUtil.ref(queue).id;
 		// Look for events that were written to this queue in this process
 		let runtimeQueue = process.env[`RSTREAMS_MOCK_DATA_Q_${queue}`] || "";
@@ -43,13 +42,24 @@ export default function (leoStream: LeoStream) {
 		let queueDataFileJson = path.resolve(settings.queueDirectory, runtimeQueue, `${queue}.json`);
 		let mockStream;
 
+		let JSONparse = parserUtil.createParser({
+			parser: config?.parser,
+			opts: {
+				...config?.parserOpts
+			}
+		});
+
 		if (fs.existsSync(queueDataFileJsonl)) {
 			mockStream = leoStream.pipeline(
 				fs.createReadStream(queueDataFileJsonl),
-				leoStream.parse<ReadEvent<T>>()
+				leoStream.split((value) => JSONparse(value))
 			);
 		} else if (fs.existsSync(queueDataFileJson)) {
-			mockStream = leoStream.eventstream.readArray(requireFn(queueDataFileJson));
+			mockStream = leoStream.pipeline(
+				// They may be using a custom parser so we need to convert the json to a string and use the parser
+				leoStream.eventstream.readArray(requireFn(queueDataFileJson).map(l => JSON.stringify(l) + "\n")),
+				leoStream.split((value) => JSONparse(value))
+			);
 		} else {
 			mockStream = leoStream.eventstream.readArray([]);
 		}

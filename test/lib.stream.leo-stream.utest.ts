@@ -3,9 +3,9 @@ import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
 import utilFn from "../lib/stream/leo-stream";
 import { promisify } from "util";
-import AWS from "aws-sdk";
 import { CorrelationId, ReadEvent } from "../lib/types";
 import { RStreamsSdk } from "../index";
+import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
 
 chai.use(sinonchai);
 let ls = utilFn({ onUpdate: () => { }, resources: {}, aws: {} });
@@ -69,7 +69,7 @@ describe("lib/streams/leo-stream", function () {
 		let update = sandbox.stub()
 			.onFirstCall().callsArgWith(1, null, {});
 
-		sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ update });
+		sandbox.stub(DynamoDBDocument, 'from').returns({ update } as unknown as DynamoDBDocument);
 		let ls = utilFn({ onUpdate: () => { }, resources: { LeoCron: "mock-LeoCron" }, aws: {} });
 
 		let stats = ls.stats("mock-bot", "mock-queue");
@@ -2885,7 +2885,7 @@ describe("lib/streams/leo-stream", function () {
 					process.nextTick(() => cb(Object.assign(new Error("Socket timed out!"), { code: "SOCKET_TIMEOUT" })));
 				});
 
-			sandbox.stub(AWS.DynamoDB, 'DocumentClient').returns({ batchGet });
+			sandbox.stub(DynamoDBDocument, 'from').returns({ batchGet } as unknown as DynamoDBDocument);
 
 			let sdk = new RStreamsSdk(mockSdkConfig);
 			let ls = sdk.streams;

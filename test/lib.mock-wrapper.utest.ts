@@ -63,7 +63,8 @@ describe('lib/mock-wrapper.ts', function () {
 			);
 			assert.deepEqual(data, [{
 				a: 1,
-				b: "2"
+				b: "2",
+				size: 15
 			}]);
 		});
 
@@ -97,10 +98,12 @@ describe('lib/mock-wrapper.ts', function () {
 			);
 			assert.deepEqual(data, [{
 				a: 3,
-				b: "4"
+				b: "4",
+				size: 15
 			}, {
 				a: 5,
-				b: "6"
+				b: "6",
+				size: 15
 			}]);
 		});
 

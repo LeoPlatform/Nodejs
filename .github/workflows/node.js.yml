@@ -16,18 +16,19 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [14.x, 16.x, 18.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: CI/CD ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm i
     - run: npm i aws-sdk@^2.581.0
+    - run: npm i @aws-sdk/client-cloudformation@^3.378.0 @aws-sdk/client-dynamodb@^3.378.0 @aws-sdk/client-firehose@^3.378.0 @aws-sdk/client-kinesis@^3.378.0 @aws-sdk/client-s3@^3.378.0 @aws-sdk/client-secrets-manager@^3.378.0 @aws-sdk/client-sts@^3.378.0 @aws-sdk/credential-providers@^3.379.1 @aws-sdk/lib-dynamodb@^3.378.0 @aws-sdk/lib-storage@^3.378.0 @aws-sdk/node-http-handler@^3.374.0
     - run: npm run compile --if-present
     - run: npm run coverage-all --if-present
     - uses: actions/upload-artifact@v3
