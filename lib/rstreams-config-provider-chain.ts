@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import awsSdkSync from "./aws-sdk-sync";
 import { ConfigurationResources } from "../index";
+import { AwsCredentialIdentity } from "@smithy/types";
 
 declare var __webpack_require__;
 declare var __non_webpack_require__;
@@ -529,6 +530,7 @@ export class ObjectConfiguration extends Configuration {
 export class AWSSecretsConfiguration extends Configuration {
 	secretEnvKey: string;
 	cacheDuration: number;
+	public credentials?: AwsCredentialIdentity;
 	static valueCache: any = {};
 	public static clearCache() {
 		AWSSecretsConfiguration.valueCache = {};
@@ -570,13 +572,15 @@ export class AWSSecretsConfiguration extends Configuration {
 			let error;
 			try {
 				let value = new awsSdkSync.SecretsManager({
-					region: region
+					region: region,
+					credentials: this.credentials
 				}).getSecretValue({ SecretId: secretKey });
 
 				try {
 
 					if ('SecretString' in value) {
 						values = JSON.parse(value.SecretString);
+						values.credentials = this.credentials;
 					} else {
 						//let buff = Buffer.from(value.SecretBinary, 'base64');
 						//values = JSON.parse(buff.toString('ascii'));

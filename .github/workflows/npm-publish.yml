@@ -17,8 +17,8 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm i aws-sdk@^2.581.0
-      - run: npm i @aws-sdk/client-cloudformation@^3.378.0 @aws-sdk/client-dynamodb@^3.378.0 @aws-sdk/client-firehose@^3.378.0 @aws-sdk/client-kinesis@^3.378.0 @aws-sdk/client-s3@^3.378.0 @aws-sdk/client-secrets-manager@^3.378.0 @aws-sdk/client-sts@^3.378.0 @aws-sdk/credential-providers@^3.379.1 @aws-sdk/lib-dynamodb@^3.378.0 @aws-sdk/lib-storage@^3.378.0 @aws-sdk/node-http-handler@^3.374.0
+      - run: npm i --no-save aws-sdk@^2
+      - run: npm i --no-save @aws-sdk/client-lambda@^3 @aws-sdk/client-cloudformation@^3 @aws-sdk/client-dynamodb@^3 @aws-sdk/client-firehose@^3 @aws-sdk/client-kinesis@^3 @aws-sdk/client-s3@^3 @aws-sdk/client-secrets-manager@^3 @aws-sdk/client-sts@^3 @aws-sdk/credential-providers@^3 @aws-sdk/lib-dynamodb@^3 @aws-sdk/lib-storage@^3 @aws-sdk/node-http-handler@^3
       - run: npm run compile --if-present
       - run: npm run coverage-all
 
