@@ -27,7 +27,8 @@ export class DynamodbFetcher<T, R> implements JoinExternalFetcher<T, R> {
 			}),
 		}), {
 			marshallOptions: {
-				convertEmptyValues: true
+				convertEmptyValues: true,
+				removeUndefinedValues: true
 			}
 		});
 	}

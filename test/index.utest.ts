@@ -21,7 +21,7 @@ chai.use(sinonchai);
 
 const AwsMocks = [];
 
-const nodeVersion = process.version.split(/[v.]/)[1];
+const nodeVersion = parseInt(process.version.split(/[v.]/)[1]);
 
 let mockSdkConfig = {
 	Region: "mock-Region",
@@ -387,13 +387,13 @@ describe('index', function () {
 							],
 							"end": 1,
 							"event": "mock-out-queue",
-							"gzipSize": nodeVersion == "18" ? 146 : 147,
+							"gzipSize": nodeVersion >= 18 ? 146 : 147,
 							"offsets": [
 								{
 									"end": 1,
 									"event": "mock-out-queue",
 									"gzipOffset": 0,
-									"gzipSize": nodeVersion == "18" ? 146 : 147,
+									"gzipSize": nodeVersion >= 18 ? 146 : 147,
 									"offset": 0,
 									"records": 2,
 									"size": 291,
@@ -496,7 +496,7 @@ describe('index', function () {
 							"event": "mock-out-queue",
 							"start": null,
 							"end": 0,
-							"offsets": [{ "event": "mock-out-queue", "start": 0, "end": 0, "records": 1, "gzipSize": nodeVersion == "18" ? 740 : 741, "size": 614541, "offset": 0, "gzipOffset": 0 }], "gzipSize": nodeVersion == "18" ? 740 : 741, "size": 614541, "records": 1, "stats": { "mock-bot-id": { "start": 1647463353001, "end": 1647463353001, "units": 1, "checkpoint": 0 } },
+							"offsets": [{ "event": "mock-out-queue", "start": 0, "end": 0, "records": 1, "gzipSize": nodeVersion >= 18 ? 740 : 741, "size": 614541, "offset": 0, "gzipOffset": 0 }], "gzipSize": nodeVersion >= 18 ? 740 : 741, "size": 614541, "records": 1, "stats": { "mock-bot-id": { "start": 1647463353001, "end": 1647463353001, "units": 1, "checkpoint": 0 } },
 							"correlations": [{}]
 						},
 						"ExplicitHashKey": "0",
@@ -588,7 +588,7 @@ describe('index', function () {
 							"event": "mock-out-queue",
 							"start": null,
 							"end": 0,
-							"offsets": [{ "event": "mock-out-queue", "start": 0, "end": 0, "records": 1, "gzipSize": nodeVersion == "18" ? 740 : 741, "size": 614541, "offset": 0, "gzipOffset": 0 }], "gzipSize": nodeVersion == "18" ? 740 : 741, "size": 614541, "records": 1, "stats": { "mock-bot-id": { "start": 1647463353001, "end": 1647463353001, "units": 1, "checkpoint": 0 } },
+							"offsets": [{ "event": "mock-out-queue", "start": 0, "end": 0, "records": 1, "gzipSize": nodeVersion >= 18 ? 740 : 741, "size": 614541, "offset": 0, "gzipOffset": 0 }], "gzipSize": nodeVersion >= 18 ? 740 : 741, "size": 614541, "records": 1, "stats": { "mock-bot-id": { "start": 1647463353001, "end": 1647463353001, "units": 1, "checkpoint": 0 } },
 							"correlations": [{}]
 						},
 						"ExplicitHashKey": "0",
