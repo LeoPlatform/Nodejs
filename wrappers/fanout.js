@@ -1,4 +1,5 @@
-const aws = require("aws-sdk");
+
+const { Lambda } = require("@aws-sdk/client-lambda");
 const async = require("async");
 const eventIdFormat = "[z/]YYYY/MM/DD/HH/mm/";
 const moment = require("moment");
@@ -147,7 +148,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 			};
 			const handlerResponse = handler(event, context, handlerCallback);
 			if (handlerResponse && typeof handlerResponse.then === 'function') {
-				handlerResponse.then(data => handlerCallback(null, data)).catch(err=> handlerCallback(err));
+				handlerResponse.then(data => handlerCallback(null, data)).catch(err => handlerCallback(err));
 			}
 			return handlerResponse;
 		} else {
@@ -166,7 +167,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 				new Promise(resolve => {
 					setTimeout(() => {
 						logger.log(`Invoking 1/${instances}`);
-						let wasCalled = false; 
+						let wasCalled = false;
 						const handlerCallback = (err, data) => {
 							if (!wasCalled) {
 								wasCalled = true;
@@ -181,7 +182,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 						};
 						const handlerResponse = handler(event, context, handlerCallback);
 						if (handlerResponse && typeof handlerResponse.then === 'function') {
-							handlerResponse.then((data) => handlerCallback(null, data)).catch(err=> handlerCallback(err));
+							handlerResponse.then((data) => handlerCallback(null, data)).catch(err => handlerCallback(err));
 						}
 						return handlerResponse;
 					}, 200);
@@ -193,7 +194,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 
 			// Wait for all workers to return and figure out what checkpoint to persist
 			logger.debug(`Waiting on all Fanout workers: count ${workers.length}`);
-			Promise.all(workers).then(callCheckpointOnResponses(leoBotCheckpoint, callback)).catch((err) => { 
+			Promise.all(workers).then(callCheckpointOnResponses(leoBotCheckpoint, callback)).catch((err) => {
 				logger.error("[err]", err);
 				return callback(err);
 			});
@@ -201,8 +202,8 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 	};
 };
 
-function callCheckpointOnResponses(leoBotCheckpoint, callback) { 
-	return function (responses) {
+function callCheckpointOnResponses(leoBotCheckpoint, callback) {
+	return function(responses) {
 		logger.log("Return from all workers, reducing checkpoints");
 		let checkpoints = reduceCheckpoints(responses).map((data) => {
 			logger.log("[data]", data);
@@ -233,7 +234,7 @@ function callCheckpointOnResponses(leoBotCheckpoint, callback) {
 			});
 		});
 		logger.log("[promise all checkpoints]", checkpoints);
-		if(checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
+		if (checkpoints && checkpoints[0] && checkpoints[0][0] && checkpoints[0][0].length) {
 			logger.log("---- calling checkpoints ----");
 			async.parallelLimit(checkpoints[0][0], 5, callback);
 		} else {
@@ -259,7 +260,7 @@ function invokeSelf(event, iid, count, context) {
 		}
 	};
 	try {
-		logger.log(`Invoking ${iid+1}/${count}`);
+		logger.log(`Invoking ${iid + 1}/${count}`);
 		newEvent = Object.assign(JSON.parse(JSON.stringify(event)), newEvent);
 	} catch (err) {
 		return Promise.reject(err);
@@ -267,7 +268,7 @@ function invokeSelf(event, iid, count, context) {
 	return new Promise((resolve, reject) => {
 		if (process.env.AWS_LAMBDA_FUNCTION_NAME) {
 			try {
-				let lambdaApi = new aws.Lambda({
+				let lambdaApi = new Lambda({
 					region: process.env.AWS_DEFAULT_REGION,
 					httpOptions: {
 						timeout: context.getRemainingTimeInMillis() // Default: 120000 // Two minutes
@@ -280,7 +281,7 @@ function invokeSelf(event, iid, count, context) {
 					Payload: JSON.stringify(newEvent),
 					Qualifier: process.env.AWS_LAMBDA_FUNCTION_VERSION
 				}, (err, data) => {
-					logger.log(`Done with Lambda instance ${iid+1}/${count}`);
+					logger.log(`Done with Lambda instance ${iid + 1}/${count}`);
 					try {
 						logger.log("[lambda err]", err);
 						logger.log("[lambda data]", data);
@@ -292,7 +293,7 @@ function invokeSelf(event, iid, count, context) {
 						} else if (!err && data.Payload != undefined && data.Payload != 'null') {
 							data = JSON.parse(data.Payload);
 						}
-		
+
 						resolve(data);
 					} catch (err) {
 						reject(err);
@@ -304,7 +305,7 @@ function invokeSelf(event, iid, count, context) {
 			}
 		} else {
 			try {
-			// Fork process with event
+				// Fork process with event
 				let worker = require("child_process").fork(process.argv[1], process.argv.slice(2), {
 					cwd: process.cwd(),
 					env: Object.assign({}, process.env, {
@@ -314,16 +315,16 @@ function invokeSelf(event, iid, count, context) {
 						runner_keep_cmd: true
 					}),
 					execArgv: process.execArgv,
-				//stdio: [s, s, s, 'ipc'],
-				//shell: true
+					//stdio: [s, s, s, 'ipc'],
+					//shell: true
 				});
 				let responseData = {};
 				worker.once("message", (response) => {
-					logger.log(`Got Response with instance ${iid+1}/${count}`);
+					logger.log(`Got Response with instance ${iid + 1}/${count}`);
 					responseData = response;
 				});
 				worker.once("exit", () => {
-					logger.log(`Done with child instance ${iid+1}/${count}`);
+					logger.log(`Done with child instance ${iid + 1}/${count}`);
 					logger.log("[responseData]", responseData);
 					resolve(responseData);
 				});
@@ -345,7 +346,7 @@ function reduceCheckpoints(responses) {
 		if (curr && curr.error) {
 			agg.errors.push(curr.error);
 		}
-		if(curr && curr.checkpoints) {
+		if (curr && curr.checkpoints) {
 			Object.keys(curr.checkpoints).map(botId => {
 				if (!(botId in agg.checkpoints)) {
 					agg.checkpoints[botId] = curr.checkpoints[botId];
@@ -368,7 +369,7 @@ function reduceCheckpoints(responses) {
 						}
 					});
 				}
-				
+
 			});
 		}
 		return agg;
@@ -377,14 +378,14 @@ function reduceCheckpoints(responses) {
 		checkpoints: {}
 	});
 	logger.log("[checkpoints]", JSON.stringify(checkpoints, null, 2));
-	if(checkpoints.errors && checkpoints.errors.length) {
+	if (checkpoints.errors && checkpoints.errors.length) {
 		throw new Error("errors from sub lambdas");
 	} else {
 		delete checkpoints.errors;
 	}
 	let vals = Object.values(checkpoints);
-	
-	if(vals) {
+
+	if (vals) {
 		return Object.values(vals);
 	} else {
 		return [];
