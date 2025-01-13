@@ -2,7 +2,6 @@ import RStreamsSdk, { ReadEvent } from "../index";
 import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
-import AWS, { Credentials, Kinesis } from "aws-sdk";
 import { gzipSync, gunzipSync } from "zlib";
 import streams from "../lib/streams";
 import fs, { WriteStream } from "fs";
