@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { FastJson } from "fast-json";
 import { Node } from "fast-json/dist/Node";
+import { FastJsonOptions } from "fast-json/dist/types";
 
 export interface FastJsonEvent {
 	__unparsed_value__: string;
@@ -26,9 +27,14 @@ export interface FastJsonEnhanced extends FastJson {
 }
 
 // Overriding a private function to add isString feature.
-//@ts-ignore
 export class FastJsonPlus extends FastJson implements FastJsonEnhanced {
 
+	constructor(opts?: FastJsonOptions) {
+		super(opts);
+
+		// Override the private function with our own local wrapper
+		this["emitPrimitiveOrString"] = this._emitPrimitiveOrString;
+	}
 	currentObj: any;
 	isLastPrimitiveAString: boolean = false;
 	parse(input: string) {
@@ -76,10 +82,9 @@ export class FastJsonPlus extends FastJson implements FastJsonEnhanced {
 	}
 
 	// Override private function to determine if the last permitive is a string or not
-	emitPrimitiveOrString(data, start, end) {
+	private _emitPrimitiveOrString(data, start, end) {
 		this.isLastPrimitiveAString = data[start - 1] == '"' && data[end] == '"';
-		// @ts-ignore
-		return super.emitPrimitiveOrString(data, start, end);
+		return super["emitPrimitiveOrString"](data, start, end);
 	}
 }
 
