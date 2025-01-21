@@ -3,7 +3,7 @@ import sinon from "sinon";
 import chai, { expect, assert } from "chai";
 import sinonchai from "sinon-chai";
 import { DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
-import { NodeHttpHandler, NodeHttpHandlerOptions } from "@aws-sdk/node-http-handler";
+import { NodeHttpHandler, NodeHttpHandlerOptions } from "@smithy/node-http-handler";
 chai.use(sinonchai);
 
 let mockSdkConfig = {

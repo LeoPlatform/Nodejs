@@ -13,7 +13,7 @@ import { Kinesis, KinesisClientConfig } from "@aws-sdk/client-kinesis";
 import { Firehose, FirehoseClientConfig } from "@aws-sdk/client-firehose";
 import { CloudFormation } from "@aws-sdk/client-cloudformation";
 import { DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
-import { NodeHttpHandlerOptions } from "@aws-sdk/node-http-handler";
+import { NodeHttpHandlerOptions } from "@smithy/node-http-handler";
 import https from "https";
 export * from "./lib/types";
 
