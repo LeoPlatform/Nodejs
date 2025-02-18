@@ -320,7 +320,7 @@ export function createFastS3ReadHooks(settings: ReadHooksParams): ReadOptionHook
 				let data = Array.isArray(result.data) ? result.data : [result.data];
 
 				for (let i = 0; i < data.length; i++) {
-					if (!stream.push(data[i])) {
+					if (!stream.write(data[i])) {
 						logger.debug(result.id, "parsePool Backpressure - start");
 						await new Promise(resolve => stream.once("drain", () => {
 							logger.debug(result.id, "parsePool Backpressure - done");
