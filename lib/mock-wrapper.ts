@@ -1,5 +1,5 @@
 import { StreamUtil } from "./lib";
-import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions, ReadableQueueStream, eventIdFromTimestamp } from "./types";
+import { ReadEvent, Event, ReadOptions, TransformStream, BaseWriteOptions, ReadableQueueStream } from "./types";
 import fs from "fs";
 import path from "path";
 import util from "./aws-util";
@@ -76,12 +76,12 @@ export default function (leoStream: LeoStream) {
 		mockStream.get = () => {
 			const now = Date.now();
 			const stats: Checkpoint = {
-				eid: eventIdFromTimestamp(now),
+				eid: leoStream.eventIdFromTimestamp(now),
 				source_timestamp: now,
 				units: counter
 			};
 			return stats;
-		}
+		};
 		return mockStream;
 	};
 
