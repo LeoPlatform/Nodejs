@@ -1,10 +1,10 @@
 import { StreamUtil } from "./lib";
-import { ReadEvent, Event, ReadOptions, ReadableStream, WritableStream, TransformStream, WriteOptions, BaseWriteOptions, ReadableQueueStream } from "./types";
+import { ReadEvent, Event, ReadOptions, TransformStream, BaseWriteOptions, ReadableQueueStream } from "./types";
 import fs from "fs";
 import path from "path";
 import util from "./aws-util";
 import stream from "stream";
-import { Callback, CronData, Milliseconds, ReportCompleteOptions } from "./cron";
+import { Callback, Checkpoint, CronData, Milliseconds, ReportCompleteOptions } from "./cron";
 //import uuid from "uuid";
 import refUtil from "./reference";
 import * as parserUtil from "./stream/helper/parser-util";
@@ -49,22 +49,39 @@ export default function (leoStream: LeoStream) {
 			}
 		});
 
+		let counter = 0;
+
 		if (fs.existsSync(queueDataFileJsonl)) {
 			mockStream = leoStream.pipeline(
 				fs.createReadStream(queueDataFileJsonl),
-				leoStream.split((value) => JSONparse(value))
+				leoStream.split((value) => {
+					counter++;
+					return JSONparse(value);
+				})
 			);
 		} else if (fs.existsSync(queueDataFileJson)) {
 			mockStream = leoStream.pipeline(
 				// They may be using a custom parser so we need to convert the json to a string and use the parser
 				leoStream.eventstream.readArray(requireFn(queueDataFileJson).map(l => JSON.stringify(l) + "\n")),
-				leoStream.split((value) => JSONparse(value))
+				leoStream.split((value) => {
+					counter++;
+					return JSONparse(value);
+				})
 			);
 		} else {
 			mockStream = leoStream.eventstream.readArray([]);
 		}
 
 		mockStream.checkpoint = (callback) => callback();
+		mockStream.get = () => {
+			const now = Date.now();
+			const stats: Checkpoint = {
+				eid: leoStream.eventIdFromTimestamp(now),
+				source_timestamp: now,
+				units: counter
+			};
+			return stats;
+		};
 		return mockStream;
 	};
 
