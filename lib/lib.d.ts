@@ -1330,8 +1330,8 @@ export declare namespace StreamUtil {
 	 * @todo question don't we already have other ways to do this?  do we need this?
 	 * @todo unclear This is a transform stream which means it can't be the sink and yet it takes an outQueue as though it's sending to another queue.  Don't get it.
 	 */
-	function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
-	function process<T, U>(id: string, func: ProcessFunctionAsync<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<T, U>
+	function process<T, U>(id: string, func: ProcessFunction<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<ReadEvent<T>, U>
+	function process<T, U>(id: string, func: ProcessFunctionAsync<T, U>, outQueue: string, onFlush?: any, opts?: any): TransformStream<ReadEvent<T>, U>
 
 	/**
 	   * todo document: what this functon does.  Creates Correlation form read events
