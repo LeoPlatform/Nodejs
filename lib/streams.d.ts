@@ -288,6 +288,99 @@ export function pipe<T1, T2, T3, T4, T5>(read: ReadableStream<T1> | stream.Strea
 export function pipe<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T6> | stream.Stream;
 
 /**
+ * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
+ * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @typeParam T1 The type of data that is produced by the source
+ * @typeParam T2 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T3 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T4 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T5 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T6 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T7 The type of data generated and that moves to the final step of the pipe
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t4 Pipeline step 5: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t5 Pipeline step 6: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t6 Pipeline step 7: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 8: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ * @returns The pipeline itself
+ */
+export function pipe<T1, T2, T3, T4, T5, T6, T7>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6: TransformStream<T6, T7>, write: WritableStream<T7> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T7> | stream.Stream;
+
+/**
+ * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
+ * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @typeParam T1 The type of data that is produced by the source
+ * @typeParam T2 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T3 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T4 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T5 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T6 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T7 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T8 The type of data generated and that moves to the final step of the pipe
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t4 Pipeline step 5: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t5 Pipeline step 6: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t6 Pipeline step 7: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t7 Pipeline step 8: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 9: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ * @returns The pipeline itself
+ */
+export function pipe<T1, T2, T3, T4, T5, T6, T7, T8>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6: TransformStream<T6, T7>, t7: TransformStream<T7, T8>, write: WritableStream<T8> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T8> | stream.Stream;
+
+/**
+ * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
+ * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @typeParam T1 The type of data that is produced by the source
+ * @typeParam T2 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T3 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T4 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T5 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T6 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T7 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T8 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T9 The type of data generated and that moves to the final step of the pipe
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t4 Pipeline step 5: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t5 Pipeline step 6: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t6 Pipeline step 7: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t7 Pipeline step 8: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t8 Pipeline step 9: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 10: The sink that is the last step of the pipe
+ * @param errorCallback Called if something goes wrong
+ * @returns The pipeline itself
+ */
+export function pipe<T1, T2, T3, T4, T5, T6, T7, T8, T9>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6: TransformStream<T6, T7>, t7: TransformStream<T7, T8>, t8: TransformStream<T8, T9>, write: WritableStream<T9> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T9> | stream.Stream;
+
+/**
+ * A callback-based version of [[`pipeAsync`]]. Creates a pipeline of steps where the first step produces the data and then 
+ * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+ * 
+ * This catch-all overload handles pipelines with more than 8 transform streams. For such cases, TypeScript cannot 
+ * maintain full type safety across all transformations, so the types are relaxed.
+ * 
+ * @param streams Any number of streams (source, transforms, and sink) followed by an optional error callback
+ * @returns The pipeline itself
+ */
+export function pipe(...streams: Array<stream.Stream | ErrorCallback>): stream.Stream;
+
+/**
  * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
  * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
  * 
@@ -386,6 +479,96 @@ export function pipeAsync<T1, T2, T3, T4, T5>(read: ReadableStream<T1> | stream.
  * @returns A promise so it can play nice with async/await
  */
 export function pipeAsync<T1, T2, T3, T4, T5, T6>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, write: WritableStream<T6>): Promise<void>;
+
+/**
+ * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
+ * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @typeParam T1 The type of data that is produced by the source
+ * @typeParam T2 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T3 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T4 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T5 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T6 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T7 The type of data generated and that moves to the final step of the pipe
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t4 Pipeline step 5: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t5 Pipeline step 6: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t6 Pipeline step 7: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 8: The sink that is the last step of the pipe
+ * @returns A promise so it can play nice with async/await
+ */
+export function pipeAsync<T1, T2, T3, T4, T5, T6, T7>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6: TransformStream<T6, T7>, write: WritableStream<T7>): Promise<void>;
+
+/**
+ * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
+ * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @typeParam T1 The type of data that is produced by the source
+ * @typeParam T2 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T3 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T4 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T5 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T6 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T7 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T8 The type of data generated and that moves to the final step of the pipe
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t4 Pipeline step 5: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t5 Pipeline step 6: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t6 Pipeline step 7: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t7 Pipeline step 8: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 9: The sink that is the last step of the pipe
+ * @returns A promise so it can play nice with async/await
+ */
+export function pipeAsync<T1, T2, T3, T4, T5, T6, T7, T8>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6: TransformStream<T6, T7>, t7: TransformStream<T7, T8>, write: WritableStream<T8>): Promise<void>;
+
+/**
+ * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
+ * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+ * 
+ * @typeParam T1 The type of data that is produced by the source
+ * @typeParam T2 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T3 The type of data generated and that moves to the next step of the pipe
+ * @typeParam T4 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T5 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T6 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T7 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T8 The type of data generated and that moves to the next step of the pipe  
+ * @typeParam T9 The type of data generated and that moves to the final step of the pipe
+ * 
+ * @param read Pipeline step 1: The source that produces the data, the first step of the pipe
+ * @param t1 Pipeline step 2: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t2 Pipeline step 3: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t3 Pipeline step 4: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t4 Pipeline step 5: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t5 Pipeline step 6: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t6 Pipeline step 7: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t7 Pipeline step 8: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param t8 Pipeline step 9: A transformation step that takes data from the previous step and pushes the result to the next step
+ * @param write Pipeline step 10: The sink that is the last step of the pipe
+ * @returns A promise so it can play nice with async/await
+ */
+export function pipeAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9>(read: ReadableStream<T1> | stream.Stream, t1: TransformStream<T1, T2>, t2: TransformStream<T2, T3>, t3: TransformStream<T3, T4>, t4: TransformStream<T4, T5>, t5: TransformStream<T5, T6>, t6: TransformStream<T6, T7>, t7: TransformStream<T7, T8>, t8: TransformStream<T8, T9>, write: WritableStream<T9>): Promise<void>;
+
+/**
+ * An async/await-friendly version of [[`pipe`]].  Creates a pipeline of steps where the first step produces the data and then 
+ * it flows to the next step and so on. The first step is the source, producing the content, the final step is the sink.
+ * 
+ * This catch-all overload handles pipelines with more than 8 transform streams. For such cases, TypeScript cannot 
+ * maintain full type safety across all transformations, so the types are relaxed.
+ * 
+ * @param streams Any number of streams (source, transforms, and sink)
+ * @returns A promise so it can play nice with async/await
+ */
+export function pipeAsync(...streams: stream.Stream[]): Promise<void>;
 
 // export function pipe<T1>(read: ReadableStream<T1> | stream.Stream | stream.Readable, write: WritableStream<T1> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T1>;
 // export function pipe<T1, T2>(read: ReadableStream<T1> | stream.Stream | stream.Readable, t1: TransformStream<T1, T2>, write: WritableStream<T2> | stream.Stream, errorCallback?: ErrorCallback): WritableStream<T2>;
