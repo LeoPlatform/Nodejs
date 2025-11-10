@@ -9,6 +9,31 @@ export interface FastJsonEvent {
 export enum FastParseType {
 	Number = "number",
 	String = "string",
+	/**
+	 * IfString is a special type that is used to denote a field that could be a string
+	 * or a JSON object. This is useful for parsing events that have a payload that could
+	 * be a JSON object or a string, and we only want to set the value if not a JSON object.
+	 * For example:
+	 * {
+	 * 	"payload": {
+	 * 	  "op": "delete",
+	 * 	  "obj": "my-id"
+	 * 	}
+	 * }
+	 * In this case we would set the value, but if the event was more like this:
+	 * {
+	 * 	"payload": {
+	 *    "op": "update",
+	 * 	  "obj": {
+	 *      "id": "my-id"
+	 *      "name": "John Doe",
+	 *      "age": 30
+	 * 	  }
+	 * 	}
+	 * }
+	 * In this case we would not set the value.
+	 */
+	IfString = 'ifstring',
 	Eid = "eid",
 	Raw = "raw",
 	Json = "json",
@@ -103,6 +128,14 @@ export let fieldParsers: Record<FastParseType, {
 	) => void
 }> = {
 	[FastParseType.String]: { parse: (value) => value },
+	[FastParseType.IfString]: { set: (field, value, setFn) => {
+		if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+			// do nothing, it's not really a string, it's a JSON object
+			// and we ONLY set values for IfString if it's actually a string
+		} else {
+			return setFn(field, value);
+		}
+	}},
 	[FastParseType.Number]: { parse: (value) => Number(value) },
 	[FastParseType.Eid]: { parse: (value) => value.toString().startsWith("z/") ? value : parseInt(value.toString(), 10) },
 	[FastParseType.Raw]: { set: (field, value, setFn) => setFn(field, value, "_raw") },
