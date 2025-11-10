@@ -1,6 +1,6 @@
 {
 	"name": "leo-sdk",
-	"version": "7.1.14",
+	"version": "7.1.15",
 	"description": "Load data onto the LEO Platform",
 	"homepage": "https://leoplatform.io",
 	"main": "index.js",
@@ -35,7 +35,7 @@
 		"flush-write-stream": "2.0.0",
 		"ini": "2.0.0",
 		"leo-config": "1.1.0",
-		"leo-logger": "1.0.1",
+		"leo-logger": "1.0.7",
 		"lodash": "4.17.21",
 		"lodash.merge": "^4.6.2",
 		"moment": "2.29.4",
