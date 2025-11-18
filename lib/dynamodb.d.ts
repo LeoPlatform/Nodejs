@@ -15,13 +15,18 @@ interface GetOptions { }
  */
 interface PutOptions { }
 
+interface LeoSettingEntry<T> {
+	id: string;
+	value: T;
+}
+
 /**
  * Helper functions to interact with Dynamo DB.
  * 
  * @todo document functions below
  */
 export interface LeoDynamodb {
-	getSettingPromise: <T>(setting_id: string) => Promise<T>;
+	getSettingPromise: <T>(setting_id: string) => Promise<LeoSettingEntry<T>>;
 	setSettingPromise: <T>(setting_id: string, value: T) => Promise<void>;
 	docClient: DynamoDBDocument,
 	get: <T>(table: string, id: string, opts: GetOptions, callback: DataCallback<AWSError, T>) => void,
@@ -31,7 +36,7 @@ export interface LeoDynamodb {
 	updateMulti: (items, opts, callback) => void,
 	scan: (table: string, filter, callback) => void,
 	saveSetting: <T>(setting_id: string, value: T, callback: Callback<AWSError>) => void,
-	getSetting: <T>(setting_id: string, callback: DataCallback<AWSError, T>) => void,
+	getSetting: <T>(setting_id: string, callback: DataCallback<AWSError, LeoSettingEntry<T>>) => void,
 	query: (params, configuration?, stats?) => Promise<any>,
 	batchGetHashkey: (table: string, hashkey, ids, opts, callback) => void,
 	batchGetTable: (table: string, keys, opts, callback) => void,
