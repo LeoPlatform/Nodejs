@@ -1,5 +1,6 @@
 "use strict";
 
+const wrapAsAsync = require("./wrapAsAsync");
 
 let cachedHandler;
 module.exports = function(configOverride, botHandler) {
@@ -100,7 +101,7 @@ module.exports = function(configOverride, botHandler) {
 	}
 
 	Object.assign(config, configOverride);
-	return function(event, context, callback) {
+	return wrapAsAsync(function(event, context, callback) {
 		context.callbackWaitsForEmptyEventLoop = false;
 		context.resources = process.resources;
 		context.botId = event.botId || botId;
@@ -252,6 +253,6 @@ module.exports = function(configOverride, botHandler) {
 				}
 			});
 		}
-	};
+	});
 };
 module.exports.CronWrapper = module.exports;

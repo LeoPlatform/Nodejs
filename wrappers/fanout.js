@@ -1,4 +1,5 @@
 
+const wrapAsAsync = require("./wrapAsAsync");
 const { Lambda } = require("@aws-sdk/client-lambda");
 const async = require("async");
 const eventIdFormat = "[z/]YYYY/MM/DD/HH/mm/";
@@ -110,7 +111,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 
 
 	logger.log("Fanout Return", process.env.FANOUT_iid, process.env.FANOUT_icount, process.env.FANOUT_maxeid);
-	return (event, context, callback) => {
+	return wrapAsAsync((event, context, callback) => {
 
 		cronData = event.__cron || {};
 
@@ -199,7 +200,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 				return callback(err);
 			});
 		}
-	};
+	});
 };
 
 function callCheckpointOnResponses(leoBotCheckpoint, callback) {

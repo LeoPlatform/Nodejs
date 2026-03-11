@@ -1,4 +1,5 @@
 "use strict";
+const wrapAsAsync = require("./wrapAsAsync");
 let config = require("../leoConfigure.js");
 module.exports = function (configOverride, botHandler) {
 	if (!botHandler) {
@@ -6,7 +7,7 @@ module.exports = function (configOverride, botHandler) {
 		configOverride = {};
 	}
 	Object.assign(config, configOverride);
-	return function (event, context, callback) {
+	return wrapAsAsync(function (event, context, callback) {
 		context.callbackWaitsForEmptyEventLoop = false;
 		if (context.identity) { // Called Directly not via Api Gateway
 			event = {
@@ -120,5 +121,5 @@ module.exports = function (configOverride, botHandler) {
 				}
 			});
 		}
-	};
+	});
 };
