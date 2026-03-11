@@ -1,5 +1,6 @@
 "use strict";
 
+const wrapAsAsync = require("./wrapAsAsync");
 
 let cachedHandler;
 module.exports = function(configOverride, botHandler) {
@@ -47,7 +48,7 @@ module.exports = function(configOverride, botHandler) {
 	}
 
 	Object.assign(config, configOverride);
-	return function(event, context, callback) {
+	return wrapAsAsync(function(event, context, callback) {
 		let cb = callback;
 		callback = (err, data) => {
 			assert.print();
@@ -97,5 +98,5 @@ module.exports = function(configOverride, botHandler) {
 		}
 
 
-	};
+	});
 };
