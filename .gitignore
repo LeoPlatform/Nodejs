@@ -35,3 +35,4 @@ docs/build/
 /docs/build-docs.js
 scripts/*
 util-lambdas/*
+.claude/settings.local.json
