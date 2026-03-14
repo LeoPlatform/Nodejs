@@ -512,11 +512,12 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 
 		// Normalize top-level batch shorthand options (matches real offload behavior)
 		if (typeof opts.size != "object" && (opts.count || opts.records || opts.units || opts.time || opts.bytes)) {
-			opts.size = {} as any;
-			opts.size.count = opts.count || opts.records || opts.units;
-			opts.size.time = opts.time;
-			opts.size.bytes = opts.size || opts.bytes;
-			opts.size.highWaterMark = opts.highWaterMark || 2;
+			const size = {} as any;
+			size.count = opts.count || opts.records || opts.units;
+			size.time = opts.time;
+			size.bytes = opts.size || opts.bytes;
+			size.highWaterMark = opts.highWaterMark || 2;
+			opts.size = size;
 		}
 
 		if (!opts.batch || typeof opts.batch === "number") {
