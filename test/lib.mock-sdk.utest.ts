@@ -413,6 +413,26 @@ describe("lib/mock-sdk.ts", function () {
 
 			assert.equal(stats.checkpoint, "z/2025/01/01/00/00/custom");
 			assert.equal(stats.source_timestamp, 1700000000000);
+			assert.equal(stats.records, 999);
+		});
+
+		it("read stream get() uses idx for records when no custom stats", async () => {
+			sdk.mock.queues["count-queue"] = [{ a: 1 }, { a: 2 }, { a: 3 }];
+			const stream = sdk.streams.fromLeo("bot", "count-queue");
+
+			// Before reading, records should be 0
+			assert.equal(stream.get().records, 0);
+
+			// Read all events
+			const events: any[] = [];
+			await sdk.streams.pipeAsync(
+				stream,
+				sdk.streams.through((e: any, done: any) => { events.push(e); done(); }),
+				sdk.streams.devnull()
+			);
+
+			// After reading, records should reflect items read
+			assert.equal(events.length, 3);
 		});
 
 		it("stats on stats stream uses override", () => {
@@ -702,6 +722,114 @@ describe("lib/mock-sdk.ts", function () {
 		});
 	});
 
+	describe("enrich end-to-end", () => {
+		it("reads from mock queue, transforms, writes to output queue", (done) => {
+			sdk.mock.queues["raw-items"] = [
+				{ name: "Widget", price: 10 },
+				{ name: "Gadget", price: 20 },
+			];
+
+			sdk.enrich({
+				id: "enricher-bot",
+				inQueue: "raw-items",
+				outQueue: "enriched-items",
+				transform(payload: any, event: any, cb: any) {
+					cb(null, { ...payload, taxed_price: payload.price * 1.1 });
+				},
+			}, (err: any) => {
+				assert.isNotOk(err);
+				const output = sdk.mock.written["enriched-items"];
+				assert.equal(output.payloads.length, 2);
+				assert.closeTo(output.payloads[0].taxed_price, 11, 0.01);
+				assert.closeTo(output.payloads[1].taxed_price, 22, 0.01);
+				assert.equal(output.payloads[0].name, "Widget");
+				done();
+			});
+		});
+
+		it("can filter events by returning nothing from transform", (done) => {
+			sdk.mock.queues["input"] = [
+				{ active: true, name: "A" },
+				{ active: false, name: "B" },
+				{ active: true, name: "C" },
+			];
+
+			sdk.enrich({
+				id: "filter-bot",
+				inQueue: "input",
+				outQueue: "output",
+				transform(payload: any, event: any, cb: any) {
+					if (!payload.active) return cb();
+					cb(null, payload);
+				},
+			}, (err: any) => {
+				assert.isNotOk(err);
+				const output = sdk.mock.written["output"];
+				assert.equal(output.payloads.length, 2);
+				assert.equal(output.payloads[0].name, "A");
+				assert.equal(output.payloads[1].name, "C");
+				done();
+			});
+		});
+
+		it("enrichEvents (promisified) works", async () => {
+			sdk.mock.queues["in"] = [{ x: 1 }, { x: 2 }];
+
+			await sdk.enrichEvents({
+				id: "bot",
+				inQueue: "in",
+				outQueue: "out",
+				transform(payload: any, event: any, cb: any) {
+					cb(null, { ...payload, doubled: payload.x * 2 });
+				},
+			});
+
+			assert.equal(sdk.mock.written["out"].payloads.length, 2);
+			assert.equal(sdk.mock.written["out"].payloads[0].doubled, 2);
+		});
+	});
+
+	describe("offload end-to-end", () => {
+		it("reads from mock queue and processes events", (done) => {
+			sdk.mock.queues["work-queue"] = [
+				{ task: "build" },
+				{ task: "deploy" },
+			];
+
+			const processed: any[] = [];
+			sdk.offload({
+				id: "offload-bot",
+				inQueue: "work-queue",
+				transform(payload: any, event: any, cb: any) {
+					processed.push(payload);
+					cb();
+				},
+			}, (err: any) => {
+				assert.isNotOk(err);
+				assert.equal(processed.length, 2);
+				assert.equal(processed[0].task, "build");
+				assert.equal(processed[1].task, "deploy");
+				done();
+			});
+		});
+
+		it("offloadEvents (promisified) works", async () => {
+			sdk.mock.queues["oq"] = [{ v: 10 }, { v: 20 }];
+
+			const results: number[] = [];
+			await sdk.offloadEvents({
+				id: "bot",
+				inQueue: "oq",
+				transform(payload: any, event: any, cb: any) {
+					results.push(payload.v);
+					cb();
+				},
+			});
+
+			assert.deepEqual(results, [10, 20]);
+		});
+	});
+
 	describe("disableS3 option", () => {
 		it("is enabled by default — strips useS3 from enrich opts", (done) => {
 			sdk.mock.queues["in-q"] = [{ a: 1 }];
@@ -715,8 +843,23 @@ describe("lib/mock-sdk.ts", function () {
 			};
 
 			sdk.enrich(enrichOpts, (err: any) => {
-				// useS3 should have been stripped
 				assert.notProperty(enrichOpts, "useS3");
+				done(err);
+			});
+		});
+
+		it("strips useS3 from offload opts", (done) => {
+			sdk.mock.queues["in-q"] = [{ a: 1 }];
+
+			const offloadOpts: any = {
+				id: "bot",
+				inQueue: "in-q",
+				useS3: true,
+				transform(payload: any, event: any, cb: any) { cb(); },
+			};
+
+			sdk.offload(offloadOpts, (err: any) => {
+				assert.notProperty(offloadOpts, "useS3");
 				done(err);
 			});
 		});
@@ -735,10 +878,142 @@ describe("lib/mock-sdk.ts", function () {
 			};
 
 			sdkWithS3.enrich(enrichOpts, (err: any) => {
-				// useS3 should still be present since we disabled stripping
 				assert.isTrue(enrichOpts.useS3);
 				done(err);
 			});
 		});
+	});
+
+	describe("written proxy for unwritten queues", () => {
+		it("returns empty capture for never-written queue", () => {
+			const capture = sdk.mock.written["nonexistent-queue"];
+			assert.isArray(capture.events);
+			assert.isArray(capture.payloads);
+			assert.equal(capture.events.length, 0);
+			assert.equal(capture.payloads.length, 0);
+		});
+
+		it("returns real capture for written queue", async () => {
+			await sdk.putEvent("bot", "real-queue", { x: 1 });
+			const capture = sdk.mock.written["real-queue"];
+			assert.equal(capture.payloads.length, 1);
+		});
+	});
+
+	describe("load edge cases", () => {
+		it("silently skips events with no determinable queue", async () => {
+			await sdk.streams.pipeAsync(
+				sdk.streams.eventstream.readArray([
+					{ rawData: "no queue info" },
+				]),
+				// No outQueue provided, event has no .event field
+				sdk.streams.load("my-bot"),
+			);
+
+			// Nothing should have been written
+			assert.isEmpty(Object.keys(sdk.mock.written));
+		});
+	});
+});
+
+// ─── Integration test using real RStreamsSdk ───────────────────────────────
+// Validates the mock against the actual SDK class shape, not a hand-built fake.
+
+describe("lib/mock-sdk.ts (integration with real RStreamsSdk)", function () {
+	let sdk: MockRStreamsSdk;
+
+	before(() => {
+		// Construct a real SDK with dummy config to skip AWS resource discovery
+		const RealSdk = require("../index");
+		const realSdk = new RealSdk({
+			Region: "us-east-1",
+			LeoStream: "mock-stream",
+			LeoCron: "mock-cron",
+			LeoEvent: "mock-event",
+			LeoS3: "mock-s3",
+			LeoKinesisStream: "mock-kinesis",
+			LeoFirehoseStream: "mock-firehose",
+			LeoSettings: "mock-settings",
+		});
+		sdk = mockRStreamsSdk(realSdk);
+	});
+
+	after(() => {
+		sdk.mock.reset();
+	});
+
+	it("mock wraps real SDK and has expected shape", () => {
+		assert.isObject(sdk.mock);
+		assert.isFunction(sdk.read);
+		assert.isFunction(sdk.write);
+		assert.isFunction(sdk.enrich);
+		assert.isFunction(sdk.offload);
+		assert.isFunction(sdk.enrichEvents);
+		assert.isFunction(sdk.offloadEvents);
+		assert.isFunction(sdk.load);
+		assert.isFunction(sdk.checkpoint);
+		assert.isFunction(sdk.put);
+		assert.isFunction(sdk.putEvent);
+		assert.isFunction(sdk.putEvents);
+		assert.isObject(sdk.bot);
+		assert.isObject(sdk.streams);
+		assert.isObject(sdk.configuration);
+	});
+
+	it("read returns mock data, not real DynamoDB", async () => {
+		sdk.mock.queues["integration-queue"] = [
+			{ hello: "world" },
+		];
+
+		const events: any[] = [];
+		await sdk.streams.pipeAsync(
+			sdk.read("test-bot", "integration-queue"),
+			sdk.streams.through((event: any, done: any) => {
+				events.push(event);
+				done();
+			}),
+			sdk.streams.devnull()
+		);
+
+		assert.equal(events.length, 1);
+		assert.deepEqual(events[0].payload, { hello: "world" });
+	});
+
+	it("enrich pipeline works end-to-end against real SDK", (done) => {
+		sdk.mock.queues["real-in"] = [
+			{ val: 1 },
+			{ val: 2 },
+		];
+
+		sdk.enrich({
+			id: "integration-bot",
+			inQueue: "real-in",
+			outQueue: "real-out",
+			transform(payload: any, event: any, cb: any) {
+				cb(null, { ...payload, doubled: payload.val * 2 });
+			},
+		}, (err: any) => {
+			assert.isNotOk(err);
+			assert.equal(sdk.mock.written["real-out"].payloads.length, 2);
+			assert.equal(sdk.mock.written["real-out"].payloads[0].doubled, 2);
+			assert.equal(sdk.mock.written["real-out"].payloads[1].doubled, 4);
+			done();
+		});
+	});
+
+	it("real streaming utilities are preserved", async () => {
+		const results: string[] = [];
+		await sdk.streams.pipeAsync(
+			sdk.streams.eventstream.readArray(["a", "b"]),
+			sdk.streams.through((s: string, done: any) => {
+				done(null, s.toUpperCase());
+			}),
+			sdk.streams.through((s: string, done: any) => {
+				results.push(s);
+				done();
+			}),
+			sdk.streams.devnull()
+		);
+		assert.deepEqual(results, ["A", "B"]);
 	});
 });

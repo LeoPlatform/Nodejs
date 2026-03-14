@@ -1,8 +1,8 @@
-import { Readable, Transform, TransformOptions } from "stream";
+import { Readable } from "stream";
 import stream from "stream";
-import { RStreamsSdk, ReadEvent, BaseEvent, Event, Checkpoint, ReadableQueueStream, WritableStream, TransformStream, BotInvocationEvent, Cron } from "../index";
-import { Callback, StreamUtil, CheckpointData, WriteOptions, ReadOptions, ToCheckpointOptions, EnrichOptions, EnrichBatchOptions, OffloadOptions, OffloadBatchOptions, StatsStream } from "./lib";
-import { LeoCron, Checkpoint as CronCheckpoint } from "./cron";
+import { RStreamsSdk, ReadEvent, Event, Checkpoint, ReadableQueueStream, WritableStream, TransformStream, BotInvocationEvent } from "../index";
+import { Callback, StreamUtil, CheckpointData, WriteOptions, ReadOptions, ToCheckpointOptions, StatsStream } from "./lib";
+import { LeoCron } from "./cron";
 import { promisify } from "util";
 
 // ─── Spy infrastructure (zero external dependencies) ───────────────────────
@@ -60,6 +60,7 @@ class MockReadStream<T> extends Readable implements ReadableQueueStream<T> {
 	private queue: (ReadEvent<T>)[];
 	private idx: number;
 	private _stats: Checkpoint;
+	private _hasCustomStats: boolean;
 	private _opts: ReadOptions<T>;
 	checkpointSpy: SpyFn;
 
@@ -72,6 +73,7 @@ class MockReadStream<T> extends Readable implements ReadableQueueStream<T> {
 		super({ objectMode: true });
 		const now = Date.now();
 		this.idx = 0;
+		this._hasCustomStats = stats != null && "records" in stats;
 		this._opts = {} as ReadOptions<T>;
 
 		// Normalize items to ReadEvent shape
@@ -115,7 +117,7 @@ class MockReadStream<T> extends Readable implements ReadableQueueStream<T> {
 	}
 
 	get(): Checkpoint {
-		return { ...this._stats, records: this.idx };
+		return { ...this._stats, records: this._hasCustomStats ? this._stats.records : this.idx };
 	}
 
 	getOpts(): ReadOptions<T> {
@@ -195,6 +197,7 @@ export interface MockControl {
 	/**
 	 * Access events that were written to each queue.
 	 * Key is queue name (auto-populated as events flow through write streams).
+	 * Returns `{ events: [], payloads: [] }` for queues that were never written to.
 	 */
 	written: Record<string, QueueWriteCapture>;
 
@@ -256,6 +259,27 @@ export interface MockRStreamsSdkOptions {
 	disableS3?: boolean;
 }
 
+// ─── Written proxy ─────────────────────────────────────────────────────────
+
+const EMPTY_CAPTURE: QueueWriteCapture = Object.freeze({ events: [], payloads: [] });
+
+/**
+ * Returns a Proxy over the written record that returns { events: [], payloads: [] }
+ * for queues that were never written to, avoiding TypeError on assertion.
+ */
+function createWrittenProxy(written: Record<string, QueueWriteCapture>): Record<string, QueueWriteCapture> {
+	return new Proxy(written, {
+		get(target, prop: string) {
+			if (prop in target) {
+				return target[prop];
+			}
+			// Return frozen empty capture for unwritten queues so
+			// sdk.mock.written["q"].payloads.length doesn't throw
+			return EMPTY_CAPTURE;
+		},
+	});
+}
+
 // ─── Main entry point ──────────────────────────────────────────────────────
 
 /**
@@ -265,6 +289,10 @@ export interface MockRStreamsSdkOptions {
  * stringify, batch, etc.) are preserved. Only bus-connected operations (read/write
  * queues, checkpointing, bot/cron calls) are intercepted.
  *
+ * NOTE: This function mutates `sdk.configuration.validate` to skip config
+ * validation. This is necessary because enrich/offload close over the
+ * configuration object. All other SDK state is left untouched.
+ *
  * @param sdk An instance of RStreamsSdk (e.g., `new RStreamsSdk()`)
  * @param opts Options to control mock behavior
  * @returns A MockRStreamsSdk with all original capabilities plus a `.mock` control surface
@@ -272,7 +300,7 @@ export interface MockRStreamsSdkOptions {
 export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions): MockRStreamsSdk {
 	const disableS3 = opts?.disableS3 !== false; // default true
 	// ── State ──────────────────────────────────────────────────────────
-	const state = createMockState(sdk);
+	const state = createMockState();
 
 	// ── Create mock streams object ────────────────────────────────────
 	const realStreams = sdk.streams;
@@ -294,7 +322,8 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 
 		return realStreams.through((event: any, callback: Callback) => {
 			if (!event || !event.event) {
-				// Skip command events with no queue
+				// Command events (e.g. __cmd: "checkpoint") have no queue — pass through silently.
+				// These are internal SDK plumbing, not user events.
 				return callback();
 			}
 			const queueName = event.event;
@@ -366,8 +395,7 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 	mockStreams.load = loadSpy;
 
 	// Override stats
-	const originalStats = realStreams.stats?.bind(realStreams);
-	mockStreams.stats = (botId: string, queue: string, opts?: any): StatsStream => {
+	mockStreams.stats = (botId: string, queue: string, _opts?: any): StatsStream => {
 		const passthrough = realStreams.through((data: any, callback: Callback) => {
 			callback(null, data);
 		}) as any as StatsStream;
@@ -413,7 +441,10 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 	s3State.toS3Spy = toS3Spy;
 	mockStreams.toS3 = toS3Spy;
 
-	// Override fromS3 (return configured data)
+	// Override fromS3 (return configured data).
+	// NOTE: The real S3 SDK fails asynchronously on the stream, but this mock
+	// throws synchronously for missing keys. This is intentional for test clarity —
+	// a missing key in tests is a test setup error, not an async condition.
 	const fromS3Spy = createSpy(function (file: { bucket: string; key: string; range?: string }): stream.Readable {
 		const key = `${file.bucket}/${file.key}`;
 		const data = s3State.files[key];
@@ -434,10 +465,18 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 	s3State.fromS3Spy = fromS3Spy;
 	mockStreams.fromS3 = fromS3Spy;
 
-	// Override enrich on the mock streams object.
-	// The real enrich uses a closed-over `ls` variable, so Object.create
-	// overrides on mockStreams aren't visible to it. We must reimplement it
-	// here using the mock's fromLeo/toLeo/toCheckpoint.
+	// ── Reimplemented enrich/offload ──────────────────────────────────
+	//
+	// The real enrich/offload in leo-stream.js reference a closed-over `ls`
+	// variable, so Object.create overrides on mockStreams are invisible to
+	// them. We reimplement the pipeline assembly here so it uses the mock's
+	// fromLeo/toLeo/toCheckpoint.
+	//
+	// IMPORTANT: If the real enrich/offload pipeline assembly changes in
+	// leo-stream.js, this reimplementation must be updated to match.
+	// This is a known trade-off — the alternative (patching the closed-over
+	// `ls` directly) would require mutating the original SDK's streams.
+
 	mockStreams.enrich = function (opts: any, callback: Callback) {
 		const id = opts.id;
 		const inQueue = opts.inQueue;
@@ -445,6 +484,7 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 		const func = opts.transform || opts.each;
 		const config = opts.config || {};
 		config.start = config.start || opts.start;
+		config.debug = opts.debug;
 
 		const args: any[] = [];
 		args.push(mockStreams.fromLeo(id, inQueue, config));
@@ -464,12 +504,20 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 		return realStreams.pipe.apply(realStreams, args);
 	};
 
-	// Override offload similarly
 	mockStreams.offload = function (opts: any, callback: Callback) {
 		const id = opts.id;
 		const inQueue = opts.inQueue || opts.queue;
 		const func = opts.each || opts.transform;
 		let batchConfig: any = { size: 1, map: (payload: any, meta: any, done: any) => done(null, payload) };
+
+		// Normalize top-level batch shorthand options (matches real offload behavior)
+		if (typeof opts.size != "object" && (opts.count || opts.records || opts.units || opts.time || opts.bytes)) {
+			opts.size = {} as any;
+			opts.size.count = opts.count || opts.records || opts.units;
+			opts.size.time = opts.time;
+			opts.size.bytes = opts.size || opts.bytes;
+			opts.size.highWaterMark = opts.highWaterMark || 2;
+		}
 
 		if (!opts.batch || typeof opts.batch === "number") {
 			batchConfig.size = opts.batch || batchConfig.size;
@@ -487,7 +535,7 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 		return realStreams.pipe(
 			mockStreams.fromLeo(id, inQueue, opts),
 			realStreams.through((obj: any, done: any) => {
-				batchConfig.map(obj.payload, obj, (err: any, r: any, rOpts: any) => {
+				batchConfig.map(obj.payload, obj, (err: any, r: any) => {
 					if (err || !r) {
 						done(err);
 					} else {
@@ -528,8 +576,12 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 	mockSdk.streams = mockStreams;
 
 	// Skip configuration validation in tests.
-	// Patch directly on the original object because enrich/offload/load
-	// close over this exact object in their leo-stream factory.
+	// NOTE: This mutates the original sdk.configuration object. This is
+	// necessary because enrich/offload in leo-stream.js close over the
+	// configure object passed at factory time — the same object reference
+	// as sdk.configuration. There is no way to intercept the validate()
+	// call without patching this object directly.
+	const origValidate = sdk.configuration && (sdk.configuration as any).validate;
 	if (sdk.configuration) {
 		(sdk.configuration as any).validate = () => true;
 	}
@@ -598,10 +650,12 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 	};
 
 	// ── Attach mock control surface ───────────────────────────────────
+	const writtenProxy = createWrittenProxy(state.written);
+
 	const mockControl: MockControl = Object.create(null);
 	Object.defineProperties(mockControl, {
 		queues: { value: state.queues, writable: true },
-		written: { value: state.written, writable: true },
+		written: { value: writtenProxy },
 		checkpoints: { value: state.checkpoints },
 		bot: { value: botSpies.control },
 		readSpy: { value: readSpy },
@@ -659,7 +713,7 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 
 // ─── Internal helpers ──────────────────────────────────────────────────────
 
-function createMockState(sdk: RStreamsSdk) {
+function createMockState() {
 	return {
 		queues: {} as Record<string, any[]>,
 		written: {} as Record<string, QueueWriteCapture>,
