@@ -160,12 +160,17 @@ function SDK(id, data, awsResourceConfig) {
 
 		read: leoStream.fromLeo,
 		write: leoStream.toLeo,
-		put: function(bot_id, queue, payload, callback) {
-			let stream = this.load(bot_id, queue, {
+		put: function(bot_id, queue, payload, opts, callback) {
+			if (typeof opts === "function") {
+				callback = opts;
+				opts = {};
+			}
+			opts = Object.assign({
 				kinesis: {
-					records: 1
-				}
-			});
+					records: 1,
+				},
+			}, opts || {});
+			let stream = this.load(bot_id, queue, opts);
 			stream.write(payload);
 			stream.end(callback);
 		},
