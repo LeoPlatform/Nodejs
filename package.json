@@ -78,11 +78,12 @@
 	"peerDependencies": {
 		"@aws-sdk/client-cloudformation": "^3.427.0",
 		"@aws-sdk/client-dynamodb": "^3.427.0",
-		"@aws-sdk/client-lambda": "^3.427.0",
 		"@aws-sdk/client-firehose": "^3.427.0",
 		"@aws-sdk/client-kinesis": "^3.427.0",
+		"@aws-sdk/client-lambda": "^3.427.0",
 		"@aws-sdk/client-s3": "^3.427.0",
 		"@aws-sdk/client-secrets-manager": "^3.427.0",
+		"@aws-sdk/client-ssm": "^3.1022.0",
 		"@aws-sdk/client-sts": "^3.427.0",
 		"@aws-sdk/credential-providers": "^3.427.0",
 		"@aws-sdk/lib-dynamodb": "^3.515.0",

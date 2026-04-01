@@ -2,6 +2,9 @@
 import { DynamoDBClient, DynamoDBClientConfig, PutItemOutput } from "@aws-sdk/client-dynamodb";
 import { S3ClientConfig, ListBucketsOutput } from "@aws-sdk/client-s3";
 import { GetSecretValueRequest, GetSecretValueResponse, SecretsManagerClientConfig } from "@aws-sdk/client-secrets-manager";
+import { SSMClientConfig, GetParameterRequest, GetParameterResult } from "@aws-sdk/client-ssm";
+import { STSClientConfig, GetCallerIdentityRequest, GetCallerIdentityResponse } from "@aws-sdk/client-sts";
+import { CloudFormationClientConfig, ListExportsInput, ListExportsOutput } from "@aws-sdk/client-cloudformation";
 import { spawnSync } from "child_process";
 
 // Build a function to call on a different process
@@ -84,9 +87,30 @@ export class DynamoDB extends Service<DynamoDBClientConfig> {
 	}
 }
 
+export class SSM extends Service<SSMClientConfig> {
+	getParameter(params: GetParameterRequest): GetParameterResult {
+		return this.invoke("getParameter", params);
+	}
+}
+
+export class STS extends Service<STSClientConfig> {
+	getCallerIdentity(params?: GetCallerIdentityRequest): GetCallerIdentityResponse {
+		return this.invoke("getCallerIdentity", params || {});
+	}
+}
+
+export class CloudFormation extends Service<CloudFormationClientConfig> {
+	listExports(params?: ListExportsInput): ListExportsOutput {
+		return this.invoke("listExports", params || {});
+	}
+}
+
 export default {
 	Service,
 	SecretsManager,
 	S3,
-	DynamoDB
+	DynamoDB,
+	SSM,
+	STS,
+	CloudFormation
 };

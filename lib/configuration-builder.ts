@@ -69,6 +69,10 @@ export class ConfigurationBuilder<T> {
 
 		options.stage = options.stage || process.env.STAGE || process.env.ENVIRONMENT || process.env.LEO_ENVIRONMENT;
 		options.region = options.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1";
+		// ${Stage} resolves to capitalized value (e.g. "Prod"), ${stage} to lowercase (e.g. "prod")
+		if (options.stage) {
+			(options as any).Stage = (options as any).Stage || options.stage.charAt(0).toUpperCase() + options.stage.slice(1).toLowerCase();
+		}
 		let g = (global as any);
 		if (g.rstreams_project_config_cache == null) {
 			g.rstreams_project_config_cache = {};
@@ -87,6 +91,9 @@ export class ConfigurationBuilder<T> {
 				this.data = (process as any).rsf_config;
 			} else if (g.rsf_config) {
 				this.data = g.rsf_config;
+			} else {
+				// Auto-discover config definition from the project
+				this.data = discoverConfigDef();
 			}
 		}
 
@@ -101,12 +108,14 @@ export class ConfigurationBuilder<T> {
 				this.data = JSON.parse(this.data);
 			} else {
 				// config is the key to a secret
+				let secretId = resolveKeywords(this.data as string, options);
+				assertKeywordsResolved(secretId);
 
 				logger.time("get-rsf-config");
 				this.data = JSON.parse(new awsSdkSync.SecretsManager({
 					region: options.region
 				}).getSecretValue({
-					SecretId: this.data
+					SecretId: secretId
 				}).SecretString.replace(/"{/g, '{').replace(/}"/g, "}"));
 				logger.timeEnd("get-rsf-config");
 			}
@@ -227,17 +236,80 @@ export class ConfigurationBuilder<T> {
 	}
 
 	static Resolvers: Record<string, (ref: ResourceReference, cache: any) => any> = {
-		// ssm: (ref: ResourceReference) => {
-		// 	return process.env[`RS_ssm::${resolveKeywords(ref.key, ref.options)}`];
-		// },
-		// cf: (ref: ResourceReference) => {
-		// 	return process.env[`RS_cf::${resolveKeywords(ref.key, ref.options)}`];
-		// },
-		// stack: (ref: ResourceReference) => {
-		// 	return process.env[`RS_stack::${resolveKeywords(ref.key, ref.options)}`];
-		// },
+		ssm: (ref: ResourceReference, cache: any) => {
+			let resolvedKey = resolveKeywords(ref.key, ref.options);
+			assertKeywordsResolved(resolvedKey);
+			let envValue = process.env[`RS_ssm::${resolvedKey}`];
+			if (envValue != null) {
+				return envValue;
+			}
+			let cacheKey = `ssm::${resolvedKey}`;
+			if (cache[cacheKey] != null) {
+				return cache[cacheKey];
+			}
+			logger.log(`SSM GetParameter Key: ${resolvedKey}, Region: ${ref.options?.region}`);
+			logger.time("ssm-get");
+			let result = new awsSdkSync.SSM({
+				region: ref.options?.region
+			}).getParameter({
+				Name: resolvedKey,
+				WithDecryption: true
+			});
+			logger.timeEnd("ssm-get");
+			let value = result.Parameter?.Value;
+			cache[cacheKey] = value;
+			return value;
+		},
+		cf: (ref: ResourceReference, cache: any) => {
+			let resolvedKey = resolveKeywords(ref.key, ref.options);
+			assertKeywordsResolved(resolvedKey);
+			let envValue = process.env[`RS_cf::${resolvedKey}`];
+			if (envValue != null) {
+				return envValue;
+			}
+			let cacheKey = `cf::${resolvedKey}`;
+			if (cache[cacheKey] != null) {
+				return cache[cacheKey];
+			}
+			logger.log(`CloudFormation ListExports Key: ${resolvedKey}, Region: ${ref.options?.region}`);
+			logger.time("cf-get");
+			let result = new awsSdkSync.CloudFormation({
+				region: ref.options?.region
+			}).listExports({});
+			logger.timeEnd("cf-get");
+			let exports = result.Exports || [];
+			for (let exp of exports) {
+				cache[`cf::${exp.Name}`] = exp.Value;
+			}
+			return cache[cacheKey];
+		},
+		stack: (ref: ResourceReference, cache: any) => {
+			let resolvedKey = resolveKeywords(ref.key, ref.options);
+			let envValue = process.env[`RS_stack::${resolvedKey}`];
+			if (envValue != null) {
+				return envValue;
+			}
+			// Handle pseudo-parameters like ${AWS::AccountId}, ${AWS::Region}
+			if (resolvedKey === "AWS::AccountId" || resolvedKey === "${AWS::AccountId}") {
+				if (cache["stack::AWS::AccountId"] != null) {
+					return cache["stack::AWS::AccountId"];
+				}
+				logger.time("sts-get");
+				let identity = new awsSdkSync.STS({
+					region: ref.options?.region
+				}).getCallerIdentity();
+				logger.timeEnd("sts-get");
+				cache["stack::AWS::AccountId"] = identity.Account;
+				return identity.Account;
+			}
+			if (resolvedKey === "AWS::Region" || resolvedKey === "${AWS::Region}") {
+				return ref.options?.region || process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-1";
+			}
+			return undefined;
+		},
 		secret: (ref: ResourceReference, cache: any) => {
 			let resolvedKey = resolveKeywords(ref.key, ref.options);
+			assertKeywordsResolved(resolvedKey);
 			if (process.env[`RS_secret::${resolvedKey}`] && !process.env[`RS_secret::${resolvedKey}`].match(/^(true|false)$/)) {
 				return process.env[`RS_secret::${resolvedKey}`];
 			}
@@ -250,11 +322,18 @@ export class ConfigurationBuilder<T> {
 				logger.log(`SecretsManager  Key: ${key}, Region:${ref.options?.region}`);
 
 				logger.time("secret-get");
-				let value = JSON.parse(new awsSdkSync.SecretsManager({
+				let raw = new awsSdkSync.SecretsManager({
 					region: ref.options?.region
 				}).getSecretValue({
 					SecretId: resolveKeywords(key, ref.options)
-				}).SecretString);
+				}).SecretString;
+				let value: any;
+				try {
+					value = JSON.parse(raw);
+				} catch (e) {
+					// Secret is a plain string, not JSON
+					value = raw;
+				}
 				logger.timeEnd("secret-get");
 				cache[cacheKey] = value;
 				cachedValue = value;
@@ -278,6 +357,18 @@ export function resolveKeywords(template: string, data: any) {
 	}).replace(/[_-]{2,}/g, "");
 	return name;
 }
+
+export function assertKeywordsResolved(resolved: string) {
+	let unresolved = resolved.match(/\${(.*?)}/g);
+	if (unresolved) {
+		let fields = unresolved.map(m => m.replace(/^\${|}$/g, ""));
+		throw new Error(
+			`Unresolved template variable(s) in config name "${resolved}": ${fields.join(", ")}. ` +
+			`Set one of STAGE, ENVIRONMENT, or LEO_ENVIRONMENT env vars ` +
+			`(e.g. STAGE=prod) or pass { stage: "prod" } to .build().`
+		);
+	}
+}
 export function getDataSafe(data = {}, path = "") {
 	const pathArray = path.split(".").filter(a => a !== "");
 	if (pathArray.length === 0) {
@@ -285,6 +376,22 @@ export function getDataSafe(data = {}, path = "") {
 	}
 	const lastField = pathArray.pop();
 	return pathArray.reduce((parent, field) => parent[field] || {}, data)[lastField];
+}
+
+function discoverConfigDef(): ConfigurationData | undefined {
+	// Walk up from cwd looking for project-config.def.json
+	let dir = process.cwd();
+	let prev = "";
+	while (dir !== prev) {
+		let defFile = path.resolve(dir, "project-config.def.json");
+		if (fs.existsSync(defFile)) {
+			logger.log(`Auto-discovered config definition: ${defFile}`);
+			return JSON.parse(fs.readFileSync(defFile, "utf-8"));
+		}
+		prev = dir;
+		dir = path.dirname(dir);
+	}
+	return undefined;
 }
 
 const numberRegex = /^\d+(?:\.\d*)?$/;
