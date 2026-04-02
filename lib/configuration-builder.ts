@@ -279,14 +279,16 @@ export class ConfigurationBuilder<T> {
 			}
 			logger.log(`CloudFormation ListExports Key: ${resolvedKey}, Region: ${ref.options?.region}`);
 			logger.time("cf-get");
-			let result = new awsSdkSync.CloudFormation({
-				region: ref.options?.region
-			}).listExports({});
+			let cfClient = new awsSdkSync.CloudFormation({ region: ref.options?.region });
+			let nextToken: string | undefined;
+			do {
+				let result = cfClient.listExports(nextToken ? { NextToken: nextToken } : {});
+				for (let exp of result.Exports || []) {
+					cache[`cf::${exp.Name}`] = exp.Value;
+				}
+				nextToken = result.NextToken;
+			} while (nextToken && cache[cacheKey] == null);
 			logger.timeEnd("cf-get");
-			let exports = result.Exports || [];
-			for (let exp of exports) {
-				cache[`cf::${exp.Name}`] = exp.Value;
-			}
 			return cache[cacheKey];
 		},
 		stack: (ref: ResourceReference, cache: any) => {
