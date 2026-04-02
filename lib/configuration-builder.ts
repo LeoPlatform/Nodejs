@@ -209,6 +209,7 @@ export class ConfigurationBuilder<T> {
 		};
 		if (opts.stageEnvVar != null && process.env[opts.stageEnvVar] != null) {
 			opts.stage = process.env[opts.stageEnvVar];
+			(opts as any).Stage = opts.stage.charAt(0).toUpperCase() + opts.stage.slice(1).toLowerCase();
 		}
 
 		if (opts.regionEnvVar != null && process.env[opts.regionEnvVar] != null) {
