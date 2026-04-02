@@ -465,108 +465,9 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 	s3State.fromS3Spy = fromS3Spy;
 	mockStreams.fromS3 = fromS3Spy;
 
-	// ── Reimplemented enrich/offload ──────────────────────────────────
-	//
-	// The real enrich/offload in leo-stream.js reference a closed-over `ls`
-	// variable, so Object.create overrides on mockStreams are invisible to
-	// them. We reimplement the pipeline assembly here so it uses the mock's
-	// fromLeo/toLeo/toCheckpoint.
-	//
-	// IMPORTANT: If the real enrich/offload pipeline assembly changes in
-	// leo-stream.js, this reimplementation must be updated to match.
-	// This is a known trade-off — the alternative (patching the closed-over
-	// `ls` directly) would require mutating the original SDK's streams.
-
-	mockStreams.enrich = function (opts: any, callback: Callback) {
-		const id = opts.id;
-		const inQueue = opts.inQueue;
-		const outQueue = opts.outQueue;
-		const func = opts.transform || opts.each;
-		const config = opts.config || {};
-		config.start = config.start || opts.start;
-		config.debug = opts.debug;
-
-		const args: any[] = [];
-		args.push(mockStreams.fromLeo(id, inQueue, config));
-
-		if (opts.batch) {
-			args.push(realStreams.batch(opts.batch));
-		}
-
-		args.push(realStreams.process(id, func, outQueue));
-		args.push(mockStreams.toLeo(id, opts));
-		args.push(mockStreams.toCheckpoint({
-			debug: opts.debug,
-			force: opts.force,
-			onCheckpoint: opts.onCheckpoint,
-		}));
-		args.push(callback);
-		return realStreams.pipe.apply(realStreams, args);
-	};
-
-	mockStreams.offload = function (opts: any, callback: Callback) {
-		const id = opts.id;
-		const inQueue = opts.inQueue || opts.queue;
-		const func = opts.each || opts.transform;
-		let batchConfig: any = { size: 1, map: (payload: any, meta: any, done: any) => done(null, payload) };
-
-		// Normalize top-level batch shorthand options (matches real offload behavior)
-		if (typeof opts.size != "object" && (opts.count || opts.records || opts.units || opts.time || opts.bytes)) {
-			const size = {} as any;
-			size.count = opts.count || opts.records || opts.units;
-			size.time = opts.time;
-			size.bytes = opts.size || opts.bytes;
-			size.highWaterMark = opts.highWaterMark || 2;
-			opts.size = size;
-		}
-
-		if (!opts.batch || typeof opts.batch === "number") {
-			batchConfig.size = opts.batch || batchConfig.size;
-		} else {
-			batchConfig.size = opts.batch.size || ((opts.batch.count || opts.batch.bytes || opts.batch.time || opts.batch.highWaterMark) && opts.batch) || batchConfig.size;
-			batchConfig.map = opts.batch.map || batchConfig.map;
-		}
-		if (typeof batchConfig.size !== "object") {
-			batchConfig.size = { count: batchConfig.size };
-		}
-		batchConfig.size.highWaterMark = batchConfig.size.highWaterMark || 2;
-
-		const batchSize = typeof batchConfig.size === "number" ? batchConfig.size : (batchConfig.size.count || batchConfig.size.records);
-
-		return realStreams.pipe(
-			mockStreams.fromLeo(id, inQueue, opts),
-			realStreams.through((obj: any, done: any) => {
-				batchConfig.map(obj.payload, obj, (err: any, r: any) => {
-					if (err || !r) {
-						done(err);
-					} else {
-						obj.payload = r;
-						done(null, obj);
-					}
-				});
-			}),
-			realStreams.batch(batchConfig.size),
-			realStreams.through({ highWaterMark: 1 }, (batch: any, done: any) => {
-				batch.units = batch.payload.length;
-				const last = batch.payload[batch.units - 1];
-				if (batchSize == 1) {
-					done(null, last);
-				} else {
-					batch.event_source_timestamp = last.event_source_timestamp;
-					batch.event = last.event;
-					batch.eid = last.eid;
-					done(null, batch);
-				}
-			}),
-			realStreams.process(id, func, null, undefined, { highWaterMark: 1 }),
-			mockStreams.toCheckpoint({
-				debug: opts.debug,
-				force: opts.force,
-				onCheckpoint: opts.onCheckpoint,
-			}),
-			callback
-		);
-	};
+	// enrich/offload/load in leo-stream.js now use `this` instead of the
+	// closed-over `ls`, so they naturally pick up our overrides on mockStreams
+	// via the prototype chain (Object.create). No reimplementation needed.
 
 	// Override cron on the streams object
 	const botSpies = createBotSpies(state);
@@ -597,22 +498,27 @@ export function mockRStreamsSdk(sdk: RStreamsSdk, opts?: MockRStreamsSdkOptions)
 	// Override bot
 	mockSdk.bot = botSpies.cron;
 
-	// Wrap enrich/offload with disableS3 stripping if enabled
+	// Bind enrich/offload to mockStreams so `this` resolves to the mock
+	// (where fromLeo/toLeo/toCheckpoint are overridden) rather than the SDK object.
+	const boundEnrich = mockStreams.enrich.bind(mockStreams);
+	const boundOffload = mockStreams.offload.bind(mockStreams);
+
+	// Wrap with disableS3 stripping if enabled
 	const wrappedEnrich = disableS3
 		? (enrichOpts: any, callback: Callback) => {
 			delete enrichOpts.useS3;
-			return mockStreams.enrich(enrichOpts, callback);
+			return boundEnrich(enrichOpts, callback);
 		}
-		: mockStreams.enrich;
+		: boundEnrich;
 	mockSdk.enrich = wrappedEnrich;
 	mockSdk.enrichEvents = promisify(wrappedEnrich) as any;
 
 	const wrappedOffload = disableS3
 		? (offloadOpts: any, callback: Callback) => {
 			delete offloadOpts.useS3;
-			return mockStreams.offload(offloadOpts, callback);
+			return boundOffload(offloadOpts, callback);
 		}
-		: mockStreams.offload;
+		: boundOffload;
 	mockSdk.offload = wrappedOffload;
 	mockSdk.offloadEvents = promisify(wrappedOffload) as any;
 

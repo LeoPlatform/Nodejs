@@ -864,11 +864,13 @@ describe("lib/mock-sdk.ts", function () {
 			});
 		});
 
-		it("can be explicitly disabled to preserve useS3", (done) => {
+		it("can be explicitly disabled to preserve useS3", () => {
 			const baseSdk = createMinimalSdk();
 			const sdkWithS3 = mockRStreamsSdk(baseSdk, { disableS3: false });
-			sdkWithS3.mock.queues["in-q"] = [{ a: 1 }];
 
+			// Verify the wrapper doesn't strip useS3 by checking the opts
+			// object after calling enrich. We don't actually run the pipeline
+			// (useS3:true would try real S3), just confirm the flag survives.
 			const enrichOpts: any = {
 				id: "bot",
 				inQueue: "in-q",
@@ -877,10 +879,10 @@ describe("lib/mock-sdk.ts", function () {
 				transform(payload: any, event: any, cb: any) { cb(null, payload); },
 			};
 
-			sdkWithS3.enrich(enrichOpts, (err: any) => {
-				assert.isTrue(enrichOpts.useS3);
-				done(err);
-			});
+			// Call enrich — it will start the pipeline but we don't need to wait
+			// for completion. The synchronous stripping (or not) happens immediately.
+			sdkWithS3.enrich(enrichOpts, () => {});
+			assert.isTrue(enrichOpts.useS3);
 		});
 	});
 
