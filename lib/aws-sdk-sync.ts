@@ -2,16 +2,20 @@
 import { DynamoDBClient, DynamoDBClientConfig, PutItemOutput } from "@aws-sdk/client-dynamodb";
 import { S3ClientConfig, ListBucketsOutput } from "@aws-sdk/client-s3";
 import { GetSecretValueRequest, GetSecretValueResponse, SecretsManagerClientConfig } from "@aws-sdk/client-secrets-manager";
+import { SSMClientConfig, GetParameterRequest, GetParameterResult } from "@aws-sdk/client-ssm";
+import { STSClientConfig, GetCallerIdentityRequest, GetCallerIdentityResponse } from "@aws-sdk/client-sts";
+import { CloudFormationClientConfig, ListExportsInput, ListExportsOutput } from "@aws-sdk/client-cloudformation";
 import { spawnSync } from "child_process";
 
 // Build a function to call on a different process
 // use `module.require` to keep webpack from overriding the function.
 // This isn't run within the bundle
 // It is stringified and run in a different process
-export function invoke(req: any, service: string, method: string, config: any, params: any) {
+export function invoke(req: any, service: string, method: string, config: any, params: any, packageName?: string) {
 	let hasLogged = false;
 	try {
-		let serviceLib = req("@aws-sdk/client-" + service.replace(/[A-Z]+/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""));
+		let pkg = packageName || ("@aws-sdk/client-" + service.replace(/[A-Z]+/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""));
+		let serviceLib = req(pkg);
 		new serviceLib[service](config)[method](params, (err: any, data: any) => {
 			if (!hasLogged) {
 				hasLogged = true;
@@ -31,8 +35,8 @@ export function invoke(req: any, service: string, method: string, config: any, p
 	}
 }
 
-function run(service: string, method: string, config: any, params: any) {
-	let fn = `(${invoke.toString()})(require,"${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)})`;
+function run(service: string, method: string, config: any, params: any, packageName?: string) {
+	let fn = `(${invoke.toString()})(require,"${service}", "${method}", ${JSON.stringify(config)}, ${JSON.stringify(params)}, ${packageName ? JSON.stringify(packageName) : "undefined"})`;
 
 	// Spawn node with the function to run `node -e (()=>{})`
 	// Using `RESPONSE::{}::RESPONSE` to denote the response in the output
@@ -59,9 +63,10 @@ function run(service: string, method: string, config: any, params: any) {
 }
 
 export class Service<T> {
+	protected packageName?: string;
 	constructor(private options?: T) { }
 	protected invoke(method: string, params?: any): any {
-		return run(this.constructor.name, method, this.options, params);
+		return run(this.constructor.name, method, this.options, params, this.packageName);
 	}
 }
 
@@ -84,9 +89,31 @@ export class DynamoDB extends Service<DynamoDBClientConfig> {
 	}
 }
 
+export class SSM extends Service<SSMClientConfig> {
+	getParameter(params: GetParameterRequest): GetParameterResult {
+		return this.invoke("getParameter", params);
+	}
+}
+
+export class STS extends Service<STSClientConfig> {
+	getCallerIdentity(params?: GetCallerIdentityRequest): GetCallerIdentityResponse {
+		return this.invoke("getCallerIdentity", params || {});
+	}
+}
+
+export class CloudFormation extends Service<CloudFormationClientConfig> {
+	packageName = "@aws-sdk/client-cloudformation";
+	listExports(params?: ListExportsInput): ListExportsOutput {
+		return this.invoke("listExports", params || {});
+	}
+}
+
 export default {
 	Service,
 	SecretsManager,
 	S3,
-	DynamoDB
+	DynamoDB,
+	SSM,
+	STS,
+	CloudFormation
 };
