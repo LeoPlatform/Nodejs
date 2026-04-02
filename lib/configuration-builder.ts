@@ -91,8 +91,14 @@ export class ConfigurationBuilder<T> {
 				this.data = (process as any).rsf_config;
 			} else if (g.rsf_config) {
 				this.data = g.rsf_config;
+			} else if (process.env.AWS_LAMBDA_FUNCTION_NAME) {
+				throw new Error(
+					`RSF_CONFIG is not set for Lambda "${process.env.AWS_LAMBDA_FUNCTION_NAME}". ` +
+					`Config auto-discovery is only supported for local development. ` +
+					`Ensure RSF_CONFIG is set via the deployment configuration.`
+				);
 			} else {
-				// Auto-discover config definition from the project
+				// Auto-discover config definition from the project (local dev only)
 				this.data = discoverConfigDef();
 			}
 		}
