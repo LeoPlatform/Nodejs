@@ -108,7 +108,7 @@ function SDK(id, data, awsResourceConfig) {
 		 * @param {Object} config - An object that contains config values that control the flow of events to outQueue
 		 * @return {stream} Stream
 		 */
-		load: leoStream.load,
+		load: leoStream.load.bind(leoStream),
 
 		/**
 		 * Process events from a queue.
@@ -121,7 +121,7 @@ function SDK(id, data, awsResourceConfig) {
 		 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
 		 * @return {stream} Stream
 		 */
-		offload: leoStream.offload,
+		offload: leoStream.offload.bind(leoStream),
 		/**
 		 * Process events from a queue.
 		 * @param {Object} opts
@@ -145,7 +145,7 @@ function SDK(id, data, awsResourceConfig) {
 		 * @param {function} callback - A function called when all events have been processed. (payload, metadata, done) => { }
 		 * @return {stream} Stream
 		 */
-		enrich: leoStream.enrich,
+		enrich: leoStream.enrich.bind(leoStream),
 		/**
 		 * Enrich events from one queue to another.
 		 * @param {Object} opts
