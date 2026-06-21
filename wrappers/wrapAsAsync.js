@@ -9,9 +9,13 @@
  * @returns {function(event, context): Promise} An async Lambda handler
  */
 module.exports = function wrapAsAsync(handler) {
-	return async function(event, context) {
+	return async function(event, context, callback) {
+		// Support old runtimes that only accept callbacks and not async functions
+		if (callback != null){
+			return handler(event, context, callback)
+		} 
 		return new Promise((resolve, reject) => {
-			handler(event, context, function(err, result) {
+			return handler(event, context, function(err, result) {
 				if (err) reject(err);
 				else resolve(result);
 			});
