@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "Nodejs"
+  description: "Leo/RStreams Node.js SDK - streaming data processing platform"
+  annotations:
+    github.com/project-slug: LeoPlatform/Nodejs
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - typescript
+    - sdk
+    - nodejs
+    - streaming
+spec:
+  type: library
+  lifecycle: production
+  owner: "cup-shared-services"
