@@ -180,24 +180,34 @@ module.exports = function(configOverride, botHandler) {
 									callback(null, err || data);
 								});
 							});
-							if (promise && typeof promise.then == "function" && botHandler.length < 3) {
-								promise.then(data => {
-									cmdLogger.log("[LEOCRON]:complete:" + cronkey);
-									cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
-										if (err || err2) {
-											logger.log(err || err2);
-										}
-										callback(null, err || data);
-									});
+							// A rejection needs exactly one handler. Attaching .then() and .catch()
+							// to the same promise made them siblings rather than a chain: on
+							// rejection the .catch() reported the bot complete, but the
+							// .then()-derived chain stayed unhandled, and Node's default
+							// unhandledRejection mode ("throw") then killed the process after the
+							// bot had already been reported complete. Passing the rejection
+							// handler as then()'s second argument keeps the previous behaviour of
+							// both branches while leaving no unhandled chain behind.
+							let onRejected = err => {
+								cmdLogger.log("[LEOCRON]:complete:" + cronkey);
+								cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
+									callback(null, err);
 								});
-							}
-							if (promise && typeof promise.catch == "function") {
-								promise.catch(err => {
-									cmdLogger.log("[LEOCRON]:complete:" + cronkey);
-									cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
-										callback(null, err);
-									});
-								});
+							};
+							if (promise && typeof promise.then == "function") {
+								if (botHandler.length < 3) {
+									promise.then(data => {
+										cmdLogger.log("[LEOCRON]:complete:" + cronkey);
+										cron.reportComplete(event.__cron, context.awsRequestId, err ? "error" : "complete", err ? err : '', {}, function(err2, data2) {
+											if (err || err2) {
+												logger.log(err || err2);
+											}
+											callback(null, err || data);
+										});
+									}, onRejected);
+								} else if (typeof promise.catch == "function") {
+									promise.catch(onRejected);
+								}
 							}
 						}).catch(err => {
 							cron.reportComplete(event.__cron, context.awsRequestId, "error", err, {}, function() {
