@@ -474,6 +474,8 @@ describe("Streams", function () {
 			Date.now = now;
 		});
 		afterEach(() => {
+			console.log = log;
+			Date.now = now;
 		});
 		it("counter with label and 1", async function () {
 			let logs = [];
@@ -613,10 +615,13 @@ describe("Streams", function () {
 
 	describe("devnull", function () {
 		let log = console.log;
+		let now = Date.now;
 		beforeEach(() => {
 			console.log = log;
 		});
 		afterEach(() => {
+			console.log = log;
+			Date.now = now;
 		});
 		it("log with label", async function () {
 			let logs = [];
