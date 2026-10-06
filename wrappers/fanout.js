@@ -5,6 +5,7 @@ const async = require("async");
 const eventIdFormat = "[z/]YYYY/MM/DD/HH/mm/";
 const moment = require("moment");
 const logger = require("leo-logger")("======= [ leo-fanout ] =======");
+const { ReadTracker } = require("./fanout-read-tracker");
 /**
  * @param {function(BotEvent, LambdaContext, Callback)} handler function to the code handler
  * @param {function(QueueEvent): any} eventPartition function to return the value representing what partition for the event 
@@ -28,6 +29,8 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 	let leoBotReportComplete = leo.bot.reportComplete;
 	let cronData;
 	let checkpoints = {};
+	// Per bot/queue read position of this instance, see fanout-read-tracker.js
+	let readTrackers = {};
 
 	function fixInstanceForLocal(cronData) {
 		// Get fanout data from process env if running locally
@@ -38,15 +41,64 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 		}
 	}
 
+	function getReadTracker(ID, queue) {
+		const id = String(ID).replace(/_reader$/, "");
+		const key = id + "\u0000" + queue;
+		if (!(key in readTrackers)) {
+			// Every instance starts reading after the bot's stored checkpoint, which the master passes along in __cron
+			const read = (cronData.checkpoints || {}).read || {};
+			const start = (read["queue:" + queue] || {}).checkpoint;
+			readTrackers[key] = { id, queue, tracker: new ReadTracker(start) };
+		}
+		return readTrackers[key].tracker;
+	}
+
+	// Every instance must vote on how far it read, even if it owned nothing. Otherwise the master
+	// only counts the instances that checkpointed and advances past events the silent owners never saw.
+	function reportCheckpoints() {
+		if (opts.allowCheckpoint === true) {
+			return checkpoints;
+		}
+		const now = Date.now();
+		Object.keys(readTrackers).forEach(key => {
+			const { id, queue, tracker } = readTrackers[key];
+			const position = tracker.position();
+			if (!position) {
+				return;
+			}
+			if (!(id in checkpoints)) {
+				checkpoints[id] = {
+					read: {},
+					write: {}
+				};
+			}
+			const read = checkpoints[id].read;
+			if (!(queue in read)) {
+				read[queue] = {
+					records: 0,
+					started_timestamp: now,
+					ended_timestamp: now
+				};
+			}
+			if (!read[queue].checkpoint || position > read[queue].checkpoint) {
+				read[queue].checkpoint = position;
+			}
+		});
+		return checkpoints;
+	}
+
 	// Override reading from leo to only read up to the max event id send from the master.
 	leo.streams.fromLeo = leo.read = (ID, queue, opts = {}) => {
 		opts.maxOverride = min(opts.maxOverride, cronData.maxeid);
 		logger.log(`Reading Queue Wrapper. Bot: ${ID}, IID: ${cronData.iid}, Queue: ${queue}, Max: ${opts.maxOverride}`);
 		let reader = leoStreamsFromLeo.call(leo.streams, ID, queue, opts);
+		const tracker = getReadTracker(ID, queue);
 		let stream = leo.streams.pipe(reader, leo.streams.through((obj, done) => {
 			let partition = Math.abs(hashCode(eventPartition(obj))) % cronData.icount;
 			logger.log("[partition]", partition, "[iid]", cronData.iid, "[eid]", obj.eid, "[icount]", cronData.icount);
-			if (partition == cronData.iid) {
+			const owned = partition == cronData.iid;
+			tracker.read(obj.eid, owned);
+			if (owned) {
 				logger.log("------ PROCESSING: matched on partition ------");
 				done(null, obj);
 			} else {
@@ -83,6 +135,12 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 			botData[event].source_timestamp = params.source_timestamp;
 			botData[event].started_timestamp = params.started_timestamp;
 			botData[event].ended_timestamp = params.ended_timestamp;
+			if ((params.type || "read") === "read" && params.eid) {
+				const entry = readTrackers[id + "\u0000" + event];
+				if (entry) {
+					entry.tracker.checkpoint(params.eid);
+				}
+			}
 			logger.log(`Checkpoint Wrapper. Bot: ${id}:${cronData.iid}, Queue: ${event}, data: ${JSON.stringify(params)}`);
 			done();
 		};
@@ -121,6 +179,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 		logger.debug("Fanout Handler Event", JSON.stringify(event, null, 2));
 		logger.debug("Fanout Handler Context", JSON.stringify(context, null, 2));
 		checkpoints = {};
+		readTrackers = {};
 
 		// If this is a worker then report back the checkpoints or error
 		if (cronData.iid && cronData.icount) {
@@ -135,7 +194,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 					wasCalled = true;
 					let response = {
 						error: err,
-						checkpoints: checkpoints,
+						checkpoints: reportCheckpoints(),
 						data: data,
 						iid: cronData.iid
 					};
@@ -153,8 +212,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 			}
 			return handlerResponse;
 		} else {
-			let timestamp = moment.utc();
-			cronData.maxeid = timestamp.format(eventIdFormat) + timestamp.valueOf();
+			cronData.maxeid = getMaxEid(cronData);
 			cronData.iid = 0;
 			logger.log("Fanout Master", cronData.iid);
 			// If this is the master start the workers needed Workers
@@ -175,7 +233,7 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 								logger.log(`Done with instance 1/${instances}`);
 								resolve({
 									error: err,
-									checkpoints: checkpoints,
+									checkpoints: reportCheckpoints(),
 									data: data,
 									iid: 0
 								});
@@ -190,12 +248,12 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 				})
 			];
 			for (let i = 1; i < instances; i++) {
-				workers.unshift(invokeSelf(event, i, instances, context));
+				workers.unshift(invokeSelf(event, i, instances, context, cronData));
 			}
 
 			// Wait for all workers to return and figure out what checkpoint to persist
 			logger.debug(`Waiting on all Fanout workers: count ${workers.length}`);
-			Promise.all(workers).then(callCheckpointOnResponses(leoBotCheckpoint, callback)).catch((err) => {
+			Promise.all(workers).then(callCheckpointOnResponses(leoBotCheckpoint, callback, opts)).catch((err) => {
 				logger.error("[err]", err);
 				return callback(err);
 			});
@@ -203,10 +261,10 @@ const fanoutFactory = (handler, eventPartition, opts = {}) => {
 	});
 };
 
-function callCheckpointOnResponses(leoBotCheckpoint, callback) {
+function callCheckpointOnResponses(leoBotCheckpoint, callback, opts = {}) {
 	return function(responses) {
 		logger.log("Return from all workers, reducing checkpoints");
-		let checkpoints = reduceCheckpoints(responses).map((data) => {
+		let checkpoints = reduceCheckpoints(responses, opts).map((data) => {
 			logger.log("[data]", data);
 			return Object.keys(data).map((botId) => {
 				logger.log("[botId]", botId);
@@ -251,13 +309,18 @@ function callCheckpointOnResponses(leoBotCheckpoint, callback) {
  * @param {number} iid The instance id of this worker
  * @param {number} count The total number of workers
  * @param {*} context Lambda context object
+ * @param {*} cronData The master's cron data (max eid and start checkpoints for the workers)
  * @param {function(BotEvent, LambdaContext, Callback)} handler
  */
-function invokeSelf(event, iid, count, context) {
+function invokeSelf(event, iid, count, context, cronData = {}) {
+	// Workers must get the master's max eid and the start checkpoints, otherwise they read an unbounded window
+	// and can't report where they started
 	let newEvent = {
 		__cron: {
 			iid,
-			icount: count
+			icount: count,
+			maxeid: cronData.maxeid,
+			checkpoints: cronData.checkpoints
 		}
 	};
 	try {
@@ -339,9 +402,14 @@ function invokeSelf(event, iid, count, context) {
 /**
  * 
  * @param {[checkpoint]} responses Array of responses from the workers
+ * @param {{strictCheckpoints: boolean}} [opts] strictCheckpoints (default true) throws if an instance did not report a read position for a queue another instance reported
  * @returns {[checkpoint]} Consolidated checkpoint
  */
-function reduceCheckpoints(responses) {
+function reduceCheckpoints(responses, opts = {}) {
+	// Check before reducing: the reduce below aliases and mutates the response objects. Errors are reported by the reduce.
+	if (opts.strictCheckpoints !== false && !responses.some(response => response && response.error)) {
+		assertAllReported(responses);
+	}
 	logger.log("[responses]", JSON.stringify(responses, null, 2));
 	let checkpoints = responses.reduce((agg, curr) => {
 		if (curr && curr.error) {
@@ -359,7 +427,7 @@ function reduceCheckpoints(responses) {
 					Object.keys(curr.checkpoints[botId].read || {}).map(queue => {
 						if (!(queue in checkpointData)) {
 							checkpointData[queue] = curr.checkpoints[botId].read[queue];
-							checkpointData.read[queue].eid = curr.checkpoints[botId].read[queue].checkpoint;
+							checkpointData[queue].eid = curr.checkpoints[botId].read[queue].checkpoint;
 						} else {
 							let minCheckpoint = min(checkpointData[queue].checkpoint, curr.checkpoints[botId].read[queue].checkpoint);
 							if (minCheckpoint && minCheckpoint == curr.checkpoints[botId].read[queue].checkpoint) {
@@ -391,6 +459,46 @@ function reduceCheckpoints(responses) {
 	} else {
 		return [];
 	}
+}
+
+/**
+ * The max eid every instance reads up to. Pinned to the cron invocation token (__cron.ts, in ms) so the window is
+ * fixed by the trigger rather than by when the master happened to start. Falls back to now if the token is
+ * missing or in the future.
+ * @param {{ts?: number|string}} cronData The master's cron data
+ * @param {moment.Moment} [now] Current time, for testing
+ * @returns {string} Max eid in the form z/YYYY/MM/DD/HH/mm/<ms>
+ */
+function getMaxEid(cronData, now = moment.utc()) {
+	const ts = Number(cronData.ts);
+	const timestamp = Number.isFinite(ts) && ts > 0 && ts <= now.valueOf() ? moment.utc(ts) : now;
+	return timestamp.format(eventIdFormat) + timestamp.valueOf();
+}
+
+/**
+ * A silent instance must not be counted as a vote to advance. Every instance has to report a read position
+ * for every bot/queue any instance reported, otherwise the persisted checkpoint could pass events that
+ * instance never saw.
+ * @param {[checkpoint]} responses Array of responses from the workers
+ */
+function assertAllReported(responses) {
+	const reported = {};
+	responses.forEach(response => {
+		const data = (response && response.checkpoints) || {};
+		Object.keys(data).forEach(botId => {
+			Object.keys(data[botId].read || {}).forEach(queue => {
+				const key = botId + "/" + queue;
+				reported[key] = reported[key] || new Set();
+				reported[key].add(response.iid);
+			});
+		});
+	});
+	Object.keys(reported).forEach(key => {
+		const missing = responses.filter(response => !(response && reported[key].has(response.iid))).map(response => response && response.iid);
+		if (missing.length) {
+			throw new Error(`fanout instance(s) [${missing}] did not report a read position for ${key}`);
+		}
+	});
 }
 
 /**
@@ -430,6 +538,7 @@ function min(...args) {
 }
 
 fanoutFactory.reduceCheckpoints = reduceCheckpoints;
+fanoutFactory.getMaxEid = getMaxEid;
 fanoutFactory.callCheckpointOnResponses = callCheckpointOnResponses;
 
 module.exports = fanoutFactory;
