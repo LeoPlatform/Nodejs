@@ -215,4 +215,109 @@ describe("lib/event-trace.ts children", function () {
 		await eventTrace(sdk, STATS_TABLE, { queue: "q0", eid: "z/2022/03/14/22/38/1647297513618-0000030", children: ["bot1", "queue1"] });
 		assert.equal(fromLeo.getCall(0).args[2].start, "z/2022/03/14/22/38/1647297513618-000003 ");
 	});
+
+	it("E1 children trace uses the correlation timestamp when stats are older than the event", async function () {
+		const childEvent = {
+			eid: "z/2022/03/14/22/40/1647297650000-0000001", event: "queue:queue1", id: "bot1", payload: {},
+			timestamp: 1647297650500, event_source_timestamp: 1647297650000, correlation_id: { start: START_EID }
+		};
+		queueReads({ "queue:q0": [startEvent()], "queue:queue1": [childEvent] });
+		statsFor("bot:bot1", [stat("hour_2022-03-14 22", 1647297000000, "queue:q0", START_EID)]);
+		await eventTrace(sdk, STATS_TABLE, { queue: "q0", eid: START_EID, children: ["bot1", "queue1"] });
+		assert.equal(fromLeo.getCall(1).args[2].start, moment(START_TS).format("[z/]YYYY/MM/DD/HH/mm/ss"));
+	});
+
+	it("E1 children trace ignores queue events that do not correlate to the start", async function () {
+		const other = {
+			eid: "z/2022/03/14/22/40/1647297640000-0000001", event: "queue:queue1", id: "bot1", payload: { other: true },
+			timestamp: 1647297640500, event_source_timestamp: 1647297640000, correlation_id: { start: "z/2022/03/14/22/39/1-0000000" }
+		};
+		const match = { ...other, eid: "z/2022/03/14/22/40/1647297650000-0000002", payload: { match: true }, correlation_id: { start: START_EID } };
+		queueReads({ "queue:q0": [startEvent()], "queue:queue1": [other, match] });
+		statsFor("bot:bot1", [stat("hour_2022-03-14 22", 1647297600000, "queue:q0", START_EID)]);
+		const result: any = await eventTrace(sdk, STATS_TABLE, { queue: "q0", eid: START_EID, children: ["bot1", "queue1"] });
+		assert.deepEqual(result["queue:queue1"].payload, { match: true });
+	});
+
+	describe("E1 parents and children tree", function () {
+		const cronRows = [
+			{
+				id: "botA", name: "Bot A",
+				checkpoints: {
+					read: { "queue:qSrc": { checkpoint: "z/2022/03/14/23/00/1", source_timestamp: START_TS + 1000 } },
+					write: { "queue:qMid": {} }
+				}
+			},
+			{
+				id: "botB", name: "Bot B",
+				checkpoints: {
+					read: { "queue:qMid": { checkpoint: "z/2022/03/14/23/00/1" } },
+					write: { "queue:qSrc": {} }
+				}
+			},
+			{
+				id: "botC",
+				checkpoints: {
+					read: { "queue:qSrc": { checkpoint: "z/2022/03/14/22/00/1", source_timestamp: START_TS + 2000 } },
+					write: {}
+				}
+			},
+			{ id: "botNoCheckpoints" }
+		];
+
+		function srcEvent(extra: any = {}) {
+			return { id: "botX", event: "qSrc", eid: START_EID, timestamp: START_TS, event_source_timestamp: START_TS - 100, payload: {}, ...extra };
+		}
+
+		beforeEach(() => {
+			sandbox.stub(sdk.aws.dynamodb, "query").callsFake(() => Promise.resolve({ Items: cronRows }));
+		});
+
+		it("E1 trace stops at an event without a correlation and walks processed bots downstream", async function () {
+			queueReads({ "queue:qSrc": [srcEvent()] });
+			const result: any = await eventTrace(sdk, STATS_TABLE, { queue: "qSrc", eid: START_EID });
+			assert.deepEqual(result.parents, [{ id: "bot:botX", server_id: "bot:botX", type: "bot", label: "bot:botX" }]);
+			assert.equal(result.event.eid, START_EID);
+			assert.equal(result.event.type, "queue");
+			assert.equal(result.event.lag, 100);
+			assert.deepEqual(Object.keys(result.children), ["bot:botA", "bot:botC"]);
+
+			const botA = result.children["bot:botA"];
+			assert.equal(botA.label, "Bot A");
+			assert.isTrue(botA.has_processed);
+			assert.equal(botA.lag, 0);
+			const mid = botA.children["queue:qMid"];
+			assert.deepEqual([mid.type, mid.lag, mid.event], ["queue", null, null]);
+			const botB = mid.children["bot:botB"];
+			assert.isTrue(botB.has_processed);
+			assert.deepEqual(botB.children["queue:qSrc"].children, {});
+
+			const botC = result.children["bot:botC"];
+			assert.equal(botC.label, "bot:botC");
+			assert.isFalse(botC.has_processed);
+			assert.equal(botC.lag, 2100);
+			assert.deepEqual(botC.children, {});
+		});
+
+		it("E1 trace follows correlation_id to parent queues and stops on a repeated bot", async function () {
+			queueReads({
+				"queue:qSrc": [srcEvent({ correlation_id: { source: "qUp", start: "z/2022/03/14/22/30/1-0000000" } })],
+				"queue:qUp": [{ id: "botX", event: "qUp", eid: "z/2022/03/14/22/30/1-0000000", timestamp: START_TS - 5000, event_source_timestamp: START_TS - 6000, payload: {} }]
+			});
+			const result: any = await eventTrace(sdk, STATS_TABLE, { queue: "qSrc", eid: START_EID });
+			assert.equal(fromLeo.callCount, 2);
+			assert.equal(String(fromLeo.getCall(1).args[1]), "queue:qUp");
+			assert.deepEqual(fromLeo.getCall(1).args[2], { start: "z/2022/03/14/22/30/1-000000 ", limit: 1 });
+			assert.equal(result.parents.length, 1);
+		});
+
+		it("E1 trace rejects when reading the queue fails", async function () {
+			const { Readable } = require("stream");
+			const boom = new Error("read failed");
+			fromLeo.callsFake(() => new Readable({ objectMode: true, read() { this.destroy(boom); } }));
+			let err;
+			try { await eventTrace(sdk, STATS_TABLE, { queue: "qSrc", eid: START_EID }); } catch (e) { err = e; }
+			assert.equal(err, boom);
+		});
+	});
 });
