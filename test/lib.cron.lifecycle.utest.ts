@@ -610,6 +610,29 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(cb.callCount, 1);
 		});
 
+		it("B8 start without a callback returns a promise whose then returns undefined and never calls the callback", async function () {
+			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: lockableRow() }));
+			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
+			const { cron } = build({ get, update });
+			const result = cron.start({ id: "b1" });
+			assert.instanceOf(result, Promise);
+			const callback = sandbox.stub();
+			assert.isUndefined(result.then(callback));
+			await new Promise((r) => setTimeout(r, 20));
+			assert.equal(callback.callCount, 0);
+		});
+
+		it("B8 run throws a TypeError when start has no callback because its then returns undefined", function () {
+			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: lockableRow() }));
+			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
+			const { cron } = build({ get, update });
+			const handler = sandbox.stub();
+			const callback = sandbox.stub();
+			assert.throws(() => cron.run({ id: "b1" }, handler, callback), TypeError);
+			assert.equal(handler.callCount, 0);
+			assert.equal(callback.callCount, 0);
+		});
+
 		it("B8 run calls start, the handler and end then the callback", async function () {
 			const { cron } = build({});
 			const calls: string[] = [];

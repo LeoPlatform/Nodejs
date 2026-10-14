@@ -494,6 +494,16 @@ describe("lib/dynamodb.js", function () {
 		});
 	});
 
+	describe("D1 config updates", function () {
+		it("D1 the onUpdate listener throws a TypeError because the v3 document client has no service", function () {
+			const callbacks: any[] = [];
+			sandbox.stub(DynamoDBDocument, "from").returns({} as unknown as DynamoDBDocument);
+			(dynamodbLib as any)({ onUpdate: (cb) => callbacks.push(cb), aws: { region: "us-west-2" } });
+			assert.equal(callbacks.length, 1);
+			assert.throws(() => callbacks[0]({ aws: { region: "eu-west-1" }, credentials: {} }), TypeError);
+		});
+	});
+
 	describe("D1 construction", function () {
 		it("D1 maps legacy maxRetries/httpOptions into client config", function () {
 			const from = sandbox.stub(DynamoDBDocument, "from").returns({} as unknown as DynamoDBDocument);

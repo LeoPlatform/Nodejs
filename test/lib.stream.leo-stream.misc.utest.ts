@@ -586,8 +586,9 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.exists(ls.s3);
 		});
 
-		it("C5 the onUpdate listener is registered", function () {
-			assert.equal(onUpdateCallbacks.length >= 1, true);
+		it("C5 the onUpdate listener throws a TypeError because v3 client configs have no update function", function () {
+			assert.isAtLeast(onUpdateCallbacks.length, 1);
+			assert.throws(() => onUpdateCallbacks[0]({ aws: { region: "eu-west-1" }, credentials: {} }), TypeError);
 		});
 	});
 });
