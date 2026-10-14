@@ -112,8 +112,8 @@ describe("lib/stream/leo-stream.js read", function () {
 		});
 	}
 
-	describe("R1 start position and query", function () {
-		it("R1 fromLeo reads every event of an inline gzip item and assigns eids from the item start", async function () {
+	describe("start position and query", function () {
+		it("fromLeo reads every event of an inline gzip item and assigns eids from the item start", async function () {
 			const item = makeItem(3);
 			setup([item]);
 			const events = await readAll();
@@ -122,7 +122,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.isTrue(events.every((e) => e.event === QUEUE));
 		});
 
-		it("R1 fromLeo looks up the cron row and event row together", async function () {
+		it("fromLeo looks up the cron row and event row together", async function () {
 			setup([makeItem(1)]);
 			await readAll();
 			assert.deepEqual(batchGet.getCall(0).args[0].RequestItems, {
@@ -131,7 +131,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			});
 		});
 
-		it("R1 fromLeo queries the stream table between start and the event max eid", async function () {
+		it("fromLeo queries the stream table between start and the event max eid", async function () {
 			const item = makeItem(1);
 			setup([item]);
 			const startEid = ls.eventIdFromTimestamp(BASE - 1000);
@@ -144,7 +144,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.deepEqual(params.ExpressionAttributeValues, { ":event": QUEUE, ":start": startEid + " ", ":maxkey": item.end });
 		});
 
-		it("R1 fromLeo defaults the query limit to 50 and to 1000 with fast_s3_read", async function () {
+		it("fromLeo defaults the query limit to 50 and to 1000 with fast_s3_read", async function () {
 			setup([makeItem(1)]);
 			await readAll();
 			assert.equal(query.getCall(0).args[0].Limit, 50);
@@ -155,28 +155,28 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(query.getCall(0).args[0].Limit, 1000);
 		});
 
-		it("R1 fromLeo starts after the cron checkpoint when no start is given", async function () {
+		it("fromLeo starts after the cron checkpoint when no start is given", async function () {
 			const item = makeItem(1);
 			setup([item], { cron: { id: "bot1", checkpoints: { read: { "queue:queue1": { checkpoint: "z/2022/03/14/22/00/1647295200000-0000005" } } } } });
 			await readAll({ start: undefined });
 			assert.equal(query.getCall(0).args[0].ExpressionAttributeValues[":start"], "z/2022/03/14/22/00/1647295200000-0000005 ");
 		});
 
-		it("R1 fromLeo starts at the registry starteid when set", async function () {
+		it("fromLeo starts at the registry starteid when set", async function () {
 			setup([makeItem(1)]);
 			configure.registry.__cron = { starteid: { "queue:queue1": "z/2022/03/14/22/00/1647295200000-0000001" } };
 			await readAll({ start: undefined });
 			assert.equal(query.getCall(0).args[0].ExpressionAttributeValues[":start"], "z/2022/03/14/22/00/1647295200000-0000001 ");
 		});
 
-		it("R1 fromLeo records the cron checkpoint in the registry", async function () {
+		it("fromLeo records the cron checkpoint in the registry", async function () {
 			const cp = { checkpoint: "z/2022/03/14/22/00/1-0", records: 3 };
 			setup([makeItem(1)], { cron: { id: "bot1", checkpoints: { read: { "queue:queue1": cp } } } });
 			await readAll();
 			assert.deepEqual(configure.registry.__cron.checkpoints.read["queue:queue1"], cp);
 		});
 
-		it("R1 fromLeo caps the read at the registry maxeid, then maxOverride, then the event max eid", async function () {
+		it("fromLeo caps the read at the registry maxeid, then maxOverride, then the event max eid", async function () {
 			const item = makeItem(1);
 			setup([item]);
 			configure.registry.__cron = { maxeid: "z/9999/maxeid" };
@@ -189,38 +189,38 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(query.getCall(0).args[0].ExpressionAttributeValues[":maxkey"], item.end);
 		});
 
-		it("R1 fromLeo applies subqueue to the queue name", async function () {
+		it("fromLeo applies subqueue to the queue name", async function () {
 			setup([makeItem(1)]);
 			await readAll({ subqueue: "sub" });
 			assert.equal(query.getCall(0).args[0].ExpressionAttributeValues[":event"], "queue1.sub");
 		});
 
-		it("R1 fromLeo ends empty when the queue has no event row", async function () {
+		it("fromLeo ends empty when the queue has no event row", async function () {
 			setup([], { event: null });
 			assert.deepEqual(await readAll(), []);
 			assert.equal(query.callCount, 0);
 		});
 
-		it("R1 fromLeo reads a phantom queue even without an event row", async function () {
+		it("fromLeo reads a phantom queue even without an event row", async function () {
 			setup([], { event: null });
 			assert.deepEqual(await readAll({}, "bot1", "queue1/_phantom"), []);
 		});
 
-		it("R1 fromLeo emits an error when the lookup fails", async function () {
+		it("fromLeo emits an error when the lookup fails", async function () {
 			batchGet.callsFake((params: any, cb: any) => cb(new Error("lookup failed")));
 			let err: any;
 			try { await readAll(); } catch (e) { err = e; }
 			assert.match(err.message, /lookup failed/);
 		});
 
-		it("R1 fromLeo emits an error when the lookup is throttled", async function () {
+		it("fromLeo emits an error when the lookup is throttled", async function () {
 			batchGet.callsFake((params: any, cb: any) => cb(null, { Responses: {}, UnprocessedKeys: { [EVENT_TABLE]: {} } }));
 			let err: any;
 			try { await readAll(); } catch (e) { err = e; }
 			assert.equal(err.message, "Not enough capacity to read");
 		});
 
-		it("R1 fromLeo emits an error when the stream query fails", async function () {
+		it("fromLeo emits an error when the stream query fails", async function () {
 			setup([makeItem(1)]);
 			query.reset();
 			query.callsFake((params: any, cb: any) => cb(new Error("query failed")));
@@ -229,7 +229,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(err.message, "query failed");
 		});
 
-		it("R1 fromLeo does not read when the start is already past the max eid", async function () {
+		it("fromLeo does not read when the start is already past the max eid", async function () {
 			const item = makeItem(1);
 			setup([item]);
 			const hooks = { onEnd: sandbox.stub().resolves() };
@@ -239,28 +239,28 @@ describe("lib/stream/leo-stream.js read", function () {
 		});
 	});
 
-	describe("R2 limits", function () {
-		it("R2 limit stops after that many events", async function () {
+	describe("limits", function () {
+		it("limit stops after that many events", async function () {
 			setup([makeItem(5)]);
 			const events = await readAll({ limit: 2 });
 			assert.deepEqual(events.map((e) => e.payload.n), [0, 1]);
 		});
 
-		it("R2 size stops once that many bytes were read", async function () {
+		it("size stops once that many bytes were read", async function () {
 			setup([makeItem(5)]);
 			const events = await readAll({ size: 1 });
 			assert.isBelow(events.length, 5);
 			assert.isAtLeast(events.length, 1);
 		});
 
-		it("R2 events at or before start are skipped", async function () {
+		it("events at or before start are skipped", async function () {
 			const item = makeItem(4);
 			setup([item]);
 			const events = await readAll({ start: eidPrefix(BASE) + "0000001" });
 			assert.deepEqual(events.map((e) => e.payload.n), [2, 3]);
 		});
 
-		it("R2 loops caps the number of query pages", async function () {
+		it("loops caps the number of query pages", async function () {
 			const pages = [[makeItem(1, { ms: BASE })], [makeItem(1, { ms: BASE + 1000 })], [makeItem(1, { ms: BASE + 2000 })]];
 			setup(pages[0], { pages, event: leoEvent(pages[2]) });
 			const events = await readAll({ loops: 2 });
@@ -268,14 +268,14 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(query.callCount >= 2, true);
 		});
 
-		it("R2 multiple pages are read in order", async function () {
+		it("multiple pages are read in order", async function () {
 			const pages = [[makeItem(2, { ms: BASE, label: "p1" })], [makeItem(2, { ms: BASE + 1000, label: "p2" })]];
 			setup(pages[0], { pages, event: leoEvent(pages[1]) });
 			const events = await readAll();
 			assert.deepEqual(events.map((e) => `${e.payload.label}${e.payload.n}`), ["p10", "p11", "p20", "p21"]);
 		});
 
-		it("R2 pass.get reports the stats of what was read and checkpoint writes them", async function () {
+		it("pass.get reports the stats of what was read and checkpoint writes them", async function () {
 			setup([makeItem(3)]);
 			const stream = ls.fromLeo("bot1", QUEUE, { start: ls.eventIdFromTimestamp(BASE - 1000) });
 			stream.on("data", () => { });
@@ -292,7 +292,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(stream.get().units, 0);
 		});
 
-		it("R2 checkpoint with no events read skips the cron write", async function () {
+		it("checkpoint with no events read skips the cron write", async function () {
 			setup([], { event: null });
 			const stream = ls.fromLeo("bot1", QUEUE, {});
 			stream.on("data", () => { });
@@ -303,7 +303,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal((data as any).extra, 1);
 		});
 
-		it("R2 destroying the stream stops reading", async function () {
+		it("destroying the stream stops reading", async function () {
 			setup([makeItem(50)]);
 			const stream = ls.fromLeo("bot1", QUEUE, { start: ls.eventIdFromTimestamp(BASE - 1000), buffer: 1 });
 			const seen: any[] = [];
@@ -316,7 +316,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.isBelow(seen.length, 50);
 		});
 
-		it("R2 getOpts returns the resolved options", function () {
+		it("getOpts returns the resolved options", function () {
 			setup([makeItem(1)]);
 			const stream = ls.fromLeo("bot1", QUEUE, { loops: 5 });
 			assert.equal(stream.getOpts().loops, 5);
@@ -326,7 +326,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			stream.destroy();
 		});
 
-		it("R2 runTime sets the stop time from a duration", function () {
+		it("runTime sets the stop time from a duration", function () {
 			setup([makeItem(1)]);
 			sandbox.useFakeTimers({ now: 1700000000000, toFake: ["Date"] });
 			const stream = ls.fromLeo("bot1", QUEUE, { runTime: { seconds: 30 } });
@@ -334,7 +334,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			stream.destroy();
 		});
 
-		it("R2 the lambda context shortens the stop time to 80 percent of the remaining time", function () {
+		it("the lambda context shortens the stop time to 80 percent of the remaining time", function () {
 			setup([makeItem(1)]);
 			sandbox.useFakeTimers({ now: 1700000000000, toFake: ["Date"] });
 			configure.registry.context = { getRemainingTimeInMillis: () => 10000 };
@@ -344,8 +344,8 @@ describe("lib/stream/leo-stream.js read", function () {
 		});
 	});
 
-	describe("R3 s3 items", function () {
-		it("R3 reads events from an S3 item through fromS3 with the byte range", async function () {
+	describe("s3 items", function () {
+		it("reads events from an S3 item through fromS3 with the byte range", async function () {
 			const item: any = makeItem(3, { asS3: true });
 			setup([item]);
 			const events = await readAll();
@@ -354,7 +354,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.deepEqual(fromS3.getCall(0).args[0], { bucket: "mock-leos3", key: item.s3.key, range: `bytes=0-${item.gzipSize}` });
 		});
 
-		it("R3 jumps into the file at the offset that contains the start", async function () {
+		it("jumps into the file at the offset that contains the start", async function () {
 			const item: any = makeItem(4, { asS3: true });
 			item.offsets = [
 				{ size: 10, gzipOffset: 0, gzipSize: 10, records: 2, start: 0, end: 1, event: QUEUE, offset: 0 },
@@ -365,7 +365,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(fromS3.getCall(0).args[0].range, `bytes=10-${item.gzipSize}`);
 		});
 
-		it("R3 reads from a local tmp file when one exists for the range", async function () {
+		it("reads from a local tmp file when one exists for the range", async function () {
 			const fs = require("fs");
 			const os = require("os");
 			const path = require("path");
@@ -631,8 +631,8 @@ describe("lib/stream/leo-stream.js read", function () {
 		});
 	});
 
-	describe("R6 snapshot and archive", function () {
-		it("R6 starting at z/ with a snapshot reads the _snapshot queue first and the page prefetched at the switch still uses the snapshot queue", async function () {
+	describe("snapshot and archive", function () {
+		it("starting at z/ with a snapshot reads the _snapshot queue first and the page prefetched at the switch still uses the snapshot queue", async function () {
 			const snapRaw: any = makeItem(1, { label: "snap", ms: BASE, offset: 1 });
 			const snapItem = { ...snapRaw, start: snapRaw.start.replace(/^z\//, ""), end: snapRaw.end.replace(/^z\//, "") };
 			const realItem: any = makeItem(1, { label: "real", ms: BASE + 5000 });
@@ -658,7 +658,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(query.getCall(3).args[0].ExpressionAttributeValues[":event"], "queue1");
 		});
 
-		it("R6 an archive end after the start reads the _archive queue first", async function () {
+		it("an archive end after the start reads the _archive queue first", async function () {
 			const archived: any = makeItem(1, { label: "old", ms: BASE });
 			archived.archive = true;
 			archived.gzip = zlib.gzipSync(JSON.stringify({ id: "u", event: QUEUE, payload: { label: "old", n: 0 }, eid: archived.end }) + "\n");
@@ -677,8 +677,8 @@ describe("lib/stream/leo-stream.js read", function () {
 		});
 	});
 
-	describe("R8 parsers", function () {
-		it("R8 an unparsable line ends the stream with a push-after-EOF error", async function () {
+	describe("parsers", function () {
+		it("an unparsable line ends the stream with a push-after-EOF error", async function () {
 			const item: any = makeItem(2);
 			const text = JSON.stringify({ id: "u", event: QUEUE, payload: { n: 0 } }) + "\nnot json\n" + JSON.stringify({ id: "u", event: QUEUE, payload: { n: 1 } }) + "\n";
 			item.gzip = zlib.gzipSync(text);
@@ -688,7 +688,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(err.message, "stream.push() after EOF");
 		});
 
-		it("R8 setBaseEid commands change the eid prefix and restart the offset", async function () {
+		it("setBaseEid commands change the eid prefix and restart the offset", async function () {
 			const item: any = makeItem(2);
 			const text = JSON.stringify({ _cmd: "setBaseEid", eid: "z/2030/01/01/00/00/1893456000000-0000010" }) + "\n" + JSON.stringify({ id: "u", event: QUEUE, payload: { n: 0 } }) + "\n";
 			item.gzip = zlib.gzipSync(text);

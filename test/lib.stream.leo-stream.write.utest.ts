@@ -66,8 +66,8 @@ describe("lib/stream/leo-stream.js write", function () {
 		return ls.pipeAsync(ls.eventstream.readArray(events), stream);
 	}
 
-	describe("W1 toLeo to kinesis", function () {
-		it("W1 toLeo sends one gzipped putRecords with the default partition and hash key", async function () {
+	describe("toLeo to kinesis", function () {
+		it("toLeo sends one gzipped putRecords with the default partition and hash key", async function () {
 			await write([evt(1), evt(2)], ls.toLeo("bot1", {}));
 			assert.equal(putRecords.callCount, 1);
 			const params = putRecords.getCall(0).args[0];
@@ -80,7 +80,7 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.deepEqual(events.map((e) => e.eid), [0, 1]);
 		});
 
-		it("W1 toLeo emits a checkpoint command carrying the correlations after the write", async function () {
+		it("toLeo emits a checkpoint command carrying the correlations after the write", async function () {
 			const correlation = { source: "src", start: "z/1", end: "z/2", units: 2 };
 			const out = await write([evt(1, { correlation_id: correlation })], ls.toLeo("bot1", {}));
 			assert.equal(out.length, 1);
@@ -91,7 +91,7 @@ describe("lib/stream/leo-stream.js write", function () {
 			}]);
 		});
 
-		it("W1 toLeo does not call kinesis when nothing is written", async function () {
+		it("toLeo does not call kinesis when nothing is written", async function () {
 			await write([], ls.toLeo("bot1", {}));
 			assert.equal(putRecords.callCount, 0);
 		});
@@ -399,13 +399,13 @@ describe("lib/stream/leo-stream.js write", function () {
 		});
 	});
 
-	describe("W2 load", function () {
-		it("W2 load throws when the configuration is invalid", function () {
+	describe("load", function () {
+		it("load throws when the configuration is invalid", function () {
 			build({ validate: undefined });
 			assert.throws(() => ls.load("bot1", "queue1", {}), "Invalid Settings: Missing config");
 		});
 
-		it("W2 load wraps plain objects as payloads and fills id, event and timestamps", async function () {
+		it("load wraps plain objects as payloads and fills id, event and timestamps", async function () {
 			sandbox.useFakeTimers({ now: 1700000000000, toFake: ["Date"] });
 			await sink([{ n: 1 }], ls.load("bot1", "queue1", {}));
 			const sent = decodeGzipRecord(putRecords.getCall(0).args[0].Records[0].Data)[0];
@@ -416,32 +416,32 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.equal(sent.timestamp, 1700000000000);
 		});
 
-		it("W2 load keeps objects that already carry a payload and their id, event and timestamps", async function () {
+		it("load keeps objects that already carry a payload and their id, event and timestamps", async function () {
 			await sink([{ id: "other", event: "q9", payload: { a: 1 }, event_source_timestamp: 5, timestamp: 6 }], ls.load("bot1", "queue1", {}));
 			const sent = decodeGzipRecord(putRecords.getCall(0).args[0].Records[0].Data)[0];
 			assert.deepEqual([sent.id, sent.event, sent.event_source_timestamp, sent.timestamp], ["other", "q9", 5, 6]);
 		});
 
-		it("W2 load treats an object with a correlation_id as an event", async function () {
+		it("load treats an object with a correlation_id as an event", async function () {
 			sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 			await sink([{ correlation_id: { source: "s", start: "z/1" }, payload: { a: 1 } }], ls.load("bot1", "queue1", {}));
 			const sent = decodeGzipRecord(putRecords.getCall(0).args[0].Records[0].Data)[0];
 			assert.equal(sent.correlation_id.source, "s");
 		});
 
-		it("W2 load with autoDetectPayload false always wraps the object", async function () {
+		it("load with autoDetectPayload false always wraps the object", async function () {
 			await sink([{ payload: { a: 1 } }], ls.load("bot1", "queue1", { autoDetectPayload: false }));
 			const sent = decodeGzipRecord(putRecords.getCall(0).args[0].Records[0].Data)[0];
 			assert.deepEqual(sent.payload, { payload: { a: 1 } });
 		});
 
-		it("W2 load with autoCheckpoint false does not checkpoint", async function () {
+		it("load with autoCheckpoint false does not checkpoint", async function () {
 			const checkpoint = sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 			await sink([{ id: "bot1", event: "queue1", payload: 1, correlation_id: { source: "s", start: "z/1", end: "z/1" } }], ls.load("bot1", "queue1", { autoCheckpoint: false }));
 			assert.equal(checkpoint.callCount, 0);
 		});
 
-		it("W2 load checkpoints the correlation sources by default", async function () {
+		it("load checkpoints the correlation sources by default", async function () {
 			const checkpoint = sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 			await sink([{ id: "bot1", event: "queue1", payload: 1, correlation_id: { source: "src", start: "z/1", end: "z/1" } }], ls.load("bot1", "queue1", {}));
 			assert.equal(checkpoint.callCount, 1);
@@ -450,7 +450,7 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.equal(checkpoint.getCall(0).args[2].eid, "z/1");
 		});
 
-		it("W2 load calls the onCheckpoint hook", async function () {
+		it("load calls the onCheckpoint hook", async function () {
 			sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 			const hook = sandbox.stub();
 			await sink([{ id: "bot1", event: "queue1", payload: 1, correlation_id: { source: "src", start: "z/1", end: "z/1" } }], ls.load("bot1", "queue1", { onCheckpoint: hook }));
@@ -458,14 +458,14 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.deepEqual(hook.getCall(0).args[0].checkpoints, { bot1: { "queue:src": "z/1" } });
 		});
 
-		it("W2 putEvent writes the object through load and calls back", async function () {
+		it("putEvent writes the object through load and calls back", async function () {
 			const err = await new Promise((resolve) => ls.putEvent("bot1", "queue1", { n: 7 }, {}, resolve));
 			assert.isUndefined(err);
 			const sent = decodeGzipRecord(putRecords.getCall(0).args[0].Records[0].Data)[0];
 			assert.deepEqual(sent.payload, { n: 7 });
 		});
 
-		it("W2 putEvent accepts the callback in place of options", async function () {
+		it("putEvent accepts the callback in place of options", async function () {
 			await new Promise((resolve) => ls.putEvent("bot1", "queue1", { n: 8 }, resolve));
 			assert.equal(putRecords.callCount, 1);
 		});

@@ -61,7 +61,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 		return ls.pipeAsync(ls.eventstream.readArray(events), stream, ls.write({ hasCommands: false }, (o, done) => { out.push(o); done(); })).then(() => out);
 	}
 
-	describe("D3 toDynamoDB", function () {
+	describe("toDynamoDB", function () {
 		let batchWrite: sinon.SinonStub;
 		beforeEach(() => {
 			batchWrite = sandbox.stub(ls.dynamodb.docClient, "batchWrite").callsFake((p: any, cb: any) => cb(null, { UnprocessedItems: {} }));
@@ -71,7 +71,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			return call.args[0].RequestItems.T.map((r: any) => r.PutRequest.Item);
 		}
 
-		it("D3 toDynamoDB writes records as PutRequests", async function () {
+		it("toDynamoDB writes records as PutRequests", async function () {
 			await ls.pipeAsync(ls.eventstream.readArray([{ id: "a" }, { id: "b" }]), ls.toDynamoDB("T", {}));
 			assert.equal(batchWrite.callCount, 1);
 			assert.deepEqual(batchWrite.getCall(0).args[0], {
@@ -80,35 +80,35 @@ describe("lib/stream/leo-stream.js misc", function () {
 			});
 		});
 
-		it("D3 toDynamoDB splits a flush into batches of 25", async function () {
+		it("toDynamoDB splits a flush into batches of 25", async function () {
 			const records = Array.from({ length: 60 }, (_, i) => ({ id: `r${i}` }));
 			await ls.pipeAsync(ls.eventstream.readArray(records), ls.toDynamoDB("T", { records: 100 }));
 			assert.deepEqual(batchWrite.getCalls().map((c: any) => c.args[0].RequestItems.T.length).sort((a: number, b: number) => b - a), [25, 25, 10]);
 		});
 
-		it("D3 toDynamoDB flushes every opts.records records", async function () {
+		it("toDynamoDB flushes every opts.records records", async function () {
 			const records = Array.from({ length: 6 }, (_, i) => ({ id: `r${i}` }));
 			await ls.pipeAsync(ls.eventstream.readArray(records), ls.toDynamoDB("T", { records: 3 }));
 			assert.deepEqual(batchWrite.getCalls().map((c: any) => c.args[0].RequestItems.T.length), [3, 3]);
 		});
 
-		it("D3 toDynamoDB keeps only the last record per hash key", async function () {
+		it("toDynamoDB keeps only the last record per hash key", async function () {
 			await ls.pipeAsync(ls.eventstream.readArray([{ id: "a", v: 1 }, { id: "b", v: 1 }, { id: "a", v: 2 }]), ls.toDynamoDB("T", { hash: "id" }));
 			assert.deepEqual(itemsOf(batchWrite.getCall(0)), [{ id: "a", v: 2 }, { id: "b", v: 1 }]);
 		});
 
-		it("D3 toDynamoDB keys on hash and range together", async function () {
+		it("toDynamoDB keys on hash and range together", async function () {
 			await ls.pipeAsync(ls.eventstream.readArray([{ id: "a", r: 1, v: 1 }, { id: "a", r: 2, v: 2 }, { id: "a", r: 1, v: 3 }]), ls.toDynamoDB("T", { hash: "id", range: "r" }));
 			assert.deepEqual(itemsOf(batchWrite.getCall(0)), [{ id: "a", r: 1, v: 3 }, { id: "a", r: 2, v: 2 }]);
 		});
 
-		it("D3 toDynamoDB merge deep-merges duplicates within a batch", async function () {
+		it("toDynamoDB merge deep-merges duplicates within a batch", async function () {
 			sandbox.stub(ls.dynamodb, "batchGetTable").callsFake((t: string, keys: any[], o: any, cb: any) => cb(null, []));
 			await ls.pipeAsync(ls.eventstream.readArray([{ id: "a", n: { x: 1 } }, { id: "a", n: { y: 2 } }]), ls.toDynamoDB("T", { hash: "id", merge: true }));
 			assert.deepEqual(itemsOf(batchWrite.getCall(0)), [{ id: "a", n: { x: 1, y: 2 } }]);
 		});
 
-		it("D3 toDynamoDB merge reads existing items by key and merges the new data over them", async function () {
+		it("toDynamoDB merge reads existing items by key and merges the new data over them", async function () {
 			const batchGetTable = sandbox.stub(ls.dynamodb, "batchGetTable").callsFake((t: string, keys: any[], o: any, cb: any) => cb(null, [{ id: "a", old: true, n: { x: 0, z: 9 } }]));
 			await ls.pipeAsync(ls.eventstream.readArray([{ id: "a", n: { x: 1 } }, { id: "b" }]), ls.toDynamoDB("T", { hash: "id", merge: true }));
 			assert.equal(batchGetTable.getCall(0).args[0], "T");
@@ -116,7 +116,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.deepEqual(itemsOf(batchWrite.getCall(0)), [{ id: "a", old: true, n: { x: 1, z: 9 } }, { id: "b" }]);
 		});
 
-		it("D3 toDynamoDB merge fails the stream when the existing-item lookup fails", async function () {
+		it("toDynamoDB merge fails the stream when the existing-item lookup fails", async function () {
 			sandbox.stub(ls.dynamodb, "batchGetTable").callsFake((t: string, keys: any[], o: any, cb: any) => cb(new Error("lookup failed")));
 			let err: any;
 			try {
@@ -126,14 +126,14 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(batchWrite.callCount, 0);
 		});
 
-		it("D3 toDynamoDB resends only unprocessed items", async function () {
+		it("toDynamoDB resends only unprocessed items", async function () {
 			batchWrite.onFirstCall().callsFake((p: any, cb: any) => cb(null, { UnprocessedItems: { T: [{ PutRequest: { Item: { id: "b" } } }] } }));
 			await ls.pipeAsync(ls.eventstream.readArray([{ id: "a" }, { id: "b" }]), ls.toDynamoDB("T", {}));
 			assert.equal(batchWrite.callCount, 2);
 			assert.deepEqual(itemsOf(batchWrite.getCall(1)), [{ id: "b" }]);
 		});
 
-		it("D3 toDynamoDB retries after a retryable error", async function () {
+		it("toDynamoDB retries after a retryable error", async function () {
 			const retryable: any = new Error("throttled");
 			retryable.retryable = true;
 			batchWrite.onFirstCall().callsFake((p: any, cb: any) => cb(retryable));
@@ -142,7 +142,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.deepEqual(itemsOf(batchWrite.getCall(1)), [{ id: "a" }]);
 		});
 
-		it("D3 toDynamoDB fails the stream on a non-retryable error", async function () {
+		it("toDynamoDB fails the stream on a non-retryable error", async function () {
 			batchWrite.callsFake((p: any, cb: any) => cb(new Error("validation")));
 			let err: any;
 			try {
@@ -152,14 +152,14 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(batchWrite.callCount, 1);
 		});
 
-		it("D3 toDynamoDB with no records never calls batchWrite", async function () {
+		it("toDynamoDB with no records never calls batchWrite", async function () {
 			await ls.pipeAsync(ls.eventstream.readArray([]), ls.toDynamoDB("T", {}));
 			assert.equal(batchWrite.callCount, 0);
 		});
 	});
 
-	describe("W9 autoSwitch", function () {
-		it("W9 autoSwitch consumes events without emitting them or flushing the inner pipeline", async function () {
+	describe("autoSwitch", function () {
+		it("autoSwitch consumes events without emitting them or flushing the inner pipeline", async function () {
 			const out = await collect(ls.autoSwitch("q1", { recordsPerSecond: 1e9 }), [{ id: "bot1", event: "q1", payload: { n: 1 } }, { id: "bot1", event: "q1", payload: { n: 2 } }]);
 			assert.deepEqual(out, []);
 			assert.equal(putRecords.callCount, 0);
@@ -167,7 +167,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 		});
 	});
 
-	describe("W10 magic", function () {
+	describe("magic", function () {
 		function passStream(seen: any[]) {
 			return ls.through((o, done) => { seen.push(o); done(null, o); });
 		}
@@ -176,7 +176,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			return ls.through((o, done) => { seen.push(o.n); setTimeout(() => done(null, o), 5); });
 		}
 
-		it("W10 magic sends everything through the first stream that can sustain the load", async function () {
+		it("magic sends everything through the first stream that can sustain the load", async function () {
 			const seenA: any[] = [];
 			const seenB: any[] = [];
 			const out = await collect(ls.magic([
@@ -188,7 +188,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.deepEqual(out.map((e) => e.n), [1, 2, 3]);
 		});
 
-		it("W10 magic falls back to the last stream when none can sustain the load", async function () {
+		it("magic falls back to the last stream when none can sustain the load", async function () {
 			const seenA: any[] = [];
 			const seenB: any[] = [];
 			await collect(ls.magic([
@@ -199,7 +199,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.deepEqual(seenB.map((e) => e.n), [1, 2]);
 		});
 
-		it("W10 magic numeric canSustainLoad compares against records per second", async function () {
+		it("magic numeric canSustainLoad compares against records per second", async function () {
 			const seenA: any[] = [];
 			const seenB: any[] = [];
 			await collect(ls.magic([
@@ -210,14 +210,14 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.deepEqual(seenB, []);
 		});
 
-		it("W10 magic assigns labels from the stream index and a default minimum duration", function () {
+		it("magic assigns labels from the stream index and a default minimum duration", function () {
 			const streams: any[] = [{ stream: passStream([]) }, { stream: passStream([]) }];
 			ls.magic(streams, {});
 			assert.deepEqual(streams.map((s) => s.label), ["0", "1"]);
 			assert.deepEqual(streams.map((s) => s.minDurationMS), [5000, 5000]);
 		});
 
-		it("W10 magic switches streams once the current one can no longer sustain the load", async function () {
+		it("magic switches streams once the current one can no longer sustain the load", async function () {
 			const seenA: any[] = [];
 			const seenB: any[] = [];
 			let calls = 0;
@@ -234,7 +234,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 		});
 	});
 
-	describe("S1 S3 streams", function () {
+	describe("S3 streams", function () {
 		let s3: any;
 		beforeEach(() => {
 			s3 = ls.s3;
@@ -249,20 +249,20 @@ describe("lib/stream/leo-stream.js misc", function () {
 			});
 		}
 
-		it("S1 fromS3 reads the object using bucket, key and range", async function () {
+		it("fromS3 reads the object using bucket, key and range", async function () {
 			const getObject = sandbox.stub(s3, "getObject").resolves({ Body: Readable.from([Buffer.from("hello")]) });
 			const text = await read(ls.fromS3({ bucket: "b", key: "k", range: "bytes=0-4" }));
 			assert.equal(text, "hello");
 			assert.deepEqual(getObject.getCall(0).args[0], { Bucket: "b", Key: "k", Range: "bytes=0-4" });
 		});
 
-		it("S1 fromS3 accepts capitalized Bucket and Key", async function () {
+		it("fromS3 accepts capitalized Bucket and Key", async function () {
 			const getObject = sandbox.stub(s3, "getObject").resolves({ Body: Readable.from([Buffer.from("x")]) });
 			await read(ls.fromS3({ Bucket: "B", Key: "K" }));
 			assert.deepEqual(getObject.getCall(0).args[0], { Bucket: "B", Key: "K", Range: undefined });
 		});
 
-		it("S1 fromS3 finalizes a partial multipart upload on NoSuchKey and reads again", async function () {
+		it("fromS3 finalizes a partial multipart upload on NoSuchKey and reads again", async function () {
 			const failing = new Readable({ read() { const e: any = new Error("missing"); e.name = "NoSuchKey"; this.destroy(e); } });
 			const getObject = sandbox.stub(s3, "getObject");
 			getObject.onFirstCall().resolves({ Body: failing });
@@ -274,7 +274,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(getObject.callCount, 2);
 		});
 
-		it("S1 fromS3 passes the NoSuchKey error along when finalizing fails", async function () {
+		it("fromS3 passes the NoSuchKey error along when finalizing fails", async function () {
 			const failing = new Readable({ read() { const e: any = new Error("missing"); e.name = "NoSuchKey"; this.destroy(e); } });
 			sandbox.stub(s3, "getObject").resolves({ Body: failing });
 			sandbox.stub(ls, "tryFinalizeMultipartUpload").rejects(new Error("no uploads"));
@@ -283,7 +283,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(err.message, "missing");
 		});
 
-		it("S1 fromS3 passes other errors along", async function () {
+		it("fromS3 passes other errors along", async function () {
 			const failing = new Readable({ read() { this.destroy(new Error("network")); } });
 			sandbox.stub(s3, "getObject").resolves({ Body: failing });
 			let err: any;
@@ -291,7 +291,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(err.message, "network");
 		});
 
-		it("S1 tryFinalizeMultipartUpload completes the first upload with its listed parts", async function () {
+		it("tryFinalizeMultipartUpload completes the first upload with its listed parts", async function () {
 			sandbox.stub(s3, "listMultipartUploads").resolves({ Uploads: [{ Key: "bus/k", UploadId: "u1" }] });
 			const listParts = sandbox.stub(s3, "listParts").resolves({ Parts: [{ ETag: "e1", PartNumber: 1, Size: 5 }, { ETag: "e2", PartNumber: 2, Size: 5 }] });
 			const complete = sandbox.stub(s3, "completeMultipartUpload").resolves({});
@@ -304,7 +304,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			});
 		});
 
-		it("S1 tryFinalizeMultipartUpload does nothing without uploads or parts", async function () {
+		it("tryFinalizeMultipartUpload does nothing without uploads or parts", async function () {
 			const list = sandbox.stub(s3, "listMultipartUploads");
 			const complete = sandbox.stub(s3, "completeMultipartUpload").resolves({});
 			list.onFirstCall().resolves({ Uploads: [] });
@@ -316,8 +316,8 @@ describe("lib/stream/leo-stream.js misc", function () {
 		});
 	});
 
-	describe("S2 toS3", function () {
-		it("S2 toS3 uploads written chunks with the bucket and key", async function () {
+	describe("toS3", function () {
+		it("toS3 uploads written chunks with the bucket and key", async function () {
 			sandbox.restore();
 			build({}, false);
 			const sent: any[] = [];
@@ -331,7 +331,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(Buffer.from(sent[0].Body).toString(), "hello ");
 		});
 
-		it("S2 toS3 reports an upload failure through the error event and not the end callback", async function () {
+		it("toS3 reports an upload failure through the error event and not the end callback", async function () {
 			sandbox.restore();
 			build({}, false);
 			sandbox.stub(ls.s3, "send").rejects(new Error("access denied"));
@@ -346,21 +346,21 @@ describe("lib/stream/leo-stream.js misc", function () {
 		});
 	});
 
-	describe("W11 logSourceRead/logTargetWrite", function () {
+	describe("logSourceRead/logTargetWrite", function () {
 		let checkpoint: sinon.SinonStub;
 		beforeEach(() => {
 			sandbox.useFakeTimers({ now: 1700000000000, toFake: ["Date"] });
 			checkpoint = sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 		});
 
-		it("W11 logSourceRead with two strings uses them as bot id and system", async function () {
+		it("logSourceRead with two strings uses them as bot id and system", async function () {
 			await new Promise<void>((resolve) => ls.logSourceRead("bot1", "sysA", 5, {}, resolve));
 			assert.deepEqual(checkpoint.getCall(0).args.slice(0, 3), ["bot1", "system.sysA", {
 				eid: 1700000000000, records: 5, started_timestamp: undefined, timestamp: 1700000000000, source_timestamp: 1700000000000
 			}]);
 		});
 
-		it("W11 logSourceRead with one string takes the bot id from the registry", async function () {
+		it("logSourceRead with one string takes the bot id from the registry", async function () {
 			configure.registry.id = "registry-bot";
 			await new Promise<void>((resolve) => ls.logSourceRead("sysA", 7, resolve));
 			assert.equal(checkpoint.getCall(0).args[0], "registry-bot");
@@ -368,19 +368,19 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(checkpoint.getCall(0).args[2].records, 7);
 		});
 
-		it("W11 logSourceRead applies subqueue and timestamps from the options", async function () {
+		it("logSourceRead applies subqueue and timestamps from the options", async function () {
 			await new Promise<void>((resolve) => ls.logSourceRead("bot1", "sysA", 1, { subqueue: "sub", timestamp: 5, source_timestamp: 3 }, resolve));
 			assert.equal(checkpoint.getCall(0).args[1], "system.sysA.sub");
 			assert.deepEqual([checkpoint.getCall(0).args[2].started_timestamp, checkpoint.getCall(0).args[2].timestamp, checkpoint.getCall(0).args[2].source_timestamp], [5, 5, 3]);
 		});
 
-		it("W11 logSourceRead falls back to event_source_timestamp and defaults records to 0", async function () {
+		it("logSourceRead falls back to event_source_timestamp and defaults records to 0", async function () {
 			await new Promise<void>((resolve) => ls.logSourceRead("bot1", "sysA", { event_source_timestamp: 9 }, resolve));
 			assert.equal(checkpoint.getCall(0).args[2].source_timestamp, 9);
 			assert.equal(checkpoint.getCall(0).args[2].records, 0);
 		});
 
-		it("W11 logTargetWrite puts a records event on the system queue", function () {
+		it("logTargetWrite puts a records event on the system queue", function () {
 			const putEvent = sandbox.stub(ls, "putEvent").callsFake((id: string, event: string, obj: any, opts: any, cb: any) => cb());
 			const cb = sandbox.stub();
 			ls.logTargetWrite("bot1", "sysB", 12, {}, cb);
@@ -388,15 +388,15 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(cb.callCount, 1);
 		});
 
-		it("W11 logTargetWrite applies the subqueue", function () {
+		it("logTargetWrite applies the subqueue", function () {
 			const putEvent = sandbox.stub(ls, "putEvent").callsFake((id: string, event: string, obj: any, opts: any, cb: any) => cb());
 			ls.logTargetWrite("bot1", "sysB", 1, { subqueue: "out" }, () => { });
 			assert.equal(putEvent.getCall(0).args[1], "system.sysB.out");
 		});
 	});
 
-	describe("W12 checkpoint and manual checkpoint", function () {
-		it("W12 checkpoint tracks per-bot per-queue stats as events are visited", function () {
+	describe("checkpoint and manual checkpoint", function () {
+		it("checkpoint tracks per-bot per-queue stats as events are visited", function () {
 			sandbox.useFakeTimers({ now: 5000, toFake: ["Date"] });
 			const stream = ls.checkpoint({});
 			stream.visit({ id: "bot1", event: "q1", eid: "z/1", event_source_timestamp: 100, timestamp: 4000, units: 2 });
@@ -406,7 +406,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			});
 		});
 
-		it("W12 checkpoint keeps separate stats per queue", function () {
+		it("checkpoint keeps separate stats per queue", function () {
 			const stream = ls.checkpoint({});
 			stream.visit({ id: "bot1", event: "q1", eid: "z/1" });
 			stream.visit({ id: "bot1", event: "q2", eid: "z/9" });
@@ -414,21 +414,21 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(stream.getCheckpoint("bot1", "q2").eid, "z/9");
 		});
 
-		it("W12 checkpoint resets the stats after a checkpoint call", async function () {
+		it("checkpoint resets the stats after a checkpoint call", async function () {
 			const stream = ls.checkpoint({});
 			stream.visit({ id: "bot1", event: "q1", eid: "z/1" });
 			await new Promise<void>((resolve) => stream.checkpoint(() => resolve()));
 			assert.equal(stream.getCheckpoint("bot1", "q1").units, 0);
 		});
 
-		it("W12 checkpoint accepts params before the callback", async function () {
+		it("checkpoint accepts params before the callback", async function () {
 			const stream = ls.checkpoint({});
 			stream.visit({ id: "bot1", event: "q1", eid: "z/1" });
 			const err = await new Promise((resolve) => stream.checkpoint({ extra: 1 }, resolve));
 			assert.notExists(err);
 		});
 
-		it("W12 toManualCheckpoint checkpoints what was written when finished", async function () {
+		it("toManualCheckpoint checkpoints what was written when finished", async function () {
 			const checkpoint = sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 			const stream = ls.toManualCheckpoint("bot1", {});
 			stream.write({ id: "src", event: "queue1", eid: "z/1", payload: {}, event_source_timestamp: 5, timestamp: 6 });
@@ -442,7 +442,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(checkpoint.getCall(0).args[2].records, 2);
 		});
 
-		it("W12 toManualCheckpoint flush checkpoints without ending", async function () {
+		it("toManualCheckpoint flush checkpoints without ending", async function () {
 			const checkpoint = sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 			const stream = ls.toManualCheckpoint("bot1", {});
 			stream.write({ id: "src", event: "queue1", eid: "z/1", payload: {}, event_source_timestamp: 5, timestamp: 6 });
@@ -453,13 +453,13 @@ describe("lib/stream/leo-stream.js misc", function () {
 		});
 	});
 
-	describe("W14 enrich and offload", function () {
+	describe("enrich and offload", function () {
 		let checkpoint: sinon.SinonStub;
 		beforeEach(() => {
 			checkpoint = sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 		});
 
-		it("W14 enrich reads the in queue, writes transformed events to the out queue and checkpoints", async function () {
+		it("enrich reads the in queue, writes transformed events to the out queue and checkpoints", async function () {
 			const fromLeo = sandbox.stub(ls, "fromLeo").callsFake(() => ls.eventstream.readArray(readEvents("in-q", 2)));
 			await new Promise<void>((resolve, reject) => ls.enrich({
 				id: "bot1", inQueue: "in-q", outQueue: "out-q", start: "z/start",
@@ -475,7 +475,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(checkpoint.getCall(0).args[2].records, 2);
 		});
 
-		it("W14 enrich batches the input when opts.batch is set", async function () {
+		it("enrich batches the input when opts.batch is set", async function () {
 			sandbox.stub(ls, "fromLeo").callsFake(() => ls.eventstream.readArray(readEvents("in-q", 3)));
 			const batches: any[] = [];
 			await new Promise<void>((resolve, reject) => ls.enrich({
@@ -485,7 +485,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.deepEqual(batches.map((b) => b.length), [2, 1]);
 		});
 
-		it("W14 offload hands each event to the handler and checkpoints the in queue", async function () {
+		it("offload hands each event to the handler and checkpoints the in queue", async function () {
 			const fromLeo = sandbox.stub(ls, "fromLeo").callsFake(() => ls.eventstream.readArray(readEvents("in-q", 3)));
 			const seen: any[] = [];
 			await new Promise<void>((resolve, reject) => ls.offload({
@@ -498,7 +498,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(checkpoint.getCall(0).args[2].records, 3);
 		});
 
-		it("W14 offload with a batch size passes arrays of payloads to the handler", async function () {
+		it("offload with a batch size passes arrays of payloads to the handler", async function () {
 			sandbox.stub(ls, "fromLeo").callsFake(() => ls.eventstream.readArray(readEvents("in-q", 4)));
 			const seen: any[] = [];
 			await new Promise<void>((resolve, reject) => ls.offload({
@@ -509,7 +509,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(checkpoint.getCall(0).args[2].eid, "z/2022/03/14/22/38/1647297513618-0000003");
 		});
 
-		it("W14 offload drops events when the batch map callback returns nothing", async function () {
+		it("offload drops events when the batch map callback returns nothing", async function () {
 			sandbox.stub(ls, "fromLeo").callsFake(() => ls.eventstream.readArray(readEvents("in-q", 3)));
 			const seen: any[] = [];
 			await new Promise<void>((resolve, reject) => ls.offload({
@@ -525,8 +525,8 @@ describe("lib/stream/leo-stream.js misc", function () {
 		}
 	});
 
-	describe("W15 process flush", function () {
-		it("W15 a flush function can push an aggregate event correlated to the last event", async function () {
+	describe("process flush", function () {
+		it("a flush function can push an aggregate event correlated to the last event", async function () {
 			const out = await collect(ls.process("bot1", (payload: any, event: any, done: any) => done(null, true), "out-q", function (this: any, done: any) {
 				this.push({ summary: true });
 				done();
@@ -539,7 +539,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			});
 		});
 
-		it("W15 a flush callback result is pushed with its options", async function () {
+		it("a flush callback result is pushed with its options", async function () {
 			const out = await collect(ls.process("bot1", (payload: any, event: any, done: any) => done(null, true), "out-q", (done: any) => done(null, { total: 2 }, { queue: "totals", partial: true })), readEvents("in-q", 1));
 			const last = out[out.length - 1];
 			assert.equal(last.event, "totals");
@@ -547,7 +547,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(last.correlation_id.partial_start, "z/2022/03/14/22/38/1647297513618-0000000");
 		});
 
-		it("W15 a flush error fails the stream", async function () {
+		it("a flush error fails the stream", async function () {
 			let err: any;
 			try {
 				await collect(ls.process("bot1", (payload: any, event: any, done: any) => done(null, true), "out-q", (done: any) => done(new Error("flush failed"))), readEvents("in-q", 1));
@@ -555,15 +555,15 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(err.message, "flush failed");
 		});
 
-		it("W15 outQueue may be the flush function", async function () {
+		it("outQueue may be the flush function", async function () {
 			const flush = sandbox.stub().callsFake(function (this: any, done: any) { done(); });
 			await collect(ls.process("bot1", (payload: any, event: any, done: any) => done(null, true), flush), readEvents("in-q", 1));
 			assert.equal(flush.callCount, 1);
 		});
 	});
 
-	describe("C5 client configuration", function () {
-		it("C5 awsResourceConfig maps httpOptions and maxRetries onto each client", async function () {
+	describe("client configuration", function () {
+		it("awsResourceConfig maps httpOptions and maxRetries onto each client", async function () {
 			sandbox.restore();
 			build({
 				awsResourceConfig: {
@@ -579,14 +579,14 @@ describe("lib/stream/leo-stream.js misc", function () {
 			assert.equal(await ls.dynamodb.docClient.config.maxAttempts(), 2);
 		});
 
-		it("C5 an explicit request handler is kept when httpOptions is also given", function () {
+		it("an explicit request handler is kept when httpOptions is also given", function () {
 			sandbox.restore();
 			const handler = { handle: () => { }, metadata: { handlerProtocol: "http/1.1" } };
 			build({ awsResourceConfig: { s3Config: { httpOptions: { timeout: 1 }, requestHandler: handler } } });
 			assert.exists(ls.s3);
 		});
 
-		it("C5 the onUpdate listener throws a TypeError because v3 client configs have no update function", function () {
+		it("the onUpdate listener throws a TypeError because v3 client configs have no update function", function () {
 			assert.isAtLeast(onUpdateCallbacks.length, 1);
 			assert.throws(() => onUpdateCallbacks[0]({ aws: { region: "eu-west-1" }, credentials: {} }), TypeError);
 		});
