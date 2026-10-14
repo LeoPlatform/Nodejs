@@ -50,7 +50,7 @@ npx mocha --exit test/lib.dynamodb.utest.js   # run one compiled test file
 - `.js` compiled from `.ts` is gitignored (`.gitignore` has `*.js`, `!*.ts`). Hand-written JS sources such as
   `lib/cron.js`, `lib/dynamodb.js`, `lib/streams.js`, `lib/stream/leo-stream.js`, `wrappers/fanout.js` are tracked;
   a brand-new `.js` source needs `git add -f`.
-- `.nycrc.json`: `sourceMap: false`, `cache: false` so coverage is reported against the compiled JS lines.
+- `.nycrc.json` is the repo default (TypeScript sources are remapped to `.ts`). To report against compiled JS lines, pass `--no-source-map --no-cache` to nyc on the command line.
   `coverage/` and `.nyc_output/` are gitignored; never commit them.
 - `npm run compile` also builds the worker-thread bundle via webpack; not needed for tests.
 - CI (`node.js.yml`) installs v2 `aws-sdk` and the v3 clients with `--no-save`, then runs `compile` and `coverage-all`.
