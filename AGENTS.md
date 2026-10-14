@@ -10,7 +10,7 @@ Version lives in `package.json`; GitHub repo `LeoPlatform/Nodejs`.
 
 ## Tech Stack
 
-- Node 16/18/20/22 (CI matrix in `.github/workflows/node.js.yml`), TypeScript 4+, CommonJS output.
+- Node 16/18/20/22 (CI matrix in `.github/workflows/node.js.yml`), TypeScript 5.x, CommonJS output.
 - AWS SDK v3 clients (`@aws-sdk/client-kinesis`, `client-firehose`, `client-s3`,
   `client-dynamodb` + `lib-dynamodb`, `client-lambda`, `client-secrets-manager`, `lib-storage`).
 - Streams: `through2`, `pump`, `pumpify`, `event-stream`, `split2`, `flush-write-stream`.
