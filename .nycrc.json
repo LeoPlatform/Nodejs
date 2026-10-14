@@ -37,6 +37,7 @@
 		".ts",
 		".tsx"
 	],
-	"cache": true,
+	"cache": false,
+	"sourceMap": false,
 	"all": false
 }
