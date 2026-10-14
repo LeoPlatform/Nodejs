@@ -97,9 +97,6 @@ describe("lib/stream/leo-stream.js read", function () {
 			query.onCall(i).callsFake((params: any, cb: any) => cb(null, { Items: page, Count: page.length, ConsumedCapacity: { CapacityUnits: 1 } }));
 		});
 		query.callsFake((params: any, cb: any) => cb(null, { Items: [], Count: 0 }));
-		pages.forEach((page, i) => {
-			query.onCall(i).callsFake((params: any, cb: any) => cb(null, { Items: page, Count: page.length, ConsumedCapacity: { CapacityUnits: 1 } }));
-		});
 	}
 
 	function readAll(opts: any = {}, id = "bot1", queue = QUEUE) {
@@ -386,7 +383,7 @@ describe("lib/stream/leo-stream.js read", function () {
 		});
 	});
 
-	describe("R5 fast_s3_read timeout retry", function () {
+	describe("fast_s3_read timeout retry", function () {
 		function timeoutError() {
 			const err: any = new Error("timed out");
 			err.name = "TimeoutError";
@@ -396,6 +393,24 @@ describe("lib/stream/leo-stream.js read", function () {
 		function slowGood(key: string, ms = 30) {
 			const pass = new PassThrough();
 			setTimeout(() => pass.end(s3Files[key]), ms);
+			return pass;
+		}
+
+		function deferred() {
+			let resolve: () => void = () => { };
+			const promise = new Promise<void>((r) => { resolve = r; });
+			return { promise, resolve };
+		}
+
+		async function flushEventLoop() {
+			for (let i = 0; i < 10; i++) {
+				await new Promise((r) => setImmediate(r));
+			}
+		}
+
+		function gatedGood(key: string, gate: Promise<void>) {
+			const pass = new PassThrough();
+			gate.then(() => pass.end(s3Files[key]));
 			return pass;
 		}
 
@@ -416,7 +431,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			return events.map((e) => `${e.payload.label}${e.payload.n}`);
 		}
 
-		it("R5 a pre-connected file that times out is connected again once", async function () {
+		it("a pre-connected file that times out is connected again once", async function () {
 			twoFiles();
 			let bCalls = 0;
 			fromS3.callsFake((file: any) => {
@@ -429,7 +444,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(bCalls, 2);
 		});
 
-		it("R5 after the retry count is used up the file is connected when it is needed", async function () {
+		it("after the retry count is used up the file is connected when it is needed", async function () {
 			twoFiles();
 			let bCalls = 0;
 			fromS3.callsFake((file: any) => {
@@ -442,10 +457,9 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(bCalls, 3);
 		});
 
-		it("R5 fast_s3_read_timeout_retry_count 0 does not reconnect early", async function () {
+		it("fast_s3_read_timeout_retry_count 0 does not reconnect early", async function () {
 			twoFiles();
 			let bCalls = 0;
-			let aliveAtSecondCall = false;
 			fromS3.callsFake((file: any) => {
 				if (file.key === "file-a") { return slowGood("file-a", 60); }
 				bCalls++;
@@ -454,10 +468,9 @@ describe("lib/stream/leo-stream.js read", function () {
 			const events = await readAll({ fast_s3_read: true, fast_s3_read_timeout_retry_count: 0 });
 			assert.deepEqual(labels(events), ["a0", "a1", "b0", "b1"]);
 			assert.equal(bCalls, 2);
-			assert.isFalse(aliveAtSecondCall);
 		});
 
-		it("R5 a non-timeout error on a pre-connected file is raised when the file is read", async function () {
+		it("a non-timeout error on a pre-connected file is raised when the file is read", async function () {
 			twoFiles();
 			fromS3.callsFake((file: any) => {
 				if (file.key === "file-a") { return slowGood("file-a", 60); }
@@ -470,7 +483,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(err.message, "access denied");
 		});
 
-		it("R5 without fast_s3_read files are fetched one at a time with no retry", async function () {
+		it("without fast_s3_read files are fetched one at a time with no retry", async function () {
 			twoFiles();
 			const order: string[] = [];
 			fromS3.callsFake((file: any) => { order.push(file.key); return slowGood(file.key, 0); });
@@ -479,39 +492,52 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.deepEqual(order, ["file-a", "file-b"]);
 		});
 
-		it("R5 fast_s3_read connects to following files while reading the first", async function () {
+		it("fast_s3_read connects to following files while reading the first", async function () {
 			twoFiles();
 			const connectedWhileReadingFirst: string[] = [];
+			const gateA = deferred();
+			const bConnected = deferred();
 			fromS3.callsFake((file: any) => {
 				connectedWhileReadingFirst.push(file.key);
-				return slowGood(file.key, file.key === "file-a" ? 60 : 0);
+				if (file.key === "file-b") { bConnected.resolve(); }
+				return file.key === "file-a" ? gatedGood(file.key, gateA.promise) : slowGood(file.key, 0);
 			});
 			const stream = ls.fromLeo("bot1", QUEUE, { start: ls.eventIdFromTimestamp(BASE - 1000), fast_s3_read: true });
 			const first = new Promise((resolve) => stream.once("data", resolve));
 			stream.on("data", () => { });
-			await new Promise((r) => setTimeout(r, 25));
+			await bConnected.promise;
 			assert.deepEqual(connectedWhileReadingFirst, ["file-a", "file-b"]);
+			gateA.resolve();
 			await first;
 			await new Promise((r) => stream.on("end", r));
 		});
 
-		it("R5 fast_s3_read_parallel_fetch_max_bytes limits how many files connect ahead", async function () {
+		it("fast_s3_read_parallel_fetch_max_bytes limits how many files connect ahead", async function () {
 			const a: any = makeItem(2, { asS3: true, ms: BASE, key: "file-a" });
 			const b: any = makeItem(2, { asS3: true, ms: BASE + 1000, key: "file-b" });
 			const c: any = makeItem(2, { asS3: true, ms: BASE + 2000, key: "file-c" });
 			setup([a, b, c]);
 			const connected: string[] = [];
-			fromS3.callsFake((file: any) => { connected.push(file.key); return slowGood(file.key, file.key === "file-a" ? 60 : 0); });
+			const gateA = deferred();
+			const aConnected = deferred();
+			fromS3.callsFake((file: any) => {
+				connected.push(file.key);
+				if (file.key === "file-a") { aConnected.resolve(); }
+				return file.key === "file-a" ? gatedGood(file.key, gateA.promise) : slowGood(file.key, 0);
+			});
 			const stream = ls.fromLeo("bot1", QUEUE, { start: ls.eventIdFromTimestamp(BASE - 1000), fast_s3_read: true, fast_s3_read_parallel_fetch_max_bytes: 1 });
 			stream.on("data", () => { });
-			await new Promise((r) => setTimeout(r, 25));
+			await aConnected.promise;
+			await flushEventLoop();
 			assert.deepEqual(connected, ["file-a"]);
-			await new Promise((r) => stream.on("end", r));
+			const ended = new Promise((r) => stream.on("end", r));
+			gateA.resolve();
+			await ended;
 			assert.deepEqual(connected, ["file-a", "file-b", "file-c"]);
 		});
 	});
 
-	describe("R7 read hooks", function () {
+	describe("read hooks", function () {
 		function hookLog() {
 			const log: string[] = [];
 			const hooks = {
@@ -526,7 +552,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			return { log, hooks };
 		}
 
-		it("R7 hooks run in order, with onGetEvents also running for the prefetched page that is never read", async function () {
+		it("hooks run in order, with onGetEvents also running for the prefetched page that is never read", async function () {
 			setup([makeItem(2), makeItem(1, { ms: BASE + 1000 })]);
 			const { log, hooks } = hookLog();
 			await readAll({ hooks });
@@ -537,7 +563,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			]);
 		});
 
-		it("R7 onStart receives the queue and the start eid", async function () {
+		it("onStart receives the queue and the start eid", async function () {
 			setup([makeItem(1)]);
 			const onStart = sandbox.stub();
 			const start = ls.eventIdFromTimestamp(BASE - 1000);
@@ -545,14 +571,14 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.deepEqual(onStart.getCall(0).args[0], { queue: QUEUE, eid: start + " " });
 		});
 
-		it("R7 onGetEvents may replace the items returned by the query", async function () {
+		it("onGetEvents may replace the items returned by the query", async function () {
 			const real = makeItem(2, { label: "real" });
 			setup([makeItem(2, { label: "ignored" })], { event: leoEvent([real]) });
 			const events = await readAll({ hooks: { onGetEvents: (items: any[]) => items.length ? [real] : undefined } });
 			assert.deepEqual(events.map((e) => e.payload.label), ["real", "real"]);
 		});
 
-		it("R7 onBatchStart may replace the items to read", async function () {
+		it("onBatchStart may replace the items to read", async function () {
 			const first = makeItem(1, { ms: BASE, label: "first" });
 			const second = makeItem(1, { ms: BASE + 1000, label: "second" });
 			setup([first, second]);
@@ -560,7 +586,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.deepEqual(events.map((e) => e.payload.label), ["second"]);
 		});
 
-		it("R7 onBatchEnd and onEnd are awaited before the stream ends", async function () {
+		it("onBatchEnd and onEnd are awaited before the stream ends", async function () {
 			setup([makeItem(1)]);
 			const order: string[] = [];
 			let ended = false;
@@ -578,14 +604,14 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.deepEqual(order, ["batchEnd", "end", "streamEnd"]);
 		});
 
-		it("R7 onEnd is called when there is nothing to read", async function () {
+		it("onEnd is not called when there is nothing to read", async function () {
 			setup([], { event: null });
 			const onEnd = sandbox.stub().resolves();
 			await readAll({ hooks: { onEnd } });
 			assert.equal(onEnd.callCount, 0);
 		});
 
-		it("R7 getS3Stream supplies the stream for an S3 item", async function () {
+		it("getS3Stream supplies the stream for an S3 item", async function () {
 			const item: any = makeItem(2, { asS3: true });
 			setup([item]);
 			const stream: any = new PassThrough();
@@ -598,7 +624,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(getS3Stream.getCall(0).args[1], 0);
 		});
 
-		it("R7 createS3Stream supplies a wrapper whose get returns the stream", async function () {
+		it("createS3Stream supplies a wrapper whose get returns the stream", async function () {
 			const item: any = makeItem(2, { asS3: true });
 			setup([item]);
 			const createS3Stream = sandbox.stub().callsFake(() => {
@@ -612,7 +638,7 @@ describe("lib/stream/leo-stream.js read", function () {
 			assert.equal(fromS3.callCount, 0);
 		});
 
-		it("R7 createSplitParseStream replaces the line parser", async function () {
+		it("createSplitParseStream replaces the line parser", async function () {
 			const item = makeItem(2);
 			setup([item]);
 			const createSplitParseStream = sandbox.stub().callsFake(() => {

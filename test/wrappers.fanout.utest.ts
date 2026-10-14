@@ -62,8 +62,8 @@ describe("wrappers/fanout.js", function () {
 		});
 	}
 
-	describe("F1 process safety", function () {
-		it("F1 master with instances above 1 and no Lambda environment forks through child_process", async function () {
+	describe("process safety", function () {
+		it("master with instances above 1 and no Lambda environment forks through child_process", async function () {
 			sandbox.useFakeTimers({ now: 1700000000000, toFake: ["Date"] });
 			const handler = fanout((event, ctx, cb) => cb(null), { instances: 2 });
 			let err;
@@ -73,8 +73,8 @@ describe("wrappers/fanout.js", function () {
 		});
 	});
 
-	describe("F1 reduceCheckpoints", function () {
-		it("F1 reduceCheckpoints returns the single worker checkpoints with eid set", function () {
+	describe("reduceCheckpoints", function () {
+		it("reduceCheckpoints returns the single worker checkpoints with eid set", function () {
 			const result = fanout.reduceCheckpoints([{
 				iid: 0,
 				checkpoints: { bot1: { read: { "queue:q": { checkpoint: "z/2", records: 3 } }, write: {} } }
@@ -84,7 +84,7 @@ describe("wrappers/fanout.js", function () {
 			}]);
 		});
 
-		it("F1 reduceCheckpoints keeps the lowest checkpoint across workers", function () {
+		it("reduceCheckpoints keeps the lowest checkpoint across workers", function () {
 			const result = fanout.reduceCheckpoints([
 				{ checkpoints: { bot1: { read: { "queue:q": { checkpoint: "z/5", records: 1 } }, write: {} } } },
 				{ checkpoints: { bot1: { read: { "queue:q": { checkpoint: "z/3", records: 2 } }, write: {} } } },
@@ -93,7 +93,7 @@ describe("wrappers/fanout.js", function () {
 			assert.deepEqual(result[0].bot1.read["queue:q"], { checkpoint: "z/3", records: 2, eid: "z/3" });
 		});
 
-		it("F1 reduceCheckpoints keeps the first worker checkpoint when it is already lowest", function () {
+		it("reduceCheckpoints keeps the first worker checkpoint when it is already lowest", function () {
 			const result = fanout.reduceCheckpoints([
 				{ checkpoints: { bot1: { read: { "queue:q": { checkpoint: "z/1", records: 1 } }, write: {} } } },
 				{ checkpoints: { bot1: { read: { "queue:q": { checkpoint: "z/9", records: 2 } }, write: {} } } }
@@ -101,7 +101,7 @@ describe("wrappers/fanout.js", function () {
 			assert.deepEqual(result[0].bot1.read["queue:q"], { checkpoint: "z/1", records: 1, eid: "z/1" });
 		});
 
-		it("F1 reduceCheckpoints takes write checkpoints from the first worker only", function () {
+		it("reduceCheckpoints takes write checkpoints from the first worker only", function () {
 			const result = fanout.reduceCheckpoints([
 				{ checkpoints: { bot1: { read: {}, write: { "queue:w": { checkpoint: "z/1" } } } } },
 				{ checkpoints: { bot1: { read: {}, write: { "queue:w": { checkpoint: "z/0" } } } } }
@@ -109,18 +109,18 @@ describe("wrappers/fanout.js", function () {
 			assert.deepEqual(result[0].bot1.write, { "queue:w": { checkpoint: "z/1" } });
 		});
 
-		it("F1 reduceCheckpoints throws when any worker reported an error", function () {
+		it("reduceCheckpoints throws when any worker reported an error", function () {
 			assert.throws(() => fanout.reduceCheckpoints([
 				{ checkpoints: { bot1: { read: {}, write: {} } } },
 				{ error: "worker failed" }
 			]), "errors from sub lambdas");
 		});
 
-		it("F1 reduceCheckpoints ignores empty worker responses", function () {
+		it("reduceCheckpoints ignores empty worker responses", function () {
 			assert.deepEqual(fanout.reduceCheckpoints([null, {}]), [{}]);
 		});
 
-		it("F1 reduceCheckpoints throws a TypeError when a later worker has a queue the first lacks", function () {
+		it("reduceCheckpoints throws a TypeError when a later worker has a queue the first lacks", function () {
 			assert.throws(() => fanout.reduceCheckpoints([
 				{ checkpoints: { bot1: { read: { "queue:a": { checkpoint: "z/1" } }, write: {} } } },
 				{ checkpoints: { bot1: { read: { "queue:b": { checkpoint: "z/2" } }, write: {} } } }
@@ -128,8 +128,8 @@ describe("wrappers/fanout.js", function () {
 		});
 	});
 
-	describe("F1 callCheckpointOnResponses", function () {
-		it("F1 callCheckpointOnResponses checkpoints read then write queues with the type set", function (done) {
+	describe("callCheckpointOnResponses", function () {
+		it("callCheckpointOnResponses checkpoints read then write queues with the type set", function (done) {
 			const checkpoint = sandbox.stub().callsFake((id, queue, params, cb) => cb(null, "ok"));
 			fanout.callCheckpointOnResponses(checkpoint, (err, results) => {
 				assert.isNull(err);
@@ -141,7 +141,7 @@ describe("wrappers/fanout.js", function () {
 			})([{ checkpoints: { bot1: { read: { "queue:r": { checkpoint: "z/2", records: 4 } }, write: { "queue:w": { checkpoint: "z/7" } } } } }]);
 		});
 
-		it("F1 callCheckpointOnResponses calls back true when no worker processed events", function (done) {
+		it("callCheckpointOnResponses calls back true when no worker processed events", function (done) {
 			const checkpoint = sandbox.stub();
 			fanout.callCheckpointOnResponses(checkpoint, (err, result) => {
 				assert.isNull(err);
@@ -151,7 +151,7 @@ describe("wrappers/fanout.js", function () {
 			})([{ checkpoints: {} }]);
 		});
 
-		it("F1 callCheckpointOnResponses only checkpoints the first bot", function (done) {
+		it("callCheckpointOnResponses only checkpoints the first bot", function (done) {
 			const checkpoint = sandbox.stub().callsFake((id, queue, params, cb) => cb());
 			fanout.callCheckpointOnResponses(checkpoint, () => {
 				assert.deepEqual(checkpoint.getCalls().map((c) => c.args[0]), ["bot1"]);
@@ -164,7 +164,7 @@ describe("wrappers/fanout.js", function () {
 			}]);
 		});
 
-		it("F1 callCheckpointOnResponses reports a checkpoint failure", function (done) {
+		it("callCheckpointOnResponses reports a checkpoint failure", function (done) {
 			const checkpoint = sandbox.stub().callsFake((id, queue, params, cb) => cb("Stale Checkpoint"));
 			fanout.callCheckpointOnResponses(checkpoint, (err) => {
 				assert.equal(err, "Stale Checkpoint");
@@ -173,7 +173,7 @@ describe("wrappers/fanout.js", function () {
 		});
 	});
 
-	describe("F1 eventPartition hashing", function () {
+	describe("eventPartition hashing", function () {
 		async function readThroughWorker(iid: number, icount: number, events: any[], partition?: any, maxOverride?: any) {
 			const reader: any = leo.streams.eventstream.readArray(events);
 			reader.checkpoint = () => "cp";
@@ -190,27 +190,27 @@ describe("wrappers/fanout.js", function () {
 			return { out: readerOut, stream };
 		}
 
-		it("F1 string eventPartition values are hashed and only the matching instance processes the event", async function () {
+		it("string eventPartition values are hashed and only the matching instance processes the event", async function () {
 			const events = [{ eid: "e1", k: "a" }, { eid: "e2", k: "b" }, { eid: "e3", k: "c" }];
 			const part = (e) => e.k;
 			assert.deepEqual((await readThroughWorker(1, 3, events, part)).out.map((e) => e.eid), ["e1"]);
 			assert.deepEqual((await readThroughWorker(2, 3, events, part)).out.map((e) => e.eid), ["e2"]);
 		});
 
-		it("F1 numeric and array partition values hash to their value and the sum of their parts", async function () {
+		it("numeric and array partition values hash to their value and the sum of their parts", async function () {
 			const events = [{ eid: "n", k: 100 }, { eid: "arr", k: ["a", "b"] }];
 			const part = (e) => e.k;
 			assert.deepEqual((await readThroughWorker(1, 3, events, part)).out.map((e) => e.eid), ["n"]);
 			assert.deepEqual((await readThroughWorker(2, 3, events, part)).out, []);
 		});
 
-		it("F1 partition defaults to the event eid and handles negative hashes", async function () {
+		it("partition defaults to the event eid and handles negative hashes", async function () {
 			const events = [{ eid: "order-1" }, { eid: "order-2" }, { eid: "order-3" }, { eid: "order-4" }];
 			assert.deepEqual((await readThroughWorker(1, 3, events)).out.map((e) => e.eid), ["order-2"]);
 			assert.deepEqual((await readThroughWorker(2, 3, events)).out.map((e) => e.eid), ["order-1", "order-4"]);
 		});
 
-		it("F1 a partition object argument supplies eventPartition", async function () {
+		it("a partition object argument supplies eventPartition", async function () {
 			const events = [{ eid: "e1", k: "a" }, { eid: "e2", k: "b" }];
 			const reader: any = leo.streams.eventstream.readArray(events);
 			originalFromLeo.returns(reader);
@@ -221,13 +221,13 @@ describe("wrappers/fanout.js", function () {
 			assert.deepEqual(out.map((e) => e.eid), ["e2"]);
 		});
 
-		it("F1 the wrapped reader keeps the original checkpoint and get functions", async function () {
+		it("the wrapped reader keeps the original checkpoint and get functions", async function () {
 			const { stream } = await readThroughWorker(1, 2, [{ eid: "e1" }]);
 			assert.equal(stream.checkpoint(), "cp");
 			assert.equal(stream.get(), "got");
 		});
 
-		it("F1 reads are capped at the lowest of the requested max and the master maxeid", async function () {
+		it("reads are capped at the lowest of the requested max and the master maxeid", async function () {
 			await readThroughWorker(1, 2, [], undefined, undefined);
 			assert.equal(originalFromLeo.getCall(0).args[2].maxOverride, "z/2023/11/14/22/13/1700000000000");
 			await readThroughWorker(1, 2, [], undefined, "z/2020/01/01/00/00/1");
@@ -236,15 +236,15 @@ describe("wrappers/fanout.js", function () {
 			assert.equal(originalFromLeo.getCall(2).args[2].maxOverride, "z/2023/11/14/22/13/1700000000000");
 		});
 
-		it("F1 the override is installed on both leo.streams.fromLeo and leo.read", function () {
+		it("the override is installed on both leo.streams.fromLeo and leo.read", function () {
 			fanout(() => { });
 			assert.equal(leo.streams.fromLeo, leo.read);
 			assert.notEqual(leo.read, originalFromLeo);
 		});
 	});
 
-	describe("F1 checkpoint/lock overrides", function () {
-		it("F1 checkLock runs the real lock check only on instance 0", function (done) {
+	describe("checkpoint/lock overrides", function () {
+		it("checkLock runs the real lock check only on instance 0", function (done) {
 			fanout(() => { });
 			leo.bot.checkLock({ iid: 0 }, "run1", 1000, (err, data) => {
 				assert.deepEqual(data, { original: true });
@@ -253,7 +253,7 @@ describe("wrappers/fanout.js", function () {
 			});
 		});
 
-		it("F1 checkLock is a no-op on worker instances", function (done) {
+		it("checkLock is a no-op on worker instances", function (done) {
 			fanout(() => { });
 			leo.bot.checkLock({ iid: 2 }, "run1", 1000, (err, data) => {
 				assert.isNull(err);
@@ -263,7 +263,7 @@ describe("wrappers/fanout.js", function () {
 			});
 		});
 
-		it("F1 checkLock takes the instance from FANOUT_iid when running locally", function (done) {
+		it("checkLock takes the instance from FANOUT_iid when running locally", function (done) {
 			fanout(() => { });
 			process.env.FANOUT_iid = "3";
 			process.env.FANOUT_icount = "4";
@@ -279,7 +279,7 @@ describe("wrappers/fanout.js", function () {
 			});
 		});
 
-		it("F1 reportComplete reports only from instance 0", function (done) {
+		it("reportComplete reports only from instance 0", function (done) {
 			fanout(() => { });
 			leo.bot.reportComplete({ iid: 0 }, "run1", "complete", "", {}, (err, data) => {
 				assert.deepEqual(data, { original: true });
@@ -292,22 +292,22 @@ describe("wrappers/fanout.js", function () {
 			});
 		});
 
-		it("F1 options passed as a third argument are ignored when eventPartition is not a function", function () {
+		it("options passed as a third argument are ignored when eventPartition is not a function", function () {
 			fanout(() => { }, undefined, { allowCheckpoint: true });
 			assert.notEqual(leo.bot.checkpoint, originalCheckpoint);
 		});
 
-		it("F1 options passed as a third argument are honored when eventPartition is a function", function () {
+		it("options passed as a third argument are honored when eventPartition is a function", function () {
 			fanout(() => { }, (e) => e.eid, { allowCheckpoint: true });
 			assert.equal(leo.bot.checkpoint, originalCheckpoint);
 		});
 
-		it("F1 allowCheckpoint leaves the real checkpoint function in place", function () {
+		it("allowCheckpoint leaves the real checkpoint function in place", function () {
 			fanout(() => { }, { allowCheckpoint: true });
 			assert.equal(leo.bot.checkpoint, originalCheckpoint);
 		});
 
-		it("F1 checkpoint is captured for the master instead of written", async function () {
+		it("checkpoint is captured for the master instead of written", async function () {
 			let resolved;
 			const handler = fanout((event, ctx, cb) => {
 				leo.bot.checkpoint("bot1_reader", "queue:q", { eid: "z/1", units: 2, source_timestamp: 10, started_timestamp: 20, ended_timestamp: 30 }, () => {
@@ -331,8 +331,8 @@ describe("wrappers/fanout.js", function () {
 		});
 	});
 
-	describe("F1 worker invocation", function () {
-		it("F1 worker returns error, checkpoints, data and iid and trims 3s from the remaining time", async function () {
+	describe("worker invocation", function () {
+		it("worker returns error, checkpoints, data and iid and trims 3s from the remaining time", async function () {
 			let remaining;
 			const handler = fanout((event, ctx, cb) => {
 				remaining = ctx.getRemainingTimeInMillis();
@@ -343,21 +343,21 @@ describe("wrappers/fanout.js", function () {
 			assert.deepEqual(response, { error: null, checkpoints: {}, data: "worker-data", iid: 1 });
 		});
 
-		it("F1 worker resolves from a promise returned by the handler", async function () {
+		it("worker resolves from a promise returned by the handler", async function () {
 			const handler = fanout(() => Promise.resolve("promised"));
 			const response = await handler(workerEvent(2, 3), context());
 			assert.equal(response.data, "promised");
 			assert.equal(response.iid, 2);
 		});
 
-		it("F1 worker reports a rejected promise as the response error", async function () {
+		it("worker reports a rejected promise as the response error", async function () {
 			const boom = new Error("handler failed");
 			const handler = fanout(() => Promise.reject(boom));
 			const response = await handler(workerEvent(1, 2), context());
 			assert.equal(response.error, boom);
 		});
 
-		it("F1 worker only responds once when the handler calls back and returns a promise", async function () {
+		it("worker only responds once when the handler calls back and returns a promise", async function () {
 			const handler = fanout((event, ctx, cb) => {
 				cb(null, "first");
 				return Promise.resolve("second");
@@ -366,7 +366,7 @@ describe("wrappers/fanout.js", function () {
 			assert.equal(response.data, "first");
 		});
 
-		it("F1 FANOUT_ environment variables turn an unmarked event into a worker", async function () {
+		it("FANOUT_ environment variables turn an unmarked event into a worker", async function () {
 			process.env.FANOUT_iid = "2";
 			process.env.FANOUT_icount = "4";
 			process.env.FANOUT_maxeid = "z/local";
@@ -378,12 +378,12 @@ describe("wrappers/fanout.js", function () {
 		});
 	});
 
-	describe("F1 master invocation", function () {
+	describe("master invocation", function () {
 		beforeEach(() => {
 			sandbox.useFakeTimers({ now: 1700000000000, toFake: ["Date"] });
 		});
 
-		it("F1 master with a single instance runs the handler as iid 0 with the maxeid stamp", async function () {
+		it("master with a single instance runs the handler as iid 0 with the maxeid stamp", async function () {
 			let seen;
 			const handler = fanout((event, ctx, cb) => { seen = event.__cron; cb(null, "data"); }, { instances: 1 });
 			const result = await handler({ __cron: { id: "bot1" } }, context());
@@ -391,7 +391,7 @@ describe("wrappers/fanout.js", function () {
 			assert.isTrue(result);
 		});
 
-		it("F1 master clamps instances to at least 1 and uses an instances function", async function () {
+		it("master clamps instances to at least 1 and uses an instances function", async function () {
 			let seen;
 			const instances = sandbox.stub().returns(0);
 			const handler = fanout((event, ctx, cb) => { seen = event.__cron.icount; cb(null); }, { instances });
@@ -401,7 +401,7 @@ describe("wrappers/fanout.js", function () {
 			assert.equal(instances.getCall(0).args[1].id, "bot1");
 		});
 
-		it("F1 master writes the reduced checkpoints through the real checkpoint function", async function () {
+		it("master writes the reduced checkpoints through the real checkpoint function", async function () {
 			const handler = fanout((event, ctx, cb) => {
 				leo.bot.checkpoint("bot1", "queue:q", { eid: "z/5", units: 7, source_timestamp: 1 }, () => cb(null));
 			}, { instances: 1 });
@@ -418,14 +418,14 @@ describe("wrappers/fanout.js", function () {
 			}]);
 		});
 
-		it("F1 master surfaces a handler error as a failure", async function () {
+		it("master surfaces a handler error as a failure", async function () {
 			const handler = fanout((event, ctx, cb) => cb(new Error("bad")), { instances: 1 });
 			let err;
 			try { await handler({ __cron: {} }, context()); } catch (e) { err = e; }
 			assert.equal(err.message, "errors from sub lambdas");
 		});
 
-		it("F1 master invokes the other instances through Lambda and merges their checkpoints", async function () {
+		it("master invokes the other instances through Lambda and merges their checkpoints", async function () {
 			process.env.AWS_LAMBDA_FUNCTION_NAME = "my-fn";
 			process.env.AWS_LAMBDA_FUNCTION_VERSION = "7";
 			process.env.AWS_DEFAULT_REGION = "us-west-2";
@@ -455,7 +455,7 @@ describe("wrappers/fanout.js", function () {
 			assert.equal(originalCheckpoint.getCall(0).args[2].checkpoint, "z/8");
 		});
 
-		it("F1 master fails when a Lambda instance returns a FunctionError", async function () {
+		it("master fails when a Lambda instance returns a FunctionError", async function () {
 			process.env.AWS_LAMBDA_FUNCTION_NAME = "my-fn";
 			sandbox.stub(Lambda.prototype, "invoke").callsFake((params: any, cb: any) => cb(null, { FunctionError: "Unhandled", Payload: "boom" }));
 			const handler = fanout((event, ctx, cb) => cb(null), { instances: 2 });
@@ -464,7 +464,7 @@ describe("wrappers/fanout.js", function () {
 			assert.equal(err, "boom");
 		});
 
-		it("F1 master fails when the Lambda invoke itself errors", async function () {
+		it("master fails when the Lambda invoke itself errors", async function () {
 			process.env.AWS_LAMBDA_FUNCTION_NAME = "my-fn";
 			const boom = new Error("invoke failed");
 			sandbox.stub(Lambda.prototype, "invoke").callsFake((params: any, cb: any) => cb(boom));
@@ -474,7 +474,7 @@ describe("wrappers/fanout.js", function () {
 			assert.equal(err, boom);
 		});
 
-		it("F1 master caps instances at maxInstances", async function () {
+		it("master caps instances at maxInstances", async function () {
 			process.env.AWS_LAMBDA_FUNCTION_NAME = "my-fn";
 			const invoke = sandbox.stub(Lambda.prototype, "invoke").callsFake((params: any, cb: any) => cb(null, { Payload: "null" }));
 			const handler = fanout((event, ctx, cb) => cb(null), { instances: 10, maxInstances: 3 });

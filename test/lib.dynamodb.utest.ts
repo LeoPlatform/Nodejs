@@ -23,8 +23,8 @@ describe("lib/dynamodb.js", function () {
 		sandbox.restore();
 	});
 
-	describe("D1 get/put/merge/update/scan", function () {
-		it("D1 get reads with ConsistentRead and returns Item", function (done) {
+	describe("get/put/merge/update/scan", function () {
+		it("get reads with ConsistentRead and returns Item", function (done) {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: { id: "a", v: 1 } }));
 			const ddb = build({ get });
 			ddb.get("T", "a", (err, item) => {
@@ -40,7 +40,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 get uses opts.id as the key name", function (done) {
+		it("get uses opts.id as the key name", function (done) {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ get });
 			ddb.get("T", "a", { id: "pk" }, (err, item) => {
@@ -50,7 +50,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 get passes the error to the callback", function (done) {
+		it("get passes the error to the callback", function (done) {
 			const boom = new Error("boom");
 			const get = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const ddb = build({ get });
@@ -60,7 +60,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 put writes the item with the id merged in and returns Success", function (done) {
+		it("put writes the item with the id merged in and returns Success", function (done) {
 			const put = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ put });
 			ddb.put("T", "a", { x: 1 }, (err, result) => {
@@ -76,7 +76,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 put uses opts.id for the key name", function (done) {
+		it("put uses opts.id for the key name", function (done) {
 			const put = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ put });
 			ddb.put("T", "a", { x: 1 }, { id: "pk" }, () => {
@@ -86,7 +86,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 put passes the error to the callback", function (done) {
+		it("put passes the error to the callback", function (done) {
 			const boom = new Error("put failed");
 			const put = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const ddb = build({ put });
@@ -97,7 +97,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 merge deep-merges onto the existing item and puts it back", function (done) {
+		it("merge deep-merges onto the existing item and puts it back", function (done) {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: { id: "a", nested: { a: 1, b: 2 } } }));
 			const put = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ get, put });
@@ -109,7 +109,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 merge returns the get error without putting", function (done) {
+		it("merge returns the get error without putting", function (done) {
 			const boom = new Error("get failed");
 			const get = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const put = sandbox.stub();
@@ -121,7 +121,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 update builds a set expression and skips undefined values", function (done) {
+		it("update builds a set expression and skips undefined values", function (done) {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ update });
 			ddb.update("T", { id: "a" }, { one: 1, two: undefined, "three-x": "3" }, () => {
@@ -137,7 +137,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 update uses if_not_exists for fields marked once", function (done) {
+		it("update uses if_not_exists for fields marked once", function (done) {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ update });
 			ddb.update("T", { id: "a" }, { one: 1, two: 2 }, { fields: { one: { once: true } } }, () => {
@@ -146,7 +146,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 update passes ReturnValues through", function (done) {
+		it("update passes ReturnValues through", function (done) {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ update });
 			ddb.update("T", { id: "a" }, { one: 1 }, { ReturnValues: "ALL_NEW" }, () => {
@@ -155,7 +155,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 update with no settable fields sends undefined expression parts", function (done) {
+		it("update with no settable fields sends undefined expression parts", function (done) {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ update });
 			ddb.update("T", { id: "a" }, { one: undefined }, () => {
@@ -167,7 +167,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 updateMulti runs one update per item and collects results in order", function (done) {
+		it("updateMulti runs one update per item and collects results in order", function (done) {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, { table: p.TableName }));
 			const ddb = build({ update });
 			ddb.updateMulti([
@@ -182,7 +182,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 updateMulti reports the first error", function (done) {
+		it("updateMulti reports the first error", function (done) {
 			const boom = new Error("nope");
 			const update = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const ddb = build({ update });
@@ -192,7 +192,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 scan returns Items", function (done) {
+		it("scan returns Items", function (done) {
 			const scan = sandbox.stub().callsFake((p, cb) => cb(null, { Items: [{ id: 1 }, { id: 2 }] }));
 			const ddb = build({ scan });
 			ddb.scan("T", null, (err, items) => {
@@ -203,7 +203,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 scan passes the error to the callback", function (done) {
+		it("scan passes the error to the callback", function (done) {
 			const boom = new Error("scan failed");
 			const scan = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const ddb = build({ scan });
@@ -214,8 +214,8 @@ describe("lib/dynamodb.js", function () {
 		});
 	});
 
-	describe("D2 getSetting/saveSetting", function () {
-		it("D2 saveSetting puts a value row into LeoSettings", function (done) {
+	describe("getSetting/saveSetting", function () {
+		it("saveSetting puts a value row into LeoSettings", function (done) {
 			const put = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ put });
 			ddb.saveSetting("s1", { a: 1 }, (err, result) => {
@@ -227,7 +227,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D2 getSetting reads the row from LeoSettings", function (done) {
+		it("getSetting reads the row from LeoSettings", function (done) {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: { id: "s1", value: 5 } }));
 			const ddb = build({ get });
 			ddb.getSetting("s1", (err, item) => {
@@ -237,20 +237,20 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D2 getSettingPromise resolves the stored row", async function () {
+		it("getSettingPromise resolves the stored row", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: { id: "s1", value: 5 } }));
 			const ddb = build({ get });
 			assert.deepEqual(await ddb.getSettingPromise("s1"), { id: "s1", value: 5 });
 		});
 
-		it("D2 setSettingPromise resolves Success", async function () {
+		it("setSettingPromise resolves Success", async function () {
 			const put = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const ddb = build({ put });
 			assert.equal(await ddb.setSettingPromise("s1", 9), "Success");
 			assert.deepEqual(put.getCall(0).args[0].Item, { id: "s1", value: 9 });
 		});
 
-		it("D2 getSettingPromise rejects with the get error", async function () {
+		it("getSettingPromise rejects with the get error", async function () {
 			const boom = new Error("get failed");
 			const get = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const ddb = build({ get });
@@ -260,8 +260,8 @@ describe("lib/dynamodb.js", function () {
 		});
 	});
 
-	describe("D1 query", function () {
-		it("D1 query returns data with _stats when there is no LastEvaluatedKey", async function () {
+	describe("query", function () {
+		it("query returns data with _stats when there is no LastEvaluatedKey", async function () {
 			const query = sandbox.stub().callsFake((p, cb) => cb(null, { Items: [{ id: 1 }], Count: 1 }));
 			const ddb = build({ query });
 			const data = await ddb.query({ TableName: "T" });
@@ -269,7 +269,7 @@ describe("lib/dynamodb.js", function () {
 			assert.deepEqual(data._stats, { mb: 1, count: 1 });
 		});
 
-		it("D1 query pages with ExclusiveStartKey and merges Items/Count/ScannedCount/capacity", async function () {
+		it("query pages with ExclusiveStartKey and merges Items/Count/ScannedCount/capacity", async function () {
 			const query = sandbox.stub();
 			query.onFirstCall().callsFake((p, cb) => cb(null, {
 				Items: [{ id: 1 }], Count: 1, ScannedCount: 2, LastEvaluatedKey: { id: 1 }, ConsumedCapacity: { CapacityUnits: 1 }
@@ -288,7 +288,7 @@ describe("lib/dynamodb.js", function () {
 			assert.deepEqual(query.getCall(1).args[0].ExclusiveStartKey, { id: 1 });
 		});
 
-		it("D1 query stops paging once the mb limit is reached", async function () {
+		it("query stops paging once the mb limit is reached", async function () {
 			const query = sandbox.stub().callsFake((p, cb) => cb(null, { Items: [{ id: 1 }], Count: 1, LastEvaluatedKey: { id: 1 } }));
 			const ddb = build({ query });
 			const data = await ddb.query({ TableName: "T" }, { mb: 1 });
@@ -296,21 +296,21 @@ describe("lib/dynamodb.js", function () {
 			assert.deepEqual(data.LastEvaluatedKey, { id: 1 });
 		});
 
-		it("D1 query stops paging once the count limit is reached", async function () {
+		it("query stops paging once the count limit is reached", async function () {
 			const query = sandbox.stub().callsFake((p, cb) => cb(null, { Items: [{ id: 1 }], Count: 1, LastEvaluatedKey: { id: 1 } }));
 			const ddb = build({ query });
 			await ddb.query({ TableName: "T" }, { count: 1 });
 			assert.equal(query.callCount, 1);
 		});
 
-		it("D1 query stops paging when progress calls back false", async function () {
+		it("query stops paging when progress calls back false", async function () {
 			const query = sandbox.stub().callsFake((p, cb) => cb(null, { Items: [{ id: 1 }], Count: 1, LastEvaluatedKey: { id: 1 } }));
 			const ddb = build({ query });
 			await ddb.query({ TableName: "T" }, { progress: (d, s, cb) => cb(false) });
 			assert.equal(query.callCount, 1);
 		});
 
-		it("D1 query with method scan calls docClient.scan", async function () {
+		it("query with method scan calls docClient.scan", async function () {
 			const scan = sandbox.stub().callsFake((p, cb) => cb(null, { Items: [], Count: 0 }));
 			const query = sandbox.stub();
 			const ddb = build({ query, scan });
@@ -319,7 +319,7 @@ describe("lib/dynamodb.js", function () {
 			assert.equal(query.callCount, 0);
 		});
 
-		it("D1 query rejects with the client error", async function () {
+		it("query rejects with the client error", async function () {
 			const boom = new Error("query failed");
 			const query = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const ddb = build({ query });
@@ -328,7 +328,7 @@ describe("lib/dynamodb.js", function () {
 			assert.equal(err, boom);
 		});
 
-		it("D1 query rejects when a subsequent page fails", async function () {
+		it("query rejects when a subsequent page fails", async function () {
 			const boom = new Error("page 2 failed");
 			const query = sandbox.stub();
 			query.onFirstCall().callsFake((p, cb) => cb(null, { Items: [{ id: 1 }], Count: 1, LastEvaluatedKey: { id: 1 } }));
@@ -340,8 +340,8 @@ describe("lib/dynamodb.js", function () {
 		});
 	});
 
-	describe("D1 batchGetTable/batchGetHashkey", function () {
-		it("D1 batchGetTable dedupes keys and sends a batchGet per chunk", function (done) {
+	describe("batchGetTable/batchGetHashkey", function () {
+		it("batchGetTable dedupes keys and sends a batchGet per chunk", function (done) {
 			const batchGet = sandbox.stub().callsFake((p, cb) => cb(null, {
 				Responses: { T: p.RequestItems.T.Keys.map((k) => ({ ...k, found: true })) }
 			}));
@@ -358,7 +358,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 batchGetTable splits keys by chunk_size", function (done) {
+		it("batchGetTable splits keys by chunk_size", function (done) {
 			const batchGet = sandbox.stub().callsFake((p, cb) => cb(null, {
 				Responses: { T: p.RequestItems.T.Keys.map((k) => ({ ...k })) }
 			}));
@@ -372,7 +372,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 batchGetTable with no keys calls back with an empty result", function (done) {
+		it("batchGetTable with no keys calls back with an empty result", function (done) {
 			const batchGet = sandbox.stub();
 			const ddb = build({ batchGet });
 			ddb.batchGetTable("T", [], (err, results) => {
@@ -383,7 +383,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 batchGetHashkey maps rows by their hash key", function (done) {
+		it("batchGetHashkey maps rows by their hash key", function (done) {
 			const batchGet = sandbox.stub().callsFake((p, cb) => cb(null, {
 				Responses: { T: [{ pk: "x", v: 1 }, { pk: "y", v: 2 }] }
 			}));
@@ -397,8 +397,8 @@ describe("lib/dynamodb.js", function () {
 		});
 	});
 
-	describe("D1 batchTableWrite/createTableWriteStream", function () {
-		it("D1 batchTableWrite sends the records as RequestItems and returns empty on success", function (done) {
+	describe("batchTableWrite/createTableWriteStream", function () {
+		it("batchTableWrite sends the records as RequestItems and returns empty on success", function (done) {
 			const batchWrite = sandbox.stub().callsFake((p, cb) => cb(null, { UnprocessedItems: {} }));
 			const ddb = build({ batchWrite });
 			const records = [{ PutRequest: { Item: { id: 1 } } }];
@@ -413,7 +413,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 batchTableWrite returns the records with the error on failure", function (done) {
+		it("batchTableWrite returns the records with the error on failure", function (done) {
 			const boom = new Error("write failed");
 			const batchWrite = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const ddb = build({ batchWrite });
@@ -425,7 +425,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 batchTableWrite reports unprocessed records", function (done) {
+		it("batchTableWrite reports unprocessed records", function (done) {
 			const left = [{ PutRequest: { Item: { id: 2 } } }];
 			const batchWrite = sandbox.stub().callsFake((p, cb) => cb(null, { UnprocessedItems: { T: left } }));
 			const ddb = build({ batchWrite });
@@ -436,7 +436,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 createTableWriteStream batches puts into PutRequests and calls end back", function (done) {
+		it("createTableWriteStream batches puts into PutRequests and calls end back", function (done) {
 			const batchWrite = sandbox.stub().callsFake((p, cb) => cb(null, { UnprocessedItems: {} }));
 			const ddb = build({ batchWrite });
 			const stream = ddb.createTableWriteStream("T", { chunk_size: 2, concurrency: 1, concurrency_delay: 1 });
@@ -451,7 +451,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 createTableWriteStream keeps only the newest record per key when keys are given", function (done) {
+		it("createTableWriteStream keeps only the newest record per key when keys are given", function (done) {
 			const batchWrite = sandbox.stub().callsFake((p, cb) => cb(null, { UnprocessedItems: {} }));
 			const ddb = build({ batchWrite });
 			const stream = ddb.createTableWriteStream("T", { keys: ["id", "sort"], chunk_size: 10, concurrency: 1, concurrency_delay: 1 });
@@ -467,7 +467,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 createTableWriteStream with nothing queued ends without writing", function (done) {
+		it("createTableWriteStream with nothing queued ends without writing", function (done) {
 			const batchWrite = sandbox.stub();
 			const ddb = build({ batchWrite });
 			const stream = ddb.createTableWriteStream("T");
@@ -479,7 +479,7 @@ describe("lib/dynamodb.js", function () {
 			});
 		});
 
-		it("D1 createTableWriteStream retries unprocessed records and gives up with an error", function (done) {
+		it("createTableWriteStream retries unprocessed records and gives up with an error", function (done) {
 			this.timeout(5000);
 			const batchWrite = sandbox.stub().callsFake((p, cb) => cb(new Error("always fails")));
 			const ddb = build({ batchWrite });
@@ -494,8 +494,8 @@ describe("lib/dynamodb.js", function () {
 		});
 	});
 
-	describe("D1 config updates", function () {
-		it("D1 the onUpdate listener throws a TypeError because the v3 document client has no service", function () {
+	describe("config updates", function () {
+		it("the onUpdate listener throws a TypeError because the v3 document client has no service", function () {
 			const callbacks: any[] = [];
 			sandbox.stub(DynamoDBDocument, "from").returns({} as unknown as DynamoDBDocument);
 			(dynamodbLib as any)({ onUpdate: (cb) => callbacks.push(cb), aws: { region: "us-west-2" } });
@@ -504,8 +504,8 @@ describe("lib/dynamodb.js", function () {
 		});
 	});
 
-	describe("D1 construction", function () {
-		it("D1 maps legacy maxRetries/httpOptions into client config", function () {
+	describe("construction", function () {
+		it("maps legacy maxRetries/httpOptions into client config", function () {
 			const from = sandbox.stub(DynamoDBDocument, "from").returns({} as unknown as DynamoDBDocument);
 			(dynamodbLib as any)({ onUpdate: () => { }, aws: { region: "us-west-2" } }, {
 				maxRetries: 4,

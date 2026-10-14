@@ -32,8 +32,8 @@ describe("lib/cron.js lifecycle", function () {
 		sandbox.restore();
 	});
 
-	describe("B4 update", function () {
-		it("B4 update merges the bot onto the stored cron row and resolves Success", async function () {
+	describe("update", function () {
+		it("update merges the bot onto the stored cron row and resolves Success", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: { id: "b1", name: "old", paused: false } }));
 			const put = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ get, put });
@@ -43,7 +43,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(put.getCall(0).args[0].Item, { id: "b1", name: "new", paused: false });
 		});
 
-		it("B4 update also invokes the callback", async function () {
+		it("update also invokes the callback", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const put = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ get, put });
@@ -53,7 +53,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(cbArgs, [null, "Success"]);
 		});
 
-		it("B4 update rejects and calls back with the failure", async function () {
+		it("update rejects and calls back with the failure", async function () {
 			const boom = new Error("get failed");
 			const get = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const { cron } = build({ get });
@@ -65,8 +65,8 @@ describe("lib/cron.js lifecycle", function () {
 		});
 	});
 
-	describe("B5 subscribe/createBot", function () {
-		it("B5 subscribe requires id and queue", async function () {
+	describe("subscribe/createBot", function () {
+		it("subscribe requires id and queue", async function () {
 			const { cron } = build({});
 			let err;
 			try { await cron.subscribe("", "q"); } catch (e) { err = e; }
@@ -76,7 +76,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(err.message, "'id' and 'queue' are required");
 		});
 
-		it("B5 subscribe creates a bot that triggers on the queue and resolves the bot ref", async function () {
+		it("subscribe creates a bot that triggers on the queue and resolves the bot ref", async function () {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ update });
 			const result = await cron.subscribe("bot1", "q1", { name: "My Bot" });
@@ -99,7 +99,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.include(params.UpdateExpression, "#name = :name");
 		});
 
-		it("B5 subscribe accepts an array of queues as triggers", async function () {
+		it("subscribe accepts an array of queues as triggers", async function () {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ update });
 			await cron.subscribe("bot1", ["q1", "q2"]);
@@ -107,7 +107,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(values[":triggers"], ["q1", "q2", "queue:q1,q2"]);
 		});
 
-		it("B5 createBot builds write checkpoints from the destination and skips source trigger when settings.time is set", async function () {
+		it("createBot builds write checkpoints from the destination and skips source trigger when settings.time is set", async function () {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ update });
 			await cron.createBot("bot1", {
@@ -122,7 +122,7 @@ describe("lib/cron.js lifecycle", function () {
 			});
 		});
 
-		it("B5 createBot rejects when the dynamodb update fails", async function () {
+		it("createBot rejects when the dynamodb update fails", async function () {
 			const boom = new Error("update failed");
 			const update = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const { cron } = build({ update });
@@ -131,7 +131,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(err, boom);
 		});
 
-		it("B5 createBot merges caller opts into the update options", async function () {
+		it("createBot merges caller opts into the update options", async function () {
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ update });
 			await cron.createBot("bot1", { settings: {} }, { ReturnValues: "ALL_NEW" });
@@ -139,61 +139,61 @@ describe("lib/cron.js lifecycle", function () {
 		});
 	});
 
-	describe("B6 runAgain/setMessage/getLastResult", function () {
-		it("B6 runAgain sets the global run-again flag", function () {
+	describe("runAgain/setMessage/getLastResult", function () {
+		it("runAgain sets the global run-again flag", function () {
 			const { cron } = build({});
 			assert.isUndefined(global.cron_run_again);
 			cron.runAgain();
 			assert.equal(global.cron_run_again, true);
 		});
 
-		it("B6 setMessage wraps a string as a msg entry on the registry", function () {
+		it("setMessage wraps a string as a msg entry on the registry", function () {
 			const { cron, configure } = build({});
 			cron.setMessage("hello");
 			assert.deepEqual(configure.registry.cron_message, [{ msg: "hello" }]);
 		});
 
-		it("B6 setMessage stores non-string messages as given", function () {
+		it("setMessage stores non-string messages as given", function () {
 			const { cron, configure } = build({});
 			const msg = [{ msg: "a", level: "warn" }];
 			cron.setMessage(msg);
 			assert.equal(configure.registry.cron_message, msg);
 		});
 
-		it("B6 getLastResult decodes the gzipped base64 result", function () {
+		it("getLastResult decodes the gzipped base64 result", function () {
 			const encoded = zlib.gzipSync(JSON.stringify({ ok: true })).toString("base64");
 			const { cron } = build({}, { __cron: { lastResult: encoded } });
 			assert.deepEqual(cron.getLastResult(), { ok: true });
 		});
 
-		it("B6 getLastResult returns null when there is no result", function () {
+		it("getLastResult returns null when there is no result", function () {
 			const { cron } = build({}, { __cron: {} });
 			assert.isNull(cron.getLastResult());
 		});
 	});
 
-	describe("B7 getAttachedSystem/getAttachedSystemByAlias", function () {
+	describe("getAttachedSystem/getAttachedSystemByAlias", function () {
 		const systems = {
 			s1: { id: "s1", aliases: ["source", "default"] },
 			s2: { id: "s2", aliases: ["destination"] }
 		};
 
-		it("B7 getAttachedSystem looks up by system id", function () {
+		it("getAttachedSystem looks up by system id", function () {
 			const { cron } = build({}, { __cron: { systems } });
 			assert.equal(cron.getAttachedSystem("s2"), systems.s2);
 		});
 
-		it("B7 getAttachedSystem strips a system. prefix", function () {
+		it("getAttachedSystem strips a system. prefix", function () {
 			const { cron } = build({}, { __cron: { systems } });
 			assert.equal(cron.getAttachedSystem("system.s1"), systems.s1);
 		});
 
-		it("B7 getAttachedSystem accepts a system: reference", function () {
+		it("getAttachedSystem accepts a system: reference", function () {
 			const { cron } = build({}, { __cron: { systems } });
 			assert.equal(cron.getAttachedSystem("system:s1"), systems.s1);
 		});
 
-		it("B7 getAttachedSystem returns undefined for an unknown system or no registry", function () {
+		it("getAttachedSystem returns undefined for an unknown system or no registry", function () {
 			const { cron } = build({}, { __cron: { systems } });
 			assert.isUndefined(cron.getAttachedSystem("nope"));
 			delete process["__config"];
@@ -201,13 +201,13 @@ describe("lib/cron.js lifecycle", function () {
 			assert.isUndefined(other.cron.getAttachedSystem("s1"));
 		});
 
-		it("B7 getAttachedSystemByAlias returns the first system carrying the alias", function () {
+		it("getAttachedSystemByAlias returns the first system carrying the alias", function () {
 			const { cron } = build({}, { __cron: { systems } });
 			assert.equal(cron.getAttachedSystemByAlias("destination"), systems.s2);
 			assert.equal(cron.getAttachedSystemByAlias("default"), systems.s1);
 		});
 
-		it("B7 getAttachedSystemByAlias returns undefined when no alias matches", function () {
+		it("getAttachedSystemByAlias returns undefined when no alias matches", function () {
 			const { cron } = build({}, { __cron: { systems } });
 			assert.isUndefined(cron.getAttachedSystemByAlias("missing"));
 			delete process["__config"];
@@ -216,8 +216,8 @@ describe("lib/cron.js lifecycle", function () {
 		});
 	});
 
-	describe("B8 get/buildPayloads", function () {
-		it("B8 get builds a payload for a stored bot and registers checkpoints", async function () {
+	describe("get/buildPayloads", function () {
+		it("get builds a payload for a stored bot and registers checkpoints", async function () {
 			const row = {
 				id: "b1",
 				name: "Bot One",
@@ -248,7 +248,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(configure.registry.__cron.checkpoints.read["queue:q1"], { checkpoint: "z/1" });
 		});
 
-		it("B8 get applies overrides and the requested instance", async function () {
+		it("get applies overrides and the requested instance", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: { id: "b1", lambda: { settings: [{ a: 1 }] } } }));
 			const { cron } = build({ get });
 			const payload: any = await new Promise((resolve, reject) => cron.get("b1", { instance: 3, overrides: { a: 2, extra: true } }, (err, d) => err ? reject(err) : resolve(d)));
@@ -257,7 +257,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(payload.__cron.iid, "3");
 		});
 
-		it("B8 get returns one payload per instance when instances is given", async function () {
+		it("get returns one payload per instance when instances is given", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: { id: "b1", namedSettings: { b: { flag: "B" } } } }));
 			const { cron } = build({ get });
 			const payloads: any[] = await new Promise((resolve, reject) => cron.get("b1", { instances: ["a", "b"] }, (err, d) => err ? reject(err) : resolve(d)));
@@ -267,7 +267,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(payloads[1].flag, "B");
 		});
 
-		it("B8 get falls back to a stub row when the bot does not exist", async function () {
+		it("get falls back to a stub row when the bot does not exist", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ get });
 			const payload: any = await new Promise((resolve, reject) => cron.get("bot:b9", {}, (err, d) => err ? reject(err) : resolve(d)));
@@ -275,14 +275,14 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(payload.botId, "b9");
 		});
 
-		it("B8 get with register false leaves the registry alone", async function () {
+		it("get with register false leaves the registry alone", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: { id: "b1", checkpoints: { read: { q: { checkpoint: "x" } } } } }));
 			const { cron, configure } = build({ get });
 			await new Promise((resolve, reject) => cron.get("b1", { register: false }, (err, d) => err ? reject(err) : resolve(d)));
 			assert.isUndefined(configure.registry.__cron);
 		});
 
-		it("B8 get passes the dynamodb error to the callback", async function () {
+		it("get passes the dynamodb error to the callback", async function () {
 			const boom = new Error("get failed");
 			const get = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const { cron } = build({ get });
@@ -290,7 +290,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(err, boom);
 		});
 
-		it("B8 buildPayloads sends the requested checkpoint for the source", async function () {
+		it("buildPayloads sends the requested checkpoint for the source", async function () {
 			const { cron } = build({});
 			const [payload]: any[] = await cron.buildPayloads({
 				id: "b1",
@@ -300,7 +300,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(payload.__cron.checkpoints, { read: { "queue:q1": { checkpoint: "z/9" } } });
 		});
 
-		it("B8 buildPayloads defaults to instance 0 and merges namedSettings", async function () {
+		it("buildPayloads defaults to instance 0 and merges namedSettings", async function () {
 			const { cron } = build({});
 			const [payload]: any[] = await cron.buildPayloads({
 				id: "b1",
@@ -312,7 +312,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(payload.__cron.iid, "0");
 		});
 
-		it("B8 buildPayloads loads attached systems from the system table", async function () {
+		it("buildPayloads loads attached systems from the system table", async function () {
 			const batchGet = sandbox.stub().callsFake((p, cb) => cb(null, { Responses: { MockLeoSystem: [] } }));
 			const { cron } = build({ batchGet });
 			const [payload]: any[] = await cron.buildPayloads({
@@ -329,7 +329,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(payload.__cron.systems["sys-default"].aliases, ["default"]);
 		});
 
-		it("B8 buildPayloads rejects when the system lookup fails", async function () {
+		it("buildPayloads rejects when the system lookup fails", async function () {
 			const boom = new Error("batchGet failed");
 			const batchGet = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const { cron } = build({ batchGet });
@@ -341,56 +341,56 @@ describe("lib/cron.js lifecycle", function () {
 		});
 	});
 
-	describe("B9 hasMoreToDo", function () {
-		it("B9 hasMoreToDo is true when a trigger queue has no checkpoint", function () {
+	describe("hasMoreToDo", function () {
+		it("hasMoreToDo is true when a trigger queue has no checkpoint", function () {
 			const { cron } = build({});
 			assert.isTrue(cron.hasMoreToDo({}, {
 				triggers: ["q1"], requested_kinesis: { q1: "z/2" }, checkpoints: { read: {} }
 			}));
 		});
 
-		it("B9 hasMoreToDo is true when the latest event is past the checkpoint", function () {
+		it("hasMoreToDo is true when the latest event is past the checkpoint", function () {
 			const { cron } = build({});
 			assert.isTrue(cron.hasMoreToDo({}, {
 				triggers: ["q1"], requested_kinesis: { q1: "z/2" }, checkpoints: { read: { q1: { checkpoint: "z/1" } } }
 			}));
 		});
 
-		it("B9 hasMoreToDo is false when the checkpoint has caught up", function () {
+		it("hasMoreToDo is false when the checkpoint has caught up", function () {
 			const { cron } = build({});
 			assert.isFalse(cron.hasMoreToDo({}, {
 				triggers: ["q1"], requested_kinesis: { q1: "z/2" }, checkpoints: { read: { q1: { checkpoint: "z/2" } } }
 			}));
 		});
 
-		it("B9 hasMoreToDo ignores queues that are not triggers", function () {
+		it("hasMoreToDo ignores queues that are not triggers", function () {
 			const { cron } = build({});
 			assert.isFalse(cron.hasMoreToDo({}, {
 				triggers: ["q1"], requested_kinesis: { other: "z/9" }, checkpoints: { read: {} }
 			}));
 		});
 
-		it("B9 hasMoreToDo ignores triggers when ignoreHasMore is set", function () {
+		it("hasMoreToDo ignores triggers when ignoreHasMore is set", function () {
 			const { cron } = build({});
 			assert.isFalse(cron.hasMoreToDo({}, {
 				triggers: ["q1"], ignoreHasMore: true, requested_kinesis: { q1: "z/9" }, checkpoints: { read: {} }
 			}));
 		});
 
-		it("B9 hasMoreToDo restricts to the given key", function () {
+		it("hasMoreToDo restricts to the given key", function () {
 			const { cron } = build({});
 			const image = { triggers: ["q1", "q2"], requested_kinesis: { q1: "z/9", q2: "z/9" }, checkpoints: { read: { q1: { checkpoint: "z/9" } } } };
 			assert.isFalse(cron.hasMoreToDo({}, image, "q1"));
 			assert.isTrue(cron.hasMoreToDo({}, image, "q2"));
 		});
 
-		it("B9 hasMoreToDo is false without requested_kinesis", function () {
+		it("hasMoreToDo is false without requested_kinesis", function () {
 			const { cron } = build({});
 			assert.isFalse(cron.hasMoreToDo({}, { triggers: ["q1"] }));
 		});
 	});
 
-	describe("B9 shouldRun", function () {
+	describe("shouldRun", function () {
 		const NOW = 1_700_000_000_000;
 
 		function run(cron, oldImage, newImage, cache) {
@@ -401,13 +401,13 @@ describe("lib/cron.js lifecycle", function () {
 			sandbox.stub(Date, "now").returns(NOW);
 		});
 
-		it("B9 shouldRun is false when the bot has no code", async function () {
+		it("shouldRun is false when the bot has no code", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, { id: "b1", trigger: NOW }, { _instances: { b1: {} } });
 			assert.isFalse(r.value);
 		});
 
-		it("B9 shouldRun is false when paused unless ignorePaused", async function () {
+		it("shouldRun is false when paused unless ignorePaused", async function () {
 			const { cron } = build({});
 			const cache = { _instances: { b1: {} } };
 			const base = { id: "b1", lambdaName: "l", trigger: NOW };
@@ -415,51 +415,51 @@ describe("lib/cron.js lifecycle", function () {
 			assert.isTrue((await run(cron, {}, { ...base, paused: true, ignorePaused: true }, cache)).value);
 		});
 
-		it("B9 shouldRun is false after more than 10 errors", async function () {
+		it("shouldRun is false after more than 10 errors", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, { id: "b1", lambdaName: "l", trigger: NOW, errorCount: 11 }, { _instances: { b1: {} } });
 			assert.isFalse(r.value);
 		});
 
-		it("B9 shouldRun treats cache._remoteCode as having code", async function () {
+		it("shouldRun treats cache._remoteCode as having code", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, { id: "b1", trigger: NOW }, { _instances: { b1: {} }, _remoteCode: true });
 			assert.isTrue(r.value);
 		});
 
-		it("B9 shouldRun is false for step-function execution types", async function () {
+		it("shouldRun is false for step-function execution types", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, { id: "b1", lambdaName: "l", executionType: "stepfunction", trigger: NOW }, { _instances: { b1: {} } });
 			assert.deepEqual(r, { msg: "Step functions not supported yet", value: false });
 		});
 
-		it("B9 shouldRun is true when triggered after the last invoke", async function () {
+		it("shouldRun is true when triggered after the last invoke", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, { id: "b1", lambdaName: "l", trigger: NOW }, { _instances: { b1: { "0": { completedTime: NOW - 10, invokeTime: NOW - 100, token: NOW - 50 } } } });
 			assert.isTrue(r.value);
 			assert.isFalse(r.timedout);
 		});
 
-		it("B9 shouldRun is false while an instance is still running within its timeout", async function () {
+		it("shouldRun is false while an instance is still running within its timeout", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, { id: "b1", lambdaName: "l", trigger: NOW }, { _instances: { b1: { "0": { invokeTime: NOW - 1000 } } } });
 			assert.isFalse(r.value);
 		});
 
-		it("B9 shouldRun is true for a running instance that has timed out", async function () {
+		it("shouldRun is true for a running instance that has timed out", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, { id: "b1", lambdaName: "l", trigger: NOW, timeout: 1000 }, { _instances: { b1: { "0": { invokeTime: NOW - 5000, token: 1 } } } });
 			assert.isTrue(r.value);
 			assert.isTrue(r.timedout);
 		});
 
-		it("B9 shouldRun is false when the token matches and nothing more is pending", async function () {
+		it("shouldRun is false when the token matches and nothing more is pending", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, { id: "b1", lambdaName: "l", trigger: NOW }, { _instances: { b1: { "0": { completedTime: NOW - 10, invokeTime: NOW - 100, token: NOW } } } });
 			assert.isFalse(r.value);
 		});
 
-		it("B9 shouldRun is true with a matching token when more work is pending", async function () {
+		it("shouldRun is true with a matching token when more work is pending", async function () {
 			const { cron } = build({});
 			const r = await run(cron, {}, {
 				id: "b1", lambdaName: "l", trigger: NOW, triggers: ["q1"], requested_kinesis: { q1: "z/2" }, checkpoints: { read: { q1: { checkpoint: "z/1" } } }
@@ -467,7 +467,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.isTrue(r.value);
 		});
 
-		it("B9 shouldRun honors the delay after the last invoke", async function () {
+		it("shouldRun honors the delay after the last invoke", async function () {
 			const { cron } = build({});
 			const image = { id: "b1", lambdaName: "l", trigger: NOW, delay: "PT1M" };
 			const cache = { _instances: { b1: { "0": { completedTime: NOW - 10, invokeTime: NOW - 1000, token: 1 } } } };
@@ -475,7 +475,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.isTrue((await run(cron, {}, { ...image, trigger: NOW + 120000 }, cache)).value);
 		});
 
-		it("B9 shouldRun evaluates each named trigger and lets only one sync instance run", async function () {
+		it("shouldRun evaluates each named trigger and lets only one sync instance run", async function () {
 			const { cron } = build({});
 			const image = {
 				id: "b1", lambdaName: "l", trigger: 0, namedTrigger: { a: NOW, b: NOW },
@@ -488,7 +488,7 @@ describe("lib/cron.js lifecycle", function () {
 		});
 	});
 
-	describe("B8 start/end/run", function () {
+	describe("start/end/run", function () {
 		function lockableRow(extra = {}) {
 			return {
 				id: "b1",
@@ -502,7 +502,7 @@ describe("lib/cron.js lifecycle", function () {
 			};
 		}
 
-		it("B8 start without a callback marks the run forceComplete and stamps ts", async function () {
+		it("start without a callback marks the run forceComplete and stamps ts", async function () {
 			const { cron, configure } = build({});
 			sandbox.stub(Date, "now").returns(4242);
 			const event: any = { id: "b1" };
@@ -512,7 +512,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(configure.registry.__cron, event.__cron);
 		});
 
-		it("B8 start with a callback loads the bot, writes the instance token and then checks the lock", async function () {
+		it("start with a callback loads the bot, writes the instance token and then checks the lock", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: lockableRow() }));
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron, configure } = build({ get, update });
@@ -529,7 +529,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(event.__cron.id, "b1");
 		});
 
-		it("B8 start creates the cron row when the bot has no checkpoints", async function () {
+		it("start creates the cron row when the bot has no checkpoints", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const put = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
@@ -543,7 +543,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(Object.keys(item.instances), ["0"]);
 		});
 
-		it("B8 start reports a get error", async function () {
+		it("start reports a get error", async function () {
 			const boom = new Error("get failed");
 			const get = sandbox.stub().callsFake((p, cb) => cb(boom));
 			const { cron } = build({ get });
@@ -554,7 +554,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(err, boom);
 		});
 
-		it("B8 start with lock acquires the lock and rejects when already running", async function () {
+		it("start with lock acquires the lock and rejects when already running", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: lockableRow() }));
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ get, update });
@@ -575,22 +575,22 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(err, "already running");
 		});
 
-		it("B8 end with nothing registered calls back and resolves", async function () {
+		it("end with nothing registered calls back and resolves", async function () {
 			const { cron } = build({});
 			const cb = sandbox.stub();
 			await cron.end(cb);
 			assert.equal(cb.callCount, 1);
 		});
 
-		it("B8 end reports complete with forceComplete from the registry", async function () {
+		it("end reports complete with forceComplete from the registry", async function () {
 			const { cron, configure } = build({});
 			configure.registry.__cron = { id: "b1", __requestId: "r1", forceComplete: true };
 			const reportComplete = sandbox.stub(cron, "reportComplete").callsFake((c, runid, status, log, opts, cb: any) => cb());
 			await cron.end();
-			assert.deepEqual(reportComplete.getCall(0).args.slice(1, 5), ["r1", "complete", "", { forceComplete: true }].slice(0, 4));
+			assert.deepEqual(reportComplete.getCall(0).args.slice(1, 5), ["r1", "complete", "", { forceComplete: true }]);
 		});
 
-		it("B8 end with a non-complete status reports an error with that status as the log", async function () {
+		it("end with a non-complete status reports an error with that status as the log", async function () {
 			const { cron, configure } = build({});
 			configure.registry.__cron = { id: "b1", __requestId: "r1", forceComplete: false };
 			const reportComplete = sandbox.stub(cron, "reportComplete").callsFake((c, runid, status, log, opts, cb: any) => cb());
@@ -601,7 +601,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(args[4], { forceComplete: false });
 		});
 
-		it("B8 end accepts status then callback", async function () {
+		it("end accepts status then callback", async function () {
 			const { cron, configure } = build({});
 			configure.registry.__cron = { id: "b1" };
 			sandbox.stub(cron, "reportComplete").callsFake((c, runid, status, log, opts, cb: any) => cb());
@@ -610,7 +610,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(cb.callCount, 1);
 		});
 
-		it("B8 start without a callback returns a promise whose then returns undefined and never calls the callback", async function () {
+		it("start without a callback returns a promise whose then returns undefined and never calls the callback", async function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: lockableRow() }));
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ get, update });
@@ -622,7 +622,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(callback.callCount, 0);
 		});
 
-		it("B8 run throws a TypeError when start has no callback because its then returns undefined", function () {
+		it("run throws a TypeError when start has no callback because its then returns undefined", function () {
 			const get = sandbox.stub().callsFake((p, cb) => cb(null, { Item: lockableRow() }));
 			const update = sandbox.stub().callsFake((p, cb) => cb(null, {}));
 			const { cron } = build({ get, update });
@@ -633,7 +633,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.equal(callback.callCount, 0);
 		});
 
-		it("B8 run calls start, the handler and end then the callback", async function () {
+		it("run calls start, the handler and end then the callback", async function () {
 			const { cron } = build({});
 			const calls: string[] = [];
 			sandbox.stub(cron, "start").callsFake(() => { calls.push("start"); return Promise.resolve(); });
@@ -642,7 +642,7 @@ describe("lib/cron.js lifecycle", function () {
 			assert.deepEqual(calls, ["start", "handler", "end:undefined", "callback"]);
 		});
 
-		it("B8 run passes a handler failure to end", async function () {
+		it("run passes a handler failure to end", async function () {
 			const { cron } = build({});
 			const end = sandbox.stub(cron, "end").resolves();
 			sandbox.stub(cron, "start").resolves();

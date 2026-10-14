@@ -97,42 +97,42 @@ describe("lib/stream/leo-stream.js write", function () {
 		});
 	});
 
-	describe("W6 useQueuePartition", function () {
-		it("W6 uses the queue name as the partition key and drops the explicit hash key", async function () {
+	describe("useQueuePartition", function () {
+		it("uses the queue name as the partition key and drops the explicit hash key", async function () {
 			await write([evt(1)], ls.toLeo("bot1", { useQueuePartition: true }));
 			const record = putRecords.getCall(0).args[0].Records[0];
 			assert.equal(record.PartitionKey, "queue1");
 			assert.isUndefined(record.ExplicitHashKey);
 		});
 
-		it("W6 uses the first queue seen when events target several queues", async function () {
+		it("uses the first queue seen when events target several queues", async function () {
 			await write([evt(1, { event: "qa" }), evt(2, { event: "qb" })], ls.toLeo("bot1", { useQueuePartition: true }));
 			assert.equal(putRecords.getCall(0).args[0].Records[0].PartitionKey, "qa");
 		});
 
-		it("W6 partitions per record on queue only when the option is set", async function () {
+		it("partitions per record on queue only when the option is set", async function () {
 			await write([evt(1, { event: "qa" })], ls.toLeo("bot1", {}));
 			assert.equal(putRecords.getCall(0).args[0].Records[0].PartitionKey, "0");
 		});
 
-		it("W6 uses partition 0 with the option set and no queue stats", async function () {
-			await write([], ls.toLeo("bot1", { useQueuePartition: true }));
-			assert.equal(putRecords.callCount, 0);
+		it("uses the event name qa as partition key for a single event with the option set, since every event adds queue stats", async function () {
+			await write([evt(1, { event: "qa" })], ls.toLeo("bot1", { useQueuePartition: true }));
+			assert.equal(putRecords.getCall(0).args[0].Records[0].PartitionKey, "qa");
 		});
 	});
 
-	describe("W7 partitionHashKey", function () {
-		it("W7 sends partitionHashKey as the string explicit hash key", async function () {
+	describe("partitionHashKey", function () {
+		it("sends partitionHashKey as the string explicit hash key", async function () {
 			await write([evt(1)], ls.toLeo("bot1", { partitionHashKey: 12345 }));
 			assert.strictEqual(putRecords.getCall(0).args[0].Records[0].ExplicitHashKey, "12345");
 		});
 
-		it("W7 a zero partitionHashKey stays the string 0", async function () {
+		it("a zero partitionHashKey stays the string 0", async function () {
 			await write([evt(1)], ls.toLeo("bot1", { partitionHashKey: 0 }));
 			assert.strictEqual(putRecords.getCall(0).args[0].Records[0].ExplicitHashKey, "0");
 		});
 
-		it("W7 useQueuePartition takes precedence over partitionHashKey", async function () {
+		it("useQueuePartition takes precedence over partitionHashKey", async function () {
 			await write([evt(1)], ls.toLeo("bot1", { partitionHashKey: 99, useQueuePartition: true }));
 			const record = putRecords.getCall(0).args[0].Records[0];
 			assert.isUndefined(record.ExplicitHashKey);
@@ -140,17 +140,17 @@ describe("lib/stream/leo-stream.js write", function () {
 		});
 	});
 
-	describe("W8 backoff", function () {
+	describe("backoff", function () {
 		const fast = { backoff: { initialDelay: 1, maxDelay: 2 } };
 
-		it("W8 retries the whole batch when putRecords errors", async function () {
+		it("retries the whole batch when putRecords errors", async function () {
 			putRecords.onFirstCall().callsFake((p: any, cb: any) => cb(new Error("throttled")));
 			await write([evt(1)], ls.toLeo("bot1", fast));
 			assert.equal(putRecords.callCount, 2);
 			assert.deepEqual(putRecords.getCall(0).args[0].Records.length, putRecords.getCall(1).args[0].Records.length);
 		});
 
-		it("W8 retries only the records that failed", async function () {
+		it("retries only the records that failed", async function () {
 			sandbox.restore();
 			build();
 			putRecords.onFirstCall().callsFake((p: any, cb: any) => cb(null, { FailedRecordCount: 1, Records: [{ ErrorCode: "ProvisionedThroughputExceededException" }] }));
@@ -159,7 +159,7 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.equal(putRecords.getCall(1).args[0].Records.length, 1);
 		});
 
-		it("W8 fails the stream after ten failed attempts", async function () {
+		it("fails the stream after ten failed attempts", async function () {
 			putRecords.callsFake((p: any, cb: any) => cb(new Error("always")));
 			let err: any;
 			try { await write([evt(1)], ls.toLeo("bot1", fast)); } catch (e) { err = e; }
@@ -168,10 +168,10 @@ describe("lib/stream/leo-stream.js write", function () {
 		});
 	});
 
-	describe("W5 gzipFirehose", function () {
+	describe("gzipFirehose", function () {
 		const fh = { firehose: true, time: { milliseconds: 5 } };
 
-		it("W5 sends raw newline-delimited json to firehose by default", async function () {
+		it("sends raw newline-delimited json to firehose by default", async function () {
 			await write([evt(1), evt(2)], ls.toLeo("bot1", fh));
 			assert.equal(putRecords.callCount, 0);
 			const params = putRecordBatch.getCall(0).args[0];
@@ -181,7 +181,7 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.deepEqual(lines.map((e: any) => e.payload), [{ n: 1 }, { n: 2 }]);
 		});
 
-		it("W5 gzipFirehose sends one base64 gzip chunk per line", async function () {
+		it("gzipFirehose sends one base64 gzip chunk per line", async function () {
 			await write([evt(1), evt(2)], ls.toLeo("bot1", { ...fh, gzipFirehose: true }));
 			const data = putRecordBatch.getCall(0).args[0].Records[0].Data.toString();
 			assert.isTrue(data.endsWith("\n"));
@@ -191,21 +191,21 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.deepEqual(events.map((e) => e.payload), [{ n: 1 }, { n: 2 }]);
 		});
 
-		it("W5 firehose retries only the failed records of a partial failure", async function () {
+		it("firehose retries only the failed records of a partial failure", async function () {
 			putRecordBatch.onFirstCall().callsFake((p: any, cb: any) => cb(null, { FailedPutCount: 1, RequestResponses: [{ ErrorCode: "ServiceUnavailableException" }] }));
 			await write([evt(1)], ls.toLeo("bot1", { ...fh, backoff: { initialDelay: 1, maxDelay: 2 } }));
 			assert.equal(putRecordBatch.callCount, 2);
 		});
 
-		it("W5 firehose retries after an error", async function () {
+		it("firehose retries after an error", async function () {
 			putRecordBatch.onFirstCall().callsFake((p: any, cb: any) => cb(new Error("down")));
 			await write([evt(1)], ls.toLeo("bot1", { ...fh, backoff: { initialDelay: 1, maxDelay: 2 } }));
 			assert.equal(putRecordBatch.callCount, 2);
 		});
 	});
 
-	describe("W3 useS3 and s3Opts", function () {
-		it("W3 load with useS3 uploads to bus/<queue>/<botId>/z/ and sends the s3 pointer to kinesis", async function () {
+	describe("useS3 and s3Opts", function () {
+		it("load with useS3 uploads to bus/<queue>/<botId>/z/ and sends the s3 pointer to kinesis", async function () {
 			await sink([{ n: 1 }, { n: 2 }], ls.load("bot1", "queue1", { useS3: true }));
 			assert.isAtLeast(toS3Uploads.length, 1);
 			const upload = toS3Uploads.find((u) => u.chunks.length > 0)!;
@@ -221,22 +221,22 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.equal(pointers[0].records, 2);
 		});
 
-		it("W3 prefix replaces the bot id in the S3 key", async function () {
+		it("prefix replaces the bot id in the S3 key", async function () {
 			await sink([{ n: 1 }], ls.load("bot1", "queue1", { useS3: true, prefix: "custom" }));
 			assert.match(toS3Uploads[0].key, /^bus\/queue1\/custom\/z\//);
 		});
 
-		it("W3 s3Opts can switch the file to the archive layout", async function () {
+		it("s3Opts can switch the file to the archive layout", async function () {
 			await sink([{ n: 1 }], ls.load("bot1", "queue1", { useS3: true, s3Opts: { archive: true } }));
 			assert.match(toS3Uploads[0].key, /^bus\/_archive\/q=queue1\/dt=\d{4}-\d\d-\d\d\/\d+-0000001-[0-9a-f-]{36}\.gz$/);
 		});
 
-		it("W3 s3Opts values override the defaults passed by load", async function () {
+		it("s3Opts values override the defaults passed by load", async function () {
 			await sink([{ n: 1 }], ls.load("bot1", "queue1", { useS3: true, s3Opts: { prefix: "from-s3-opts" } }));
 			assert.match(toS3Uploads[0].key, /^bus\/queue1\/from-s3-opts\/z\//);
 		});
 
-		it("W3 toLeo with useS3 forwards an existing s3 pointer record to kinesis", async function () {
+		it("toLeo with useS3 forwards an existing s3 pointer record to kinesis", async function () {
 			await sink([{ id: "bot1", event: "queue1", payload: { n: 1 }, s3: { bucket: "b", key: "k" }, records: 1, size: 10, gzipSize: 10, start: 0, end: 0, stats: {}, correlations: [], offsets: [] }], ls.toLeo("bot1", { useS3: true }));
 			assert.equal(putRecords.callCount, 1);
 			const sent = decodeGzipRecord(putRecords.getCall(0).args[0].Records[0].Data);
@@ -244,7 +244,7 @@ describe("lib/stream/leo-stream.js write", function () {
 		});
 	});
 
-	describe("W4 automatic S3 switch for large events", function () {
+	describe("automatic S3 switch for large events", function () {
 		const THRESHOLD = 1024 * 200 * 3;
 
 		function sizedEvent(totalBytes: number) {
@@ -253,14 +253,14 @@ describe("lib/stream/leo-stream.js write", function () {
 			return evt(1, { payload: { d: "x".repeat(totalBytes - baseSize) } });
 		}
 
-		it("W4 an event below the threshold stays inline", async function () {
+		it("an event below the threshold stays inline", async function () {
 			const e = sizedEvent(THRESHOLD - 1000);
 			await write([e], ls.toLeo("bot1", {}));
 			assert.equal(toS3Uploads.length, 0);
 			assert.equal(decodeGzipRecord(putRecords.getCall(0).args[0].Records[0].Data)[0].payload.d.length, e.payload.d.length);
 		});
 
-		it("W4 an event of exactly 614400 bytes is not moved to S3 but is replaced by an error event once the eid is added", async function () {
+		it("an event of exactly 614400 bytes is not moved to S3 but is replaced by an error event once the eid is added", async function () {
 			const e = sizedEvent(THRESHOLD);
 			assert.equal(Buffer.byteLength(JSON.stringify(e)), THRESHOLD);
 			await write([e], ls.toLeo("bot1", {}));
@@ -271,7 +271,7 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.deepEqual([sent.event.type, sent.event.id], ["queue", "bot.bot1.error"]);
 		});
 
-		it("W4 an event of 614401 bytes is moved to S3 and replaced by a pointer", async function () {
+		it("an event of 614401 bytes is moved to S3 and replaced by a pointer", async function () {
 			const e = sizedEvent(THRESHOLD + 1);
 			await write([e], ls.toLeo("bot1", {}));
 			const upload = toS3Uploads.find((u) => u.chunks.length > 0)!;
@@ -284,26 +284,26 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.isUndefined(sent[0].payload);
 		});
 
-		it("W4 the S3 prefix defaults to the event id and honors opts.prefix", async function () {
+		it("the S3 prefix defaults to the event id and honors opts.prefix", async function () {
 			await write([sizedEvent(THRESHOLD + 1)], ls.toLeo("bot1", { prefix: "pre" }));
 			assert.match(toS3Uploads[0].key, /^bus\/queue1\/pre\/z\//);
 		});
 
-		it("W4 load applies the same threshold before toLeo", async function () {
+		it("load applies the same threshold before toLeo", async function () {
 			const e = sizedEvent(THRESHOLD + 1);
 			await sink([e], ls.load("bot1", "queue1", {}));
 			assert.isAtLeast(toS3Uploads.length, 1);
 			assert.match(toS3Uploads[0].key, /^bus\/queue1\/bot1\/z\//);
 		});
 
-		it("W4 load with firehose still moves large events to S3 through toLeo", async function () {
+		it("load with firehose still moves large events to S3 through toLeo", async function () {
 			const e = sizedEvent(THRESHOLD + 1);
 			await sink([e], ls.load("bot1", "queue1", { firehose: true }));
 			assert.equal(toS3Uploads.filter((u) => u.chunks.length > 0).length, 1);
 		});
 	});
 
-	describe("W13 onCheckpoint", function () {
+	describe("onCheckpoint", function () {
 		function update(id: string, correlations: any[]) {
 			return { id, correlations };
 		}
@@ -316,21 +316,21 @@ describe("lib/stream/leo-stream.js write", function () {
 			checkpoint = sandbox.stub(ls.cron, "checkpoint").callsFake((id: string, event: string, cp: any, cb: any) => cb());
 		});
 
-		it("W13 a sync hook receives the checkpointed eid per bot and queue ref", async function () {
+		it("a sync hook receives the checkpointed eid per bot and queue ref", async function () {
 			const hook = sandbox.stub();
 			await sink([update("bot1", [corr("queue1", "z/1", "z/5", 5)])], ls.toCheckpoint({ onCheckpoint: hook }));
 			assert.equal(hook.callCount, 1);
 			assert.deepEqual(hook.getCall(0).args[0], { error: null, checkpoints: { bot1: { "queue:queue1": "z/5" } } });
 		});
 
-		it("W13 an async hook is awaited before the stream finishes", async function () {
+		it("an async hook is awaited before the stream finishes", async function () {
 			let finished = false;
 			const hook = async () => { await new Promise((r) => setTimeout(r, 20)); finished = true; };
 			await sink([update("bot1", [corr("queue1", "z/1", "z/5", 5)])], ls.toCheckpoint({ onCheckpoint: hook }));
 			assert.isTrue(finished);
 		});
 
-		it("W13 the hook sees the checkpoint error and the stream fails with it", async function () {
+		it("the hook sees the checkpoint error and the stream fails with it", async function () {
 			checkpoint.callsFake((id: string, event: string, cp: any, cb: any) => cb("Stale Checkpoint"));
 			const hook = sandbox.stub();
 			let err: any;
@@ -341,7 +341,7 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.exists(err);
 		});
 
-		it("W13 a hook that rejects fails the stream", async function () {
+		it("a hook that rejects fails the stream", async function () {
 			const boom = new Error("hook failed");
 			let err: any;
 			try {
@@ -350,7 +350,7 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.equal(err, boom);
 		});
 
-		it("W13 without a hook the checkpoint still runs", async function () {
+		it("without a hook the checkpoint still runs", async function () {
 			await sink([update("bot1", [corr("queue1", "z/1", "z/5", 5)])], ls.toCheckpoint({}));
 			assert.equal(checkpoint.callCount, 1);
 			assert.deepEqual(checkpoint.getCall(0).args.slice(0, 3), ["bot1", "queue1", {
@@ -358,12 +358,12 @@ describe("lib/stream/leo-stream.js write", function () {
 			}]);
 		});
 
-		it("W13 force is carried on the checkpoint", async function () {
+		it("force is carried on the checkpoint", async function () {
 			await sink([update("bot1", [corr("queue1", "z/1", "z/5", 5)])], ls.toCheckpoint({ force: true }));
 			assert.isTrue(checkpoint.getCall(0).args[2].force);
 		});
 
-		it("W13 correlations for the same queue are merged and the last end wins", async function () {
+		it("correlations for the same queue are merged and the last end wins", async function () {
 			await sink([
 				update("bot1", [corr("queue1", "z/1", "z/5", 5)]),
 				update("bot1", [corr("queue1", "z/6", "z/9", 4)])
@@ -374,28 +374,30 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.equal(cp.records, 9);
 		});
 
-		it("W13 a correlation_id on a plain event is converted to a correlation", async function () {
+		it("a correlation_id on a plain event is converted to a correlation", async function () {
 			await sink([{ id: "bot1", event: "queue2", payload: 1, event_source_timestamp: 5, timestamp: 8, correlation_id: { source: "queue1", start: "z/1", end: "z/3", units: 3 } }], ls.toCheckpoint({}));
 			assert.deepEqual(checkpoint.getCall(0).args.slice(0, 3), ["bot1", "queue1", {
 				eid: "z/3", records: 3, source_timestamp: 5, ended_timestamp: 8, started_timestamp: 8, force: undefined
 			}]);
 		});
 
-		it("W13 the checkpoint is written for the last bot and queue seen for every task", async function () {
+		it("the checkpoint is written for the last bot and queue seen for every task", async function () {
 			await sink([update("bot1", [corr("queue1", "z/1", "z/5", 5), corr("queue2", "z/1", "z/7", 7)])], ls.toCheckpoint({}));
 			assert.equal(checkpoint.callCount, 2);
 			assert.deepEqual(checkpoint.getCalls().map((c: any) => c.args[1]), ["queue2", "queue2"]);
 			assert.deepEqual(checkpoint.getCalls().map((c: any) => c.args[2].eid), ["z/7", "z/7"]);
 		});
 
-		it("W13 toCheckpoint get returns the pending checkpoint for a bot and queue", async function () {
+		it("toCheckpoint get returns the pending checkpoint for a bot and queue", async function () {
 			const stream = ls.toCheckpoint({ records: Number.POSITIVE_INFINITY, time: { days: 1 } });
-			stream.write(update("bot1", [corr("queue1", "z/1", "z/5", 5)]));
-			await new Promise((r) => setTimeout(r, 10));
-			assert.equal(stream.get("bot1", "queue1").eid, "z/5");
-			assert.isUndefined(stream.get("bot1"));
-			assert.isUndefined(stream.get("bot9", "queue1"));
-			await new Promise((r) => stream.end(r));
+			await new Promise((r) => stream.write(update("bot1", [corr("queue1", "z/1", "z/5", 5)]), r));
+			try {
+				assert.equal(stream.get("bot1", "queue1").eid, "z/5");
+				assert.isUndefined(stream.get("bot1"));
+				assert.isUndefined(stream.get("bot9", "queue1"));
+			} finally {
+				await new Promise((r) => stream.end(r));
+			}
 		});
 	});
 

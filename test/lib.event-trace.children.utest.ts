@@ -60,14 +60,14 @@ describe("lib/event-trace.ts children", function () {
 		});
 	}
 
-	it("E1 children trace reads the starting event with start just before the eid and limit 1", async function () {
+	it("children trace reads the starting event with start just before the eid and limit 1", async function () {
 		queueReads({ "queue:q0": [startEvent()] });
 		statsFor("bot:bot1", []);
 		await eventTrace(sdk, STATS_TABLE, { queue: "q0", eid: START_EID, children: ["bot1", "queue1"] });
 		assert.deepEqual(fromLeo.getCall(0).args.slice(0, 3), ["test", "queue:q0", { start: "z/2022/03/14/22/38/1647297513618-0000034", limit: 1 }]);
 	});
 
-	it("E1 children trace queries hourly then minute stats for the bot and reads the queue window", async function () {
+	it("children trace queries hourly then minute stats for the bot and reads the queue window", async function () {
 		const childEvent = {
 			eid: "z/2022/03/14/22/40/1647297650000-0000001", event: "queue:queue1", id: "bot1", payload: { x: 1 },
 			timestamp: 1647297650500, event_source_timestamp: 1647297650000, correlation_id: { start: START_EID, units: 1 }
@@ -107,7 +107,7 @@ describe("lib/event-trace.ts children", function () {
 		});
 	});
 
-	it("E1 children trace follows the correlation chain across two hops", async function () {
+	it("children trace follows the correlation chain across two hops", async function () {
 		const hop1 = {
 			eid: "z/2022/03/14/22/40/1647297650000-0000001", event: "queue:queue1", id: "bot1", payload: { hop: 1 },
 			timestamp: 1647297650500, event_source_timestamp: 1647297650000, correlation_id: { start: START_EID }
@@ -136,7 +136,7 @@ describe("lib/event-trace.ts children", function () {
 		assert.equal(query.getCall(2).args[0].ExpressionAttributeValues[":id"], "bot:bot2");
 	});
 
-	it("E1 children trace skips stats whose checkpoint is behind the correlation start", async function () {
+	it("children trace skips stats whose checkpoint is behind the correlation start", async function () {
 		const childEvent = {
 			eid: "z/2022/03/14/22/40/1647297650000-0000001", event: "queue:queue1", id: "bot1", payload: {},
 			timestamp: 1647297650500, event_source_timestamp: 1647297650000, correlation_id: { start: START_EID }
@@ -150,7 +150,7 @@ describe("lib/event-trace.ts children", function () {
 		assert.equal(query.getCall(1).args[0].ExpressionAttributeValues[":bucket"], "minute_2022-03-14 22:40");
 	});
 
-	it("E1 children trace matches an event whose correlation range covers the start", async function () {
+	it("children trace matches an event whose correlation range covers the start", async function () {
 		const rangeEvent = {
 			eid: "z/2022/03/14/22/40/1647297650000-0000009", event: "queue:queue1", id: "bot1", payload: { range: true },
 			timestamp: 1647297650500, event_source_timestamp: 1647297650000,
@@ -162,7 +162,7 @@ describe("lib/event-trace.ts children", function () {
 		assert.deepEqual(result["queue:queue1"].payload, { range: true });
 	});
 
-	it("E1 children trace keeps the first match when later events also match", async function () {
+	it("children trace keeps the first match when later events also match", async function () {
 		const first = {
 			eid: "z/2022/03/14/22/40/1647297650000-0000001", event: "queue:queue1", id: "bot1", payload: { n: 1 },
 			timestamp: 1647297650500, event_source_timestamp: 1647297650000, correlation_id: { start: START_EID }
@@ -174,7 +174,7 @@ describe("lib/event-trace.ts children", function () {
 		assert.deepEqual(result["queue:queue1"].payload, { n: 1 });
 	});
 
-	it("E1 children trace reports empty entries when no stats match", async function () {
+	it("children trace reports empty entries when no stats match", async function () {
 		queueReads({ "queue:q0": [startEvent()] });
 		statsFor("bot:bot1", [stat("hour_2022-03-14 22", 1647297600000, "queue:other", START_EID)]);
 		const result: any = await eventTrace(sdk, STATS_TABLE, { queue: "q0", eid: START_EID, children: ["bot1", "queue1"] });
@@ -182,7 +182,7 @@ describe("lib/event-trace.ts children", function () {
 		assert.equal(query.callCount, 1);
 	});
 
-	it("E1 children trace rejects when the stats query fails", async function () {
+	it("children trace rejects when the stats query fails", async function () {
 		queueReads({ "queue:q0": [startEvent()] });
 		const boom = new Error("stats failed");
 		query.callsFake((params: any, cb: any) => cb(boom));
@@ -193,7 +193,7 @@ describe("lib/event-trace.ts children", function () {
 		assert.equal(err, boom);
 	});
 
-	it("E1 children trace rejects when the minute stats query fails", async function () {
+	it("children trace rejects when the minute stats query fails", async function () {
 		queueReads({ "queue:q0": [startEvent()] });
 		const boom = new Error("minute stats failed");
 		query.callsFake((params: any, cb: any) => {
@@ -209,14 +209,14 @@ describe("lib/event-trace.ts children", function () {
 		assert.equal(err, boom);
 	});
 
-	it("E1 children trace queue ids with a 0 suffix step back to a space", async function () {
+	it("children trace queue ids with a 0 suffix step back to a space", async function () {
 		queueReads({ "queue:q0": [startEvent()] });
 		statsFor("bot:bot1", []);
 		await eventTrace(sdk, STATS_TABLE, { queue: "q0", eid: "z/2022/03/14/22/38/1647297513618-0000030", children: ["bot1", "queue1"] });
 		assert.equal(fromLeo.getCall(0).args[2].start, "z/2022/03/14/22/38/1647297513618-000003 ");
 	});
 
-	it("E1 children trace uses the correlation timestamp when stats are older than the event", async function () {
+	it("children trace uses the correlation timestamp when stats are older than the event", async function () {
 		const childEvent = {
 			eid: "z/2022/03/14/22/40/1647297650000-0000001", event: "queue:queue1", id: "bot1", payload: {},
 			timestamp: 1647297650500, event_source_timestamp: 1647297650000, correlation_id: { start: START_EID }
@@ -227,7 +227,7 @@ describe("lib/event-trace.ts children", function () {
 		assert.equal(fromLeo.getCall(1).args[2].start, moment(START_TS).format("[z/]YYYY/MM/DD/HH/mm/ss"));
 	});
 
-	it("E1 children trace ignores queue events that do not correlate to the start", async function () {
+	it("children trace ignores queue events that do not correlate to the start", async function () {
 		const other = {
 			eid: "z/2022/03/14/22/40/1647297640000-0000001", event: "queue:queue1", id: "bot1", payload: { other: true },
 			timestamp: 1647297640500, event_source_timestamp: 1647297640000, correlation_id: { start: "z/2022/03/14/22/39/1-0000000" }
@@ -239,7 +239,7 @@ describe("lib/event-trace.ts children", function () {
 		assert.deepEqual(result["queue:queue1"].payload, { match: true });
 	});
 
-	describe("E1 parents and children tree", function () {
+	describe("parents and children tree", function () {
 		const cronRows = [
 			{
 				id: "botA", name: "Bot A",
@@ -273,7 +273,7 @@ describe("lib/event-trace.ts children", function () {
 			sandbox.stub(sdk.aws.dynamodb, "query").callsFake(() => Promise.resolve({ Items: cronRows }));
 		});
 
-		it("E1 trace stops at an event without a correlation and walks processed bots downstream", async function () {
+		it("trace stops at an event without a correlation and walks processed bots downstream", async function () {
 			queueReads({ "queue:qSrc": [srcEvent()] });
 			const result: any = await eventTrace(sdk, STATS_TABLE, { queue: "qSrc", eid: START_EID });
 			assert.deepEqual(result.parents, [{ id: "bot:botX", server_id: "bot:botX", type: "bot", label: "bot:botX" }]);
@@ -299,7 +299,7 @@ describe("lib/event-trace.ts children", function () {
 			assert.deepEqual(botC.children, {});
 		});
 
-		it("E1 trace follows correlation_id to parent queues and stops on a repeated bot", async function () {
+		it("trace follows correlation_id to parent queues and stops on a repeated bot", async function () {
 			queueReads({
 				"queue:qSrc": [srcEvent({ correlation_id: { source: "qUp", start: "z/2022/03/14/22/30/1-0000000" } })],
 				"queue:qUp": [{ id: "botX", event: "qUp", eid: "z/2022/03/14/22/30/1-0000000", timestamp: START_TS - 5000, event_source_timestamp: START_TS - 6000, payload: {} }]
@@ -311,7 +311,7 @@ describe("lib/event-trace.ts children", function () {
 			assert.equal(result.parents.length, 1);
 		});
 
-		it("E1 trace rejects when reading the queue fails", async function () {
+		it("trace rejects when reading the queue fails", async function () {
 			const { Readable } = require("stream");
 			const boom = new Error("read failed");
 			fromLeo.callsFake(() => new Readable({ objectMode: true, read() { this.destroy(boom); } }));

@@ -234,7 +234,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 		});
 	});
 
-	describe("S3 streams", function () {
+	describe("streams", function () {
 		let s3: any;
 		beforeEach(() => {
 			s3 = ls.s3;
@@ -583,7 +583,7 @@ describe("lib/stream/leo-stream.js misc", function () {
 			sandbox.restore();
 			const handler = { handle: () => { }, metadata: { handlerProtocol: "http/1.1" } };
 			build({ awsResourceConfig: { s3Config: { httpOptions: { timeout: 1 }, requestHandler: handler } } });
-			assert.exists(ls.s3);
+			assert.strictEqual(ls.s3.config.requestHandler, handler);
 		});
 
 		it("the onUpdate listener throws a TypeError because v3 client configs have no update function", function () {

@@ -25,86 +25,86 @@ describe("lib/streams.js event ids", function () {
 		[1999999999999, "millisecond", 12, "z/2033/05/18/03/33/1999999999999-0000012"]
 	];
 
-	describe("P7 eventIdFromTimestamp", function () {
+	describe("eventIdFromTimestamp", function () {
 		cases.forEach(([timestamp, granularity, record, expected], i) => {
-			it(`P7 eventIdFromTimestamp case ${i + 1}: ${timestamp} ${granularity}${record == null ? "" : " record " + record}`, function () {
+			it(`eventIdFromTimestamp case ${i + 1}: ${timestamp} ${granularity}${record == null ? "" : " record " + record}`, function () {
 				assert.equal(streams.eventIdFromTimestamp(timestamp, granularity as any, record as any), expected);
 			});
 		});
 
-		it("P7 eventIdFromTimestamp defaults to full granularity", function () {
+		it("eventIdFromTimestamp defaults to full granularity", function () {
 			assert.equal(streams.eventIdFromTimestamp(1647297513618), "z/2022/03/14/22/38/1647297513618");
 		});
 
-		it("P7 eventIdFromTimestamp falls back to full for an unknown granularity", function () {
+		it("eventIdFromTimestamp falls back to full for an unknown granularity", function () {
 			assert.equal(streams.eventIdFromTimestamp(1647297513618, "decade" as any), "z/2022/03/14/22/38/1647297513618");
 		});
 
-		it("P7 eventIdFromTimestamp ignores the record for coarse granularities", function () {
+		it("eventIdFromTimestamp ignores the record for coarse granularities", function () {
 			assert.equal(streams.eventIdFromTimestamp(1647297513618, "hour", 5 as any), "z/2022/03/14/22/");
 			assert.equal(streams.eventIdFromTimestamp(1647297513618, "second", 5 as any), "z/2022/03/14/22/38/1647297513000");
 		});
 
-		it("P7 eventIdFromTimestamp pads the record to seven digits and truncates beyond that", function () {
+		it("eventIdFromTimestamp pads the record to seven digits and truncates beyond that", function () {
 			assert.equal(streams.eventIdFromTimestamp(1647297513618, "full", 0 as any), "z/2022/03/14/22/38/1647297513618-0000000");
 			assert.equal(streams.eventIdFromTimestamp(1647297513618, "full", 123456789 as any), "z/2022/03/14/22/38/1647297513618-3456789");
 		});
 	});
 
-	describe("P7 eventIdToTimestamp", function () {
-		it("P7 eventIdToTimestamp reads the millisecond timestamp from a full event id", function () {
+	describe("eventIdToTimestamp", function () {
+		it("eventIdToTimestamp reads the millisecond timestamp from a full event id", function () {
 			assert.equal(streams.eventIdToTimestamp("z/2022/03/14/22/38/1647297513618-0000035"), 1647297513618);
 		});
 
-		it("P7 eventIdToTimestamp reads the timestamp when there is no record suffix", function () {
+		it("eventIdToTimestamp reads the timestamp when there is no record suffix", function () {
 			assert.equal(streams.eventIdToTimestamp("z/2022/03/14/22/38/1647297513618"), 1647297513618);
 		});
 
-		it("P7 eventIdToTimestamp uses the minute prefix when the timestamp part is empty", function () {
+		it("eventIdToTimestamp uses the minute prefix when the timestamp part is empty", function () {
 			assert.equal(streams.eventIdToTimestamp("z/2022/03/14/22/38/"), Date.UTC(2022, 2, 14, 22, 38));
 		});
 
-		it("P7 eventIdToTimestamp uses the hour prefix", function () {
+		it("eventIdToTimestamp uses the hour prefix", function () {
 			assert.equal(streams.eventIdToTimestamp("z/2022/03/14/22/"), Date.UTC(2022, 2, 14, 22));
 		});
 
-		it("P7 eventIdToTimestamp uses the date prefix", function () {
+		it("eventIdToTimestamp uses the date prefix", function () {
 			assert.equal(streams.eventIdToTimestamp("z/2022/03/14/"), Date.UTC(2022, 2, 14));
 		});
 
-		it("P7 eventIdToTimestamp uses the month prefix", function () {
+		it("eventIdToTimestamp uses the month prefix", function () {
 			assert.equal(streams.eventIdToTimestamp("z/2022/03/"), Date.UTC(2022, 2, 1));
 		});
 
-		it("P7 eventIdToTimestamp uses the year prefix", function () {
+		it("eventIdToTimestamp uses the year prefix", function () {
 			assert.equal(streams.eventIdToTimestamp("z/2022/"), Date.UTC(2022, 0, 1));
 		});
 
-		it("P7 eventIdToTimestamp treats a timestamp part of 10000 or less as not a timestamp", function () {
+		it("eventIdToTimestamp treats a timestamp part of 10000 or less as not a timestamp", function () {
 			assert.equal(streams.eventIdToTimestamp("z/2022/03/14/22/38/5"), Date.UTC(2022, 2, 14, 22, 38));
 		});
 
-		it("P7 eventIdToTimestamp round trips every case that carries a millisecond timestamp", function () {
+		it("eventIdToTimestamp round trips every case that carries a millisecond timestamp", function () {
 			cases.filter(([, g]) => g === "full" || g === "millisecond").forEach(([timestamp, granularity, record]) => {
 				const eid = streams.eventIdFromTimestamp(timestamp, granularity as any, record as any);
 				assert.equal(streams.eventIdToTimestamp(eid), timestamp);
 			});
 		});
 
-		it("P7 eventIdToTimestamp round trips second granularity to the whole second", function () {
+		it("eventIdToTimestamp round trips second granularity to the whole second", function () {
 			const eid = streams.eventIdFromTimestamp(1767225599999, "second");
 			assert.equal(streams.eventIdToTimestamp(eid), 1767225599000);
 		});
 
-		it("P7 eventIdToTimestamp throws for a non-string id", function () {
+		it("eventIdToTimestamp throws for a non-string id", function () {
 			assert.throws(() => streams.eventIdToTimestamp(123 as any), "Invalid Event Id.  Should be a string.");
 		});
 
-		it("P7 eventIdToTimestamp throws when the id does not start with z", function () {
+		it("eventIdToTimestamp throws when the id does not start with z", function () {
 			assert.throws(() => streams.eventIdToTimestamp("x/2022/03/14/22/38/1647297513618"), "Unable to get timestamp for Event Id: x/2022/03/14/22/38/1647297513618");
 		});
 
-		it("P7 eventIdToTimestamp throws when no usable parts remain", function () {
+		it("eventIdToTimestamp throws when no usable parts remain", function () {
 			assert.throws(() => streams.eventIdToTimestamp("z/"), "Unable to get timestamp for Event Id: z/");
 		});
 	});
