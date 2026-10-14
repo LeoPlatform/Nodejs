@@ -1,6 +1,7 @@
 import sinon from "sinon";
 import { expect, assert } from "chai";
 import { Lambda } from "@aws-sdk/client-lambda";
+import childProcess from "child_process";
 
 const leo = require("../index.js");
 const fanout = require("../wrappers/fanout.js");
@@ -28,6 +29,7 @@ describe("wrappers/fanout.js", function () {
 		originalCheckLock = sandbox.stub().callsFake((cron, runid, remaining, cb) => cb(null, { original: true }));
 		originalReportComplete = sandbox.stub().callsFake((cron, runid, status, log, opts, cb) => cb(null, { original: true }));
 		originalFromLeo = sandbox.stub();
+		sandbox.stub(childProcess, "fork").throws(new Error("fanout test must not fork a process"));
 		leo.bot.checkpoint = originalCheckpoint;
 		leo.bot.checkLock = originalCheckLock;
 		leo.bot.reportComplete = originalReportComplete;
@@ -59,6 +61,17 @@ describe("wrappers/fanout.js", function () {
 			leo.streams.pipe(stream, leo.streams.eventstream.writeArray((err, results) => err ? reject(err) : resolve(results)), (err) => err && reject(err));
 		});
 	}
+
+	describe("F1 process safety", function () {
+		it("F1 master with instances above 1 and no Lambda environment forks through child_process", async function () {
+			sandbox.useFakeTimers({ now: 1700000000000, toFake: ["Date"] });
+			const handler = fanout((event, ctx, cb) => cb(null), { instances: 2 });
+			let err;
+			try { await handler({ __cron: {} }, context()); } catch (e) { err = e; }
+			assert.equal((childProcess.fork as sinon.SinonStub).callCount, 1);
+			assert.match(err.message, /must not fork/);
+		});
+	});
 
 	describe("F1 reduceCheckpoints", function () {
 		it("F1 reduceCheckpoints returns the single worker checkpoints with eid set", function () {
