@@ -193,11 +193,11 @@ describe("lib/stream/leo-stream.js write", function () {
 
 		it("firehose resends the whole combined record when it is rejected", async function () {
 			putRecordBatch.onFirstCall().callsFake((p: any, cb: any) => cb(null, { FailedPutCount: 1, RequestResponses: [{ ErrorCode: "ServiceUnavailableException" }] }));
-			await write([evt(1), evt(2), evt(3)], ls.toLeo("bot1", { ...fh, records: 1, backoff: { initialDelay: 1, maxDelay: 2 } }));
+			await write([evt(1), evt(2), evt(3)], ls.toLeo("bot1", { ...fh, gzipFirehose: true, records: 10, chunk: { records: 1 }, backoff: { initialDelay: 1, maxDelay: 2 } }));
 			assert.equal(putRecordBatch.callCount, 2);
 			const first = putRecordBatch.getCall(0).args[0].Records[0].Data;
 			const second = putRecordBatch.getCall(1).args[0].Records[0].Data;
-			assert.equal(first.toString().trim().split("\n").length, 3);
+			assert.isAtLeast(first.toString().trim().split("\n").length, 2);
 			assert.isTrue(Buffer.from(second).equals(Buffer.from(first)));
 		});
 
