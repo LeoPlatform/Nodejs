@@ -191,10 +191,14 @@ describe("lib/stream/leo-stream.js write", function () {
 			assert.deepEqual(events.map((e) => e.payload), [{ n: 1 }, { n: 2 }]);
 		});
 
-		it("firehose retries only the failed records of a partial failure", async function () {
+		it("firehose resends the whole combined record when it is rejected", async function () {
 			putRecordBatch.onFirstCall().callsFake((p: any, cb: any) => cb(null, { FailedPutCount: 1, RequestResponses: [{ ErrorCode: "ServiceUnavailableException" }] }));
-			await write([evt(1)], ls.toLeo("bot1", { ...fh, backoff: { initialDelay: 1, maxDelay: 2 } }));
+			await write([evt(1), evt(2), evt(3)], ls.toLeo("bot1", { ...fh, records: 1, backoff: { initialDelay: 1, maxDelay: 2 } }));
 			assert.equal(putRecordBatch.callCount, 2);
+			const first = putRecordBatch.getCall(0).args[0].Records[0].Data;
+			const second = putRecordBatch.getCall(1).args[0].Records[0].Data;
+			assert.equal(first.toString().trim().split("\n").length, 3);
+			assert.isTrue(Buffer.from(second).equals(Buffer.from(first)));
 		});
 
 		it("firehose retries after an error", async function () {
