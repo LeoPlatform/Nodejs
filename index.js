@@ -184,9 +184,15 @@ function SDK(id, data, awsResourceConfig) {
 		bot: leoStream.cron,
 		aws: {
 			dynamodb: leoStream.dynamodb,
-			s3: leoStream.s3,
-			kinesis: leoStream.kinesis,
-			firehose: leoStream.firehose,
+			get s3() {
+				return leoStream.s3;
+			},
+			get kinesis() {
+				return leoStream.kinesis;
+			},
+			get firehose() {
+				return leoStream.firehose;
+			},
 			cloudformation: new CloudFormation({
 				region: configuration.aws.region,
 				credentials: configuration.credentials
