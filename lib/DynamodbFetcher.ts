@@ -4,7 +4,6 @@ import { BatchOptions, JoinExternalFetcher } from "./types";
 import { promisify } from "util";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { BatchGetCommandInput, DynamoDBDocument } from "@aws-sdk/lib-dynamodb";
-import { NodeHttpHandler } from '@smithy/node-http-handler';
 export class DynamodbFetcher<T, R> implements JoinExternalFetcher<T, R> {
 	tableName: string;
 	ddb: DynamoDBDocument;
@@ -18,13 +17,13 @@ export class DynamodbFetcher<T, R> implements JoinExternalFetcher<T, R> {
 		this.ddb = DynamoDBDocument.from(new DynamoDBClient({
 			region: process.env.AWS_REGION ?? "us-east-1",
 			maxAttempts: 3,
-			requestHandler: new NodeHttpHandler({
+			requestHandler: {
 				connectionTimeout: 2000,
 				requestTimeout: 5000,
 				httpsAgent: new https.Agent({
 					ciphers: 'ALL',
 				}),
-			}),
+			},
 		}), {
 			marshallOptions: {
 				convertEmptyValues: true,
